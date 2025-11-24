@@ -10,8 +10,7 @@
             --bg-color: #141414;
             --card-bg: #2f2f2f;
             --text-color: #ffffff;
-            --primary-color: #e50914; /* Rojo Netflix */
-            --secondary-color: #aaa;
+            --primary-color: #e50914;
         }
 
         body {
@@ -19,228 +18,113 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
-            overflow-x: hidden; /* Evita scroll horizontal en la página entera */
+            overflow-x: hidden;
         }
 
         /* --- PANTALLA DE LOGIN --- */
         #login-screen {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.8)), url('https://images.unsplash.com/photo-1581092918056-0c4c58a885f2?q=80&w=2070&auto=format&fit=crop'); /* Imagen de fondo industrial */
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.8)), url('https://images.unsplash.com/photo-1581092918056-0c4c58a885f2?q=80&w=2070&auto=format&fit=crop');
             background-size: cover;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
+            display: flex; justify-content: center; align-items: center; z-index: 1000;
         }
 
         .login-box {
-            background-color: rgba(0, 0, 0, 0.75);
-            padding: 60px;
-            border-radius: 4px;
-            width: 100%;
-            max-width: 350px;
-            text-align: center;
+            background-color: rgba(0, 0, 0, 0.75); padding: 60px; border-radius: 4px; width: 100%; max-width: 350px; text-align: center;
         }
-
-        .login-box h1 {
-            color: var(--primary-color);
-            margin-bottom: 30px;
-            font-size: 2.5rem;
-            letter-spacing: 2px;
-        }
-
-        .login-input {
-            width: 100%;
-            padding: 15px;
-            margin-bottom: 20px;
-            background: #333;
-            border: none;
-            border-radius: 4px;
-            color: white;
-            font-size: 1rem;
-            box-sizing: border-box; /* Asegura que el padding no rompa el ancho */
-        }
-
-        .login-btn {
-            width: 100%;
-            padding: 15px;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-weight: bold;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
+        .login-box h1 { color: var(--primary-color); margin-bottom: 30px; font-size: 2.5rem; letter-spacing: 2px; }
+        .login-input { width: 100%; padding: 15px; margin-bottom: 20px; background: #333; border: none; border-radius: 4px; color: white; box-sizing: border-box; }
+        .login-btn { width: 100%; padding: 15px; background-color: var(--primary-color); color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
         .login-btn:hover { background-color: #f40612; }
         .login-error { color: #e5a1a1; font-size: 0.9rem; margin-top: 10px; display: none; }
 
-        /* --- INTERFAZ PRINCIPAL (OCULTA AL INICIO) --- */
+        /* --- INTERFAZ PRINCIPAL --- */
         #main-interface { display: none; }
 
-        /* CABECERA */
         header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 15px 40px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 15px 40px; position: fixed; width: 100%; top: 0; z-index: 100;
             background: linear-gradient(to bottom, rgba(20,20,20,1) 0%, rgba(20,20,20,0) 100%);
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 100;
-            box-sizing: border-box;
-            transition: background-color 0.4s;
+            transition: background-color 0.4s; box-sizing: border-box;
         }
-
         header.scrolled { background-color: #141414; }
+        .logo { color: var(--primary-color); font-size: 1.8rem; font-weight: 800; cursor: pointer; text-transform: uppercase; }
 
-        .logo {
-            color: var(--primary-color);
-            font-size: 1.8rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            text-shadow: 0 0 15px rgba(229, 9, 20, 0.5);
-            cursor: pointer;
-        }
-
-        .user-profile { font-size: 0.9rem; display: flex; align-items: center; gap: 10px; }
-        .avatar { width: 32px; height: 32px; background-color: #333; border-radius: 4px; }
-
-        /* HERO SECTION (Banner Principal) */
+        /* --- HERO DINÁMICO --- */
         .hero {
-            height: 80vh;
-            position: relative;
-            background: url('https://images.unsplash.com/photo-1531482615713-2afd69097998?q=80&w=2070&auto=format&fit=crop') center/cover no-repeat;
-            display: flex;
-            align-items: center;
-            padding-left: 50px;
+            height: 85vh; position: relative;
+            background-color: #000;
+            background-position: center;
+            background-size: cover;
+            background-repeat: no-repeat;
+            display: flex; align-items: center; padding-left: 50px;
+            /* Transición suave para el cambio de imagen de fondo */
+            transition: background-image 1s ease-in-out;
         }
         
-        .hero-overlay {
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(to right, #141414 10%, transparent 90%);
+        /* Capas de oscurecimiento para leer el texto */
+        .hero-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to right, #141414 15%, rgba(20,20,20,0.6) 50%, transparent 100%); z-index: 1; }
+        .hero-overlay-btm { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to top, #141414 0%, transparent 30%); z-index: 1; }
+        
+        .hero-content { 
+            position: relative; z-index: 10; max-width: 600px; 
+            opacity: 1; transition: opacity 0.5s ease-in-out; /* Transición para el texto */
         }
         
-        .hero-overlay-bottom {
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(to top, #141414 0%, transparent 50%);
-        }
+        /* Clase para ocultar contenido durante la transición */
+        .hero-content.fade-out { opacity: 0; }
 
-        .hero-content {
-            position: relative;
-            z-index: 10;
-            max-width: 500px;
-        }
-
-        .hero-title { font-size: 3.5rem; margin-bottom: 10px; font-weight: 800; line-height: 1; }
-        .hero-desc { font-size: 1.2rem; margin-bottom: 20px; text-shadow: 1px 1px 4px black; }
+        .hero-title { font-size: 3.5rem; margin-bottom: 10px; font-weight: 800; line-height: 1.1; text-transform: uppercase; color: white; text-shadow: 0 0 20px rgba(0,0,0,0.8); }
+        .hero-desc { font-size: 1.2rem; margin-bottom: 25px; text-shadow: 2px 2px 4px black; line-height: 1.4; color: #ddd; min-height: 60px; }
         
-        .hero-btn {
-            padding: 10px 25px;
-            font-size: 1.1rem;
-            border-radius: 4px;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            display: inline-flex; align-items: center; gap: 10px;
-        }
-        .btn-white { background-color: white; color: black; }
-        .btn-white:hover { background-color: rgba(255,255,255,0.75); }
+        .hero-btn { padding: 12px 30px; font-size: 1.2rem; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; transition: transform 0.2s; display: inline-flex; align-items: center; gap: 10px; }
+        .hero-btn:hover { transform: scale(1.05); }
 
-        /* CONTENEDOR DE FILAS */
-        .content-container {
-            position: relative;
-            top: -100px; /* Sube sobre el hero */
-            z-index: 20;
-            padding-bottom: 50px;
-        }
-
-        .category-row {
-            margin-bottom: 40px;
-            padding-left: 40px;
-        }
-
-        .category-title {
-            font-size: 1.4rem;
-            font-weight: 600;
-            color: #e5e5e5;
-            margin-bottom: 10px;
-        }
-
+        /* --- LISTAS DE CONTENIDO --- */
+        .content-container { position: relative; top: -100px; z-index: 20; padding-bottom: 50px; }
+        .category-row { margin-bottom: 40px; padding-left: 40px; }
+        .category-title { font-size: 1.4rem; font-weight: 600; color: #e5e5e5; margin-bottom: 10px; border-left: 3px solid var(--primary-color); padding-left: 10px; }
+        
         .row-slider {
-            display: flex;
-            gap: 10px;
-            overflow-x: auto;
-            padding: 20px 0;
-            scroll-behavior: smooth;
-            /* Ocultar barra de scroll pero permitir scroll */
-            scrollbar-width: none; /* Firefox */
+            display: flex; gap: 10px; overflow-x: auto; padding: 20px 0; scroll-behavior: smooth;
+            scrollbar-width: none;
         }
-        .row-slider::-webkit-scrollbar { display: none; /* Chrome/Safari */ }
+        .row-slider::-webkit-scrollbar { display: none; }
 
-        /* TARJETAS (CARDS) */
+        /* --- TARJETAS --- */
         .card {
-            flex: 0 0 250px; /* Ancho fijo */
-            aspect-ratio: 16/9;
-            background-color: var(--card-bg);
-            border-radius: 4px;
-            position: relative;
-            cursor: pointer;
-            transition: transform 0.3s ease, z-index 0.3s;
-            overflow: hidden;
+            flex: 0 0 280px; aspect-ratio: 16/9; background-color: var(--card-bg);
+            border-radius: 4px; position: relative; cursor: pointer;
+            transition: transform 0.3s ease, z-index 0.3s; overflow: hidden;
         }
-
-        .card:hover {
-            transform: scale(1.3); /* Zoom más agresivo estilo Netflix */
-            z-index: 100;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.8);
-        }
-
-        .card-img {
-            width: 100%; height: 100%;
-            object-fit: cover;
-        }
-
+        .card:hover { transform: scale(1.3); z-index: 100; box-shadow: 0 10px 20px rgba(0,0,0,0.8); }
+        .card-img { width: 100%; height: 100%; object-fit: cover; }
+        
         .card-hover-info {
-            position: absolute;
-            bottom: 0; left: 0; right: 0;
-            padding: 10px;
-            background: linear-gradient(to top, black, transparent);
-            opacity: 0;
-            transition: opacity 0.3s;
+            position: absolute; bottom: 0; left: 0; right: 0; padding: 10px;
+            background: linear-gradient(to top, black, transparent); opacity: 0; transition: opacity 0.3s;
         }
-
         .card:hover .card-hover-info { opacity: 1; }
-        .card-mini-title { font-size: 0.8rem; font-weight: bold; color: white; }
-        .card-mini-desc { font-size: 0.6rem; color: #ccc; margin-top: 4px; }
+        
+        .add-list-btn {
+            position: absolute; top: 10px; right: 10px;
+            background: rgba(40, 40, 40, 0.8); border: 2px solid #ccc; color: white;
+            width: 30px; height: 30px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.2rem; cursor: pointer; opacity: 0; transition: opacity 0.2s, background 0.2s; z-index: 101;
+        }
+        .add-list-btn:hover { border-color: white; background: rgba(80,80,80,0.9); }
+        .card:hover .add-list-btn { opacity: 1; }
+        .in-list { border-color: var(--primary-color); color: var(--primary-color); background: rgba(0,0,0,0.8); }
 
-        /* VISOR DE APLICACIÓN */
+        /* --- VISOR --- */
         #viewer {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: black;
-            z-index: 2000;
-            flex-direction: column;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: black; z-index: 2000; flex-direction: column;
         }
-
-        #viewer-header {
-            padding: 10px 30px;
-            background-color: #141414;
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid #333;
-        }
-
-        .close-btn {
-            background: transparent; border: 1px solid white; color: white;
-            padding: 5px 15px; cursor: pointer; border-radius: 2px;
-        }
-        .close-btn:hover { background: white; color: black; }
-
+        #viewer-header { padding: 10px 30px; background-color: #141414; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
+        .close-btn { background: #e50914; border: none; color: white; padding: 8px 20px; cursor: pointer; font-weight: bold; border-radius: 4px; }
+        .close-btn:hover { background: #f40612; }
         iframe { width: 100%; height: 100%; border: none; background: white; }
 
     </style>
@@ -250,37 +134,35 @@
     <div id="login-screen">
         <div class="login-box">
             <h1>SofI.A.</h1>
-            <form id="login-form" onsubmit="intentarLogin(event)">
-                <input type="text" id="username" class="login-input" placeholder="Usuario o Correo" required>
-                <input type="password" id="password" class="login-input" placeholder="Contraseña" required>
+            <form onsubmit="intentarLogin(event)">
+                <input type="text" id="username" class="login-input" placeholder="Usuario (admin)" required>
+                <input type="password" id="password" class="login-input" placeholder="Contraseña (1234)" required>
                 <button type="submit" class="login-btn">Iniciar Sesión</button>
-                <p id="error-msg" class="login-error">Credenciales incorrectas. (Prueba: admin / 1234)</p>
+                <p id="error-msg" class="login-error">Credenciales incorrectas.</p>
             </form>
-            <p style="color: #737373; font-size: 0.8rem; margin-top: 20px;">
-                ¿Nuevo en SofI.A.? <a href="#" style="color: white;">Suscríbete ahora.</a>
-            </p>
         </div>
     </div>
 
     <div id="main-interface">
         <header id="navbar">
             <div class="logo" onclick="location.reload()">SofI.A.</div>
-            <div class="user-profile">
-                <span>Ingeniero</span>
-                <div class="avatar"></div>
-            </div>
+            <div style="font-size: 0.9rem; font-weight: bold;">INGENIERÍA ▼</div>
         </header>
 
-        <div class="hero">
+        <div class="hero" id="hero-section">
             <div class="hero-overlay"></div>
-            <div class="hero-overlay-bottom"></div>
-            <div class="hero-content">
-                <div class="hero-title">EnginnerIA</div>
-                <div class="hero-desc">
-                    Tu asistente personal de ingeniería impulsado por I.A. Resuelve dudas sobre redes de gas y combustión al instante.
-                </div>
-                <button class="hero-btn btn-white" onclick="abrirHerramienta('EnginnerIA', 'Chat Bot')">
-                    ▶  ABRIR APLICACIÓN
+            <div class="hero-overlay-btm"></div>
+            
+            <div class="hero-content" id="hero-content">
+                <div class="hero-title" id="hero-title">CARGANDO...</div>
+                <div class="hero-desc" id="hero-desc">Preparando herramientas de ingeniería...</div>
+                
+                <button class="hero-btn" id="hero-btn-play" style="background: white; color: black;">
+                    ▶  ABRIR
+                </button>
+                
+                <button class="hero-btn" style="background: rgba(109, 109, 110, 0.7); color: white; margin-left: 10px;">
+                    ⓘ  Detalles
                 </button>
             </div>
         </div>
@@ -291,165 +173,195 @@
 
     <div id="viewer">
         <div id="viewer-header">
-            <span id="viewer-title" style="font-weight:bold;">Herramienta</span>
-            <button class="close-btn" onclick="cerrarHerramienta()">X CERRAR</button>
+            <span id="viewer-title" style="font-size: 1.2rem; font-weight: bold;">Herramienta</span>
+            <button class="close-btn" onclick="cerrarHerramienta()">CERRAR APLICACIÓN</button>
         </div>
         <iframe id="app-frame" src=""></iframe>
     </div>
 
     <script>
-        // 1. CONFIGURACIÓN DE USUARIO (Simulada)
-        const USER_CORRECTO = "admin";
-        const PASS_CORRECTO = "1234";
+        // --- DATOS Y CONFIGURACIÓN ---
+        const USER = "admin";
+        const PASS = "1234";
 
-        // 2. BASE DE DATOS DE HERRAMIENTAS
-        // He añadido la propiedad "categoria" para agruparlas
         const herramientas = [
             { 
-                nombre: "Calculadora Ventilación", 
+                nombre: "Calculadora de ventilación", 
                 url: "Calculadora de ventilacion 3631 V_Libre", 
-                imagen: "Imagen001.jpg", // Ajusta esta ruta
-                descripcion: "Cálculo de ventilación según dimensiones.",
-                categoria: "Cálculos y Diseño"
+                imagen: "Imagen001", 
+                descripcion: "Determina la capacidad de ventilación de un recinto ingresando solo las dimensiones espaciales y la potencia instalada.", 
+                categoria: "Cálculos de Ventilación"
             },
             { 
-                nombre: "Convertidor GLP", 
+                nombre: "Convertidor Universal GLP", 
                 url: "Aplicacion Convertidor Universal GLP",
-                imagen: "Imagen004convertidorGLP.jpg", 
-                descripcion: "Conversiones másicas Kg/m3/Gl.",
-                categoria: "Utilidades"
+                imagen: "Imagen004convertidorGLP", 
+                descripcion: "Realiza conversiones másicas: de Kg a m3, de Gl a Kg, entre otras unidades fundamentales.", 
+                categoria: "Utilidades y Conversión"
             },
             { 
                 nombre: "EnginnerIA", 
                 url: "Chat Bot",
-                imagen: "LogoIngenieroIA.jpg",
-                descripcion: "ChatBot experto en gas.",
+                imagen: "LogoIngenieroIA", 
+                descripcion: "Chatea con la I.A. experta sobre temas relacionados con las redes de gas y sistemas de combustión.", 
                 categoria: "Inteligencia Artificial"
             },
             { 
                 nombre: "Diseño Media Presión", 
                 url: "Modelador Mueller V_Pro (1211)",
-                imagen: "Imagen003DiseñoMueller.jpg",
-                descripcion: "Estimación pérdidas Mueller (>0.33 psi).",
-                categoria: "Cálculos y Diseño"
+                imagen: "Imagen003DiseñoMueller", 
+                descripcion: "Mueller: Estima las pérdidas de presión y calcula la velocidad en sistemas > 0,33 psi.", 
+                categoria: "Diseño y Modelado"
             },
              { 
                 nombre: "Diseño Baja Presión", 
                 url: "Modelador Renoaurd-V_Pro",
-                imagen: "Imagen002DiseñoRenouard.jpg",
-                descripcion: "Renouard (<0.33 psi).",
-                categoria: "Cálculos y Diseño"
+                imagen: "Imagen002DiseñoRenouard", 
+                descripcion: "Renouard: Estima las pérdidas de presión en sistemas que operan a presiones <= 0,33 psi.", 
+                categoria: "Diseño y Modelado"
             },
              { 
                 nombre: "Inventario (Beta)", 
                 url: "./inventario.html",
-                imagen: "./unnamed (4).jpg",
-                descripcion: "Gestión de stock en desarrollo.",
-                categoria: "En Desarrollo"
-            },
-            { 
-               nombre: "Normativa NTC 2505", 
-                url: "#",
-                imagen: "", 
-                descripcion: "Consulta rápida de norma.",
-                categoria: "Documentación"
-            },
+                imagen: "./unnamed (4).jpg", 
+                descripcion: "Sistema de gestión de inventario en fase de desarrollo.", 
+                categoria: "Próximamente"
+            }
         ];
 
-        // 3. LÓGICA DE LOGIN
-        function intentarLogin(e) {
-            e.preventDefault();
-            const user = document.getElementById('username').value;
-            const pass = document.getElementById('password').value;
-            const errorMsg = document.getElementById('error-msg');
+        // --- SISTEMA DE CARRUSEL (HERO) ---
+        let heroIndex = 0;
+        let heroInterval;
 
-            if(user === USER_CORRECTO && pass === PASS_CORRECTO) {
-                // Login exitoso
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('main-interface').style.display = 'block';
-                inicializarApp();
-            } else {
-                // Error
-                errorMsg.style.display = 'block';
-            }
+        function iniciarCarrusel() {
+            mostrarSlideHero(); // Mostrar el primero inmediatamente
+            // Cambiar cada 5 segundos
+            heroInterval = setInterval(() => {
+                heroIndex = (heroIndex + 1) % herramientas.length;
+                mostrarSlideHero();
+            }, 5000);
         }
 
-        // 4. RENDERIZADO ESTILO NETFLIX
-        function inicializarApp() {
+        function mostrarSlideHero() {
+            const tool = herramientas[heroIndex];
+            const bgSection = document.getElementById('hero-section');
+            const contentDiv = document.getElementById('hero-content');
+            
+            // 1. Efecto Fade Out del texto
+            contentDiv.classList.add('fade-out');
+
+            setTimeout(() => {
+                // 2. Cambiar datos mientras está invisible
+                document.getElementById('hero-title').textContent = tool.nombre;
+                document.getElementById('hero-desc').textContent = tool.descripcion;
+                
+                // Actualizar botón para que abra esta herramienta
+                const btn = document.getElementById('hero-btn-play');
+                btn.onclick = () => abrirHerramienta(tool.nombre, tool.url);
+
+                // 3. Cambiar Fondo
+                // Intentamos usar la imagen de la herramienta. Si falla, se verá negro/gris por el CSS default.
+                // Añadimos un fallback URL genérico por si la ruta local no funciona en la demo
+                const imgUrl = tool.imagen.includes('.') ? tool.imagen : tool.imagen + '.jpg'; // Intento simple de corregir falta de extensión
+                bgSection.style.backgroundImage = `url('${imgUrl}'), url('https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?q=80&w=2070&auto=format&fit=crop')`;
+
+                // 4. Efecto Fade In
+                contentDiv.classList.remove('fade-out');
+            }, 500); // Espera 500ms (lo que dura la transición CSS)
+        }
+
+
+        // --- GESTIÓN DE MI LISTA ---
+        let miLista = JSON.parse(localStorage.getItem('sofi_favorites')) || [];
+
+        function toggleMiLista(nombreHerramienta, event) {
+            event.stopPropagation();
+            const index = miLista.indexOf(nombreHerramienta);
+            index > -1 ? miLista.splice(index, 1) : miLista.push(nombreHerramienta);
+            localStorage.setItem('sofi_favorites', JSON.stringify(miLista));
+            renderizarTodo();
+        }
+
+        // --- RENDERIZADO ---
+        function renderizarTodo() {
             const container = document.getElementById('content-rows');
             container.innerHTML = "";
 
-            // Obtener categorías únicas
+            if (miLista.length > 0) {
+                const favs = herramientas.filter(h => miLista.includes(h.nombre));
+                if (favs.length > 0) crearFila(container, "Mi Lista", favs);
+            }
+
             const categorias = [...new Set(herramientas.map(h => h.categoria))];
-
             categorias.forEach(cat => {
-                // Crear contenedor de la fila
-                const row = document.createElement('div');
-                row.className = 'category-row';
-
-                // Título de categoría
-                const title = document.createElement('div');
-                title.className = 'category-title';
-                title.innerText = cat;
-                row.appendChild(title);
-
-                // Slider horizontal
-                const slider = document.createElement('div');
-                slider.className = 'row-slider';
-
-                // Filtrar herramientas de esta categoría
-                const appsEnCategoria = herramientas.filter(h => h.categoria === cat);
-
-                appsEnCategoria.forEach(tool => {
-                    const card = document.createElement('div');
-                    card.className = 'card';
-                    
-                    // Usamos un div con background-image para manejar mejor las imágenes rotas
-                    // Si falla, se verá gris oscuro (background del card)
-                    card.innerHTML = `
-                        <img src="${tool.imagen}" class="card-img" onerror="this.style.display='none'">
-                        <div class="card-hover-info">
-                            <div class="card-mini-title">${tool.nombre}</div>
-                            <div class="card-mini-desc">${tool.descripcion}</div>
-                        </div>
-                    `;
-
-                    card.onclick = () => abrirHerramienta(tool.nombre, tool.url);
-                    slider.appendChild(card);
-                });
-
-                row.appendChild(slider);
-                container.appendChild(row);
-            });
-
-            // Efecto Navbar al hacer scroll
-            window.addEventListener('scroll', () => {
-                const nav = document.getElementById('navbar');
-                if (window.scrollY > 50) {
-                    nav.classList.add('scrolled');
-                } else {
-                    nav.classList.remove('scrolled');
-                }
+                const apps = herramientas.filter(h => h.categoria === cat);
+                if(apps.length > 0) crearFila(container, cat, apps);
             });
         }
 
-        // 5. FUNCIONES DEL VISOR
-        function abrirHerramienta(titulo, url) {
-            const viewer = document.getElementById('viewer');
-            const frame = document.getElementById('app-frame');
-            const titleSpan = document.getElementById('viewer-title');
+        function crearFila(container, titulo, items) {
+            const row = document.createElement('div');
+            row.className = 'category-row';
+            
+            const titleDiv = document.createElement('div');
+            titleDiv.className = 'category-title';
+            titleDiv.innerText = titulo;
+            row.appendChild(titleDiv);
 
-            titleSpan.textContent = titulo;
-            frame.src = url; 
-            viewer.style.display = 'flex';
+            const slider = document.createElement('div');
+            slider.className = 'row-slider';
+
+            items.forEach(tool => {
+                const enLista = miLista.includes(tool.nombre);
+                const icono = enLista ? "✓" : "+";
+                const claseExtra = enLista ? "in-list" : "";
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="add-list-btn ${claseExtra}" onclick="toggleMiLista('${tool.nombre}', event)">${icono}</div>
+                    <img src="${tool.imagen}" class="card-img" onerror="this.style.display='none'; this.parentElement.style.backgroundColor='#333';">
+                    <div class="card-hover-info">
+                        <div style="font-size:0.9rem; font-weight:bold; color:white; margin-bottom:5px;">${tool.nombre}</div>
+                        <div style="font-size:0.7rem; color:#ccc; line-height:1.2;">${tool.descripcion.substring(0, 80)}...</div>
+                    </div>
+                `;
+                card.onclick = () => abrirHerramienta(tool.nombre, tool.url);
+                slider.appendChild(card);
+            });
+
+            row.appendChild(slider);
+            container.appendChild(row);
+        }
+
+        // --- SISTEMA GENERAL ---
+        function intentarLogin(e) {
+            e.preventDefault();
+            if(document.getElementById('username').value === USER && document.getElementById('password').value === PASS) {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-interface').style.display = 'block';
+                renderizarTodo();
+                iniciarCarrusel(); // <-- INICIAMOS EL CARRUSEL AL ENTRAR
+            } else {
+                document.getElementById('error-msg').style.display = 'block';
+            }
+        }
+
+        function abrirHerramienta(t, u) {
+            document.getElementById('viewer-title').textContent = t;
+            document.getElementById('app-frame').src = u;
+            document.getElementById('viewer').style.display = 'flex';
         }
 
         function cerrarHerramienta() {
-            const viewer = document.getElementById('viewer');
-            const frame = document.getElementById('app-frame');
-            frame.src = ""; 
-            viewer.style.display = 'none';
+            document.getElementById('app-frame').src = "";
+            document.getElementById('viewer').style.display = 'none';
         }
+
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            window.scrollY > 50 ? nav.classList.add('scrolled') : nav.classList.remove('scrolled');
+        });
 
     </script>
 </body>
