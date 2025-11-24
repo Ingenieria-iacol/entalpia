@@ -11,8 +11,6 @@
             --card-bg: #2f2f2f;
             --text-color: #ffffff;
             --primary-color: #e50914;
-            --footer-bg: #0a0a0a;
-            --footer-text: #737373;
         }
 
         body {
@@ -21,6 +19,7 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             overflow-x: hidden;
+            /* Flexbox para asegurar que el footer quede bien posicionado */
             display: flex;
             flex-direction: column;
             min-height: 100vh;
@@ -46,7 +45,8 @@
         /* --- INTERFAZ PRINCIPAL --- */
         #main-interface { 
             display: none; 
-            flex: 1; /* Para que ocupe el espacio y empuje el footer */
+            flex-direction: column;
+            flex: 1; 
         }
 
         header {
@@ -66,23 +66,21 @@
             background-size: cover;
             background-repeat: no-repeat;
             display: flex; align-items: center; padding-left: 50px;
-            /* Transición suave para el cambio de imagen de fondo */
             transition: background-image 1s ease-in-out;
         }
         
-        /* Capas de oscurecimiento más intensas para garantizar legibilidad */
-        .hero-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to right, #141414 20%, rgba(20,20,20,0.7) 60%, rgba(0,0,0,0.4) 100%); z-index: 1; }
-        .hero-overlay-btm { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to top, #141414 0%, transparent 40%); z-index: 1; }
+        .hero-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to right, #141414 15%, rgba(20,20,20,0.6) 50%, transparent 100%); z-index: 1; }
+        .hero-overlay-btm { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to top, #141414 0%, transparent 30%); z-index: 1; }
         
         .hero-content { 
             position: relative; z-index: 10; max-width: 600px; 
-            opacity: 1; transition: opacity 0.5s ease-in-out;
+            opacity: 1; transition: opacity 0.5s ease-in-out; 
         }
         
         .hero-content.fade-out { opacity: 0; }
 
-        .hero-title { font-size: 3.5rem; margin-bottom: 10px; font-weight: 800; line-height: 1.1; text-transform: uppercase; color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.9); }
-        .hero-desc { font-size: 1.2rem; margin-bottom: 25px; text-shadow: 1px 1px 5px black; line-height: 1.4; color: #e6e6e6; min-height: 60px; font-weight: 500; }
+        .hero-title { font-size: 3.5rem; margin-bottom: 10px; font-weight: 800; line-height: 1.1; text-transform: uppercase; color: white; text-shadow: 0 0 20px rgba(0,0,0,0.8); }
+        .hero-desc { font-size: 1.2rem; margin-bottom: 25px; text-shadow: 2px 2px 4px black; line-height: 1.4; color: #ddd; min-height: 60px; }
         
         .hero-btn { padding: 12px 30px; font-size: 1.2rem; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; transition: transform 0.2s; display: inline-flex; align-items: center; gap: 10px; }
         .hero-btn:hover { transform: scale(1.05); }
@@ -126,20 +124,16 @@
 
         /* --- FOOTER (NUEVO) --- */
         footer {
-            background-color: var(--footer-bg);
-            padding: 30px;
+            margin-top: auto; /* Empuja el footer al final si hay poco contenido */
+            padding: 30px 20px;
             text-align: center;
+            color: #737373;
             font-size: 0.9rem;
-            color: var(--footer-text);
-            margin-top: auto; /* Empuja el footer al final */
-            border-top: 1px solid #222;
-            z-index: 30;
+            border-top: 1px solid #333; /* La línea divisoria solicitada */
+            background-color: #0a0a0a;
             position: relative;
+            z-index: 30;
         }
-        footer span#year-span {
-             color: #999;
-        }
-
 
         /* --- VISOR --- */
         #viewer {
@@ -195,10 +189,9 @@
             </div>
 
         <footer>
-            &reg; Software De Inteligencia Artificial <span id="year-span"></span>
+            &reg; Software de Inteligencia Artificial - 2025
         </footer>
     </div>
-
 
     <div id="viewer">
         <div id="viewer-header">
@@ -263,7 +256,7 @@
         let heroInterval;
 
         function iniciarCarrusel() {
-            mostrarSlideHero();
+            mostrarSlideHero(); 
             heroInterval = setInterval(() => {
                 heroIndex = (heroIndex + 1) % herramientas.length;
                 mostrarSlideHero();
@@ -280,19 +273,17 @@
             setTimeout(() => {
                 document.getElementById('hero-title').textContent = tool.nombre;
                 document.getElementById('hero-desc').textContent = tool.descripcion;
+                
                 const btn = document.getElementById('hero-btn-play');
                 btn.onclick = () => abrirHerramienta(tool.nombre, tool.url);
 
-                // Cambiar Fondo: Usa la imagen de la herramienta.
-                // NOTA: Si tus imágenes locales no cargan, el fondo se verá negro por el CSS default.
-                // Asegúrate de que las rutas en 'herramientas' sean correctas.
+                // Fallback para imágenes
                 const imgUrl = tool.imagen.includes('.') ? tool.imagen : tool.imagen + '.jpg'; 
-                bgSection.style.backgroundImage = `url('${imgUrl}')`;
+                bgSection.style.backgroundImage = `url('${imgUrl}'), url('https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?q=80&w=2070&auto=format&fit=crop')`;
 
                 contentDiv.classList.remove('fade-out');
             }, 500);
         }
-
 
         // --- GESTIÓN DE MI LISTA ---
         let miLista = JSON.parse(localStorage.getItem('sofi_favorites')) || [];
@@ -362,14 +353,9 @@
             e.preventDefault();
             if(document.getElementById('username').value === USER && document.getElementById('password').value === PASS) {
                 document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('main-interface').style.display = 'flex'; // Cambiado a flex para el footer sticky
-                
-                // INICIALIZACIÓN AL LOGIN
+                document.getElementById('main-interface').style.display = 'flex'; // Cambiado a Flex para el footer
                 renderizarTodo();
                 iniciarCarrusel(); 
-                // Establecer el año actual en el footer
-                document.getElementById('year-span').textContent = new Date().getFullYear();
-
             } else {
                 document.getElementById('error-msg').style.display = 'block';
             }
