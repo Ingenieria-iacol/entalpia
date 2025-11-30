@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git de Ingeniería | El Futuro del Diseño</title>
+    <style>
+        :root {
+            --netflix-black: #141414;
+            --netflix-dark-gray: #181818;
+            --brand-blue: #0071eb; /* Azul estilo Netflix reemplazando el rojo */
+            --brand-blue-hover: #005bb5;
+            --text-white: #ffffff;
+            --text-gray: #b3b3b3;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: var(--netflix-black);
+            color: var(--text-white);
+            overflow-x: hidden;
+        }
+
+        /* --- Header / Nav --- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 4%;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7) 10%, rgba(0,0,0,0));
+            transition: background 0.5s;
+        }
+
+        .logo {
+            color: var(--brand-blue);
+            font-size: 1.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(0, 113, 235, 0.5);
+        }
+
+        .btn-login {
+            background-color: var(--brand-blue);
+            color: white;
+            border: none;
+            padding: 7px 17px;
+            border-radius: 3px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-login:hover {
+            background-color: var(--brand-blue-hover);
+        }
+
+        /* --- Hero Section --- */
+        .hero {
+            height: 85vh;
+            background-image: url('https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=2070&auto=format&fit=crop'); /* Imagen de ingeniería industrial */
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        /* El gradiente oscuro característico de la parte inferior del Hero de Netflix */
+        .hero::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.4);
+            box-shadow: inset 0 -100px 100px #141414;
+        }
+
+        .hero-content {
+            z-index: 2;
+            max-width: 800px;
+            padding: 20px;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            font-weight: 400;
+        }
+
+        .email-form {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .email-input {
+            padding: 15px;
+            width: 400px;
+            border: 1px solid #333;
+            border-radius: 2px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            font-size: 1rem;
+        }
+
+        .btn-cta {
+            background-color: var(--brand-blue);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 2px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-cta:hover {
+            background-color: var(--brand-blue-hover);
+        }
+
+        /* --- Content Rows (Cards) --- */
+        .section-container {
+            padding: 40px 4%;
+            background-color: var(--netflix-black);
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            font-weight: 500;
+            color: #e5e5e5;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 10px;
+            margin-bottom: 50px;
+        }
+
+        .card {
+            background-color: var(--netflix-dark-gray);
+            height: 150px;
+            border-radius: 4px;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            overflow: hidden;
+            border: 1px solid #333;
+        }
+
+        .card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.6;
+            transition: opacity 0.3s;
+        }
+
+        .card-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+        }
+
+        .card-title {
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        /* Efecto Hover Futurista */
+        .card:hover {
+            transform: scale(1.1); /* Zoom característico de Netflix */
+            z-index: 10;
+            box-shadow: 0 0 15px rgba(0, 113, 235, 0.6); /* Resplandor azul */
+            border-color: var(--brand-blue);
+        }
+
+        .card:hover img {
+            opacity: 1;
+        }
+
+        /* --- Features Split Section (Alternating) --- */
+        .feature-split {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 50px 10%;
+            border-bottom: 8px solid #222;
+            flex-wrap: wrap;
+        }
+
+        .feature-text {
+            flex: 1;
+            min-width: 300px;
+            padding-right: 20px;
+        }
+
+        .feature-text h2 {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .feature-text p {
+            font-size: 1.5rem;
+        }
+
+        .feature-visual {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+        
+        /* Simulación de interfaz técnica */
+        .tech-box {
+            background: #000;
+            border: 2px solid #333;
+            border-radius: 10px;
+            padding: 20px;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0, 113, 235, 0.2);
+        }
+        
+        .code-line {
+            height: 10px;
+            background-color: #333;
+            margin-bottom: 8px;
+            border-radius: 2px;
+            width: 80%;
+        }
+        .code-line.blue { background-color: var(--brand-blue); width: 40%; }
+        .code-line.short { width: 60%; }
+
+        /* --- Footer --- */
+        footer {
+            padding: 50px 10%;
+            color: var(--text-gray);
+            font-size: 0.9rem;
+            border-top: 8px solid #222;
+        }
+
+        .footer-links {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .footer-links a {
+            color: var(--text-gray);
+            text-decoration: none;
+        }
+
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            .feature-split { flex-direction: column; text-align: center; }
+            .feature-text { padding: 0; margin-bottom: 20px; }
+            .footer-links { grid-template-columns: repeat(2, 1fr); }
+            .email-input { width: 100%; margin-bottom: 10px; }
+            .btn-cta { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">GIT<span style="color: white; font-size: 0.8em;">DE</span>INGENIERÍA</div>
+        <button class="btn-login">Iniciar Sesión</button>
+    </header>
+
+    <div class="hero">
+        <div class="hero-content">
+            <h1>Control de versiones para el mundo físico.</h1>
+            <p>Gestiona planos, colabora en modelos CAD 3D y despliega proyectos de ingeniería a cualquier escala.</p>
+            
+            <div class="email-form">
+                <input type="email" class="email-input" placeholder="Ingeniero@empresa.com">
+                <button class="btn-cta">
+                    Comenzar &nbsp; &#10095;
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-container">
+        <div class="section-title">Tecnologías Populares</div>
+        <div class="card-grid">
+            <div class="card">
+                <img src="https://images.unsplash.com/photo-1531297461136-82lw8b225850?auto=format&fit=crop&w=500" alt="Chip Design">
+                <div class="card-overlay">
+                    <div class="card-title">Electrónica & PCBs</div>
+                </div>
+            </div>
+            <div class="card">
+                <img src="https://images.unsplash.com/photo-1565043589221-1a6fd495191e?auto=format&fit=crop&w=500" alt="Civil">
+                <div class="card-overlay">
+                    <div class="card-title">Ingeniería Civil</div>
+                </div>
+            </div>
+            <div class="card">
+                <img src="https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=500" alt="Robotics">
+                <div class="card-overlay">
+                    <div class="card-title">Robótica Industrial</div>
+                </div>
+            </div>
+            <div class="card">
+                <img src="https://images.unsplash.com/photo-1581092921461-eab62496096b?auto=format&fit=crop&w=500" alt="Mechanical">
+                <div class="card-overlay">
+                    <div class="card-title">Diseño Mecánico</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-title">Herramientas de Colaboración</div>
+        <div class="card-grid">
+             <div class="card">
+                <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=500" alt="Security">
+                <div class="card-overlay">
+                    <div class="card-title">Ciberseguridad OT</div>
+                </div>
+            </div>
+            <div class="card">
+                <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=500" alt="Data">
+                <div class="card-overlay">
+                    <div class="card-title">Big Data Industrial</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="feature-split">
+        <div class="feature-text">
+            <h2>Colabora en Tiempo Real.</h2>
+            <p>Deja de enviar archivos ZIP. Trabaja sobre el mismo modelo, rastrea cambios y resuelve conflictos de diseño al instante.</p>
+        </div>
+        <div class="feature-visual">
+            <div class="tech-box">
+                <div class="code-line"></div>
+                <div class="code-line blue"></div>
+                <div class="code-line short"></div>
+                <div class="code-line"></div>
+                <div style="color: var(--brand-blue); font-family: monospace; margin-top: 10px;">> Merge Request: V2.1 Aprobado</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="feature-split" style="flex-direction: row-reverse;">
+        <div class="feature-text">
+            <h2>Renderizado en la Nube.</h2>
+            <p>Visualiza ensamblajes masivos sin quemar tu GPU. Accede a tus proyectos desde cualquier dispositivo.</p>
+        </div>
+        <div class="feature-visual">
+            <img src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&w=600" style="width: 100%; border-radius: 10px; border: 2px solid #333;" alt="Tablet Engineering">
+        </div>
+    </div>
+
+    <footer>
+        <p>¿Preguntas? Llama al 0800-GIT-ING</p>
+        <div class="footer-links">
+            <a href="#">Preguntas Frecuentes</a>
+            <a href="#">Centro de Ayuda</a>
+            <a href="#">Términos de Uso</a>
+            <a href="#">Privacidad</a>
+            <a href="#">Preferencias de Cookies</a>
+            <a href="#">Información Corporativa</a>
+        </div>
+        <br>
+        <p style="font-size: 0.8rem;">© 2024 Git de Ingeniería, Inc.</p>
+    </footer>
+
+</body>
+</html>
