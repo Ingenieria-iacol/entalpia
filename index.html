@@ -7,14 +7,14 @@
     <!-- Iconos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* --- FUSIÓN DE ESTILOS (Netflux UI + SofIA Logic) --- */
+        /* --- ESTILOS GENERALES --- */
         :root {
             --primary-red: #E50914;
             --bg-black: #141414;
             --card-bg: #2f2f2f;
             --text-white: #ffffff;
             --text-gray: #e5e5e5;
-            --secondary-green: #46d369; /* Verde Éxito */
+            --secondary-green: #46d369;
             --corp-blue: #3b82f6; 
             --edu-yellow: #f59e0b; 
         }
@@ -30,17 +30,15 @@
             min-height: 100vh;
         }
 
-        /* --- UTILIDADES --- */
         .hidden { display: none !important; }
         .btn { cursor: pointer; border: none; outline: none; font-weight: bold; border-radius: 4px; transition: transform 0.2s; }
         .btn:hover { transform: scale(1.05); }
 
-        /* --- PANTALLA DE LOGIN --- */
+        /* --- LOGIN --- */
         #login-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.9)), url('https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=2000&auto=format&fit=crop');
-            background-size: cover;
-            background-position: center;
+            background-size: cover; background-position: center;
             display: flex; justify-content: center; align-items: center; z-index: 3000;
             transition: opacity 0.8s ease;
         }
@@ -76,14 +74,12 @@
         .user-menu { display: flex; align-items: center; gap: 20px; font-size: 1rem; }
         .profile-badge { border: 1px solid white; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; transition: all 0.3s; }
         
-        /* BUSCADOR (NUEVO ESTILO) */
+        /* BUSCADOR */
         .search-box {
             display: flex; align-items: center; background: transparent; border: 1px solid transparent; 
-            padding: 5px; transition: all 0.3s; overflow: hidden; width: 30px; /* Colapsado inicialmente */
+            padding: 5px; transition: all 0.3s; overflow: hidden; width: 30px;
         }
-        .search-box.active {
-            background: rgba(0,0,0,0.7); border-color: white; width: 250px;
-        }
+        .search-box.active { background: rgba(0,0,0,0.7); border-color: white; width: 250px; }
         .search-input {
             background: transparent; border: none; color: white; outline: none; 
             width: 0; transition: width 0.3s; padding-left: 10px; opacity: 0;
@@ -98,7 +94,7 @@
         }
         .nav-avatar:hover { border-color: white; }
 
-        /* --- HERO SECTION --- */
+        /* --- HERO --- */
         .hero {
             height: 85vh; width: 100%; position: relative;
             background-color: #000; background-position: center top; background-size: cover;
@@ -107,56 +103,41 @@
         }
         .hero-overlay { position: absolute; inset: 0; background: linear-gradient(to right, #141414 20%, transparent 100%); z-index: 1; }
         .hero-overlay-btm { position: absolute; bottom: 0; left: 0; right: 0; height: 150px; background: linear-gradient(to top, #141414, transparent); z-index: 1; }
-        
         .hero-content { position: relative; z-index: 10; max-width: 600px; padding-top: 60px; transition: opacity 0.5s; }
         .hero-content.fade-out { opacity: 0; }
-        
         .hero-title { font-size: 3.5rem; font-weight: 800; margin-bottom: 1rem; text-transform: uppercase; line-height: 1.1; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
         .hero-desc { font-size: 1.2rem; margin-bottom: 2rem; color: #e5e5e5; text-shadow: 1px 1px 2px black; max-width: 500px; }
-        
         .hero-buttons { display: flex; gap: 1rem; }
         .btn-play { background-color: white; color: black; padding: 0.8rem 2rem; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
         .btn-info { background-color: rgba(109, 109, 110, 0.7); color: white; padding: 0.8rem 2rem; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
 
-        /* --- CONTENT ROWS / TILES --- */
+        /* --- CONTENIDO --- */
         .content-container { position: relative; z-index: 20; margin-top: -80px; padding-bottom: 50px; min-height: 400px; }
         .row { margin-bottom: 3rem; padding-left: 4%; }
         .row-title { font-size: 1.4rem; font-weight: 600; color: #e5e5e5; margin-bottom: 1rem; }
-        
         .row-scroller { display: flex; gap: 10px; overflow-x: auto; padding: 20px 0; scrollbar-width: none; flex-wrap: nowrap; }
         
-        /* Estilo especial para resultados de búsqueda (Grid en lugar de fila) */
         .search-results-grid { display: flex; flex-wrap: wrap; gap: 20px; padding-left: 4%; padding-right: 4%; }
         
         .tile {
-            min-width: 260px; height: 146px; /* Aspect ratio estándar */
-            background-color: #333; border-radius: 4px;
-            transition: transform 0.3s, z-index 0s;
-            cursor: pointer; position: relative; overflow: hidden;
-            flex-shrink: 0;
+            min-width: 260px; height: 146px; background-color: #333; border-radius: 4px;
+            transition: transform 0.3s, z-index 0s; cursor: pointer; position: relative; overflow: hidden; flex-shrink: 0;
         }
-        
         .tile:hover { transform: scale(1.3); z-index: 100; box-shadow: 0 0 20px rgba(0,0,0,0.7); transition-delay: 0.1s; }
-        
         .tile-img { width: 100%; height: 100%; object-fit: cover; }
-        
         .tile-content {
-            position: absolute; inset: 0; opacity: 0;
-            background: linear-gradient(to top, rgba(0,0,0,0.95), transparent);
-            display: flex; flex-direction: column; justify-content: flex-end;
-            padding: 10px; transition: opacity 0.3s;
+            position: absolute; inset: 0; opacity: 0; background: linear-gradient(to top, rgba(0,0,0,0.95), transparent);
+            display: flex; flex-direction: column; justify-content: flex-end; padding: 10px; transition: opacity 0.3s;
         }
         .tile:hover .tile-content { opacity: 1; }
-        
         .tile-actions { display: flex; gap: 10px; margin-bottom: 8px; }
         .tile-icon { width: 30px; height: 30px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.7); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; background: rgba(0,0,0,0.5); color: white; transition: 0.2s; }
         .tile-icon:hover { background: white; color: black; border-color: white; transform: scale(1.1); }
         .icon-play { background: white; color: black; border-color: white; }
-        
         .tile-title { font-size: 0.9rem; font-weight: bold; color: white; margin-bottom: 4px; }
         .tile-meta { font-size: 0.7rem; color: var(--secondary-green); font-weight: bold; }
 
-        /* --- PROFILE GATE --- */
+        /* --- PERFILES --- */
         #profile-gate {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.95); z-index: 4000;
@@ -165,36 +146,22 @@
         }
         .gate-title { font-size: 3.5rem; font-weight: 400; margin-bottom: 2rem; color: white; text-align: center; }
         .gate-profiles { display: flex; gap: 2vw; flex-wrap: wrap; justify-content: center; }
-        
-        .profile-card { display: flex; flex-direction: column; align-items: center; cursor: pointer; group: hover; transition: transform 0.3s; width: 150px; }
+        .profile-card { display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: transform 0.3s; width: 150px; }
         .profile-card:hover { transform: translateY(-10px); }
-        
         .profile-avatar {
-            width: 150px; height: 150px; border-radius: 4px; margin-bottom: 1rem;
-            border: 3px solid transparent; display: flex; justify-content: center; align-items: center;
-            font-size: 4rem; color: rgba(255,255,255,0.7); transition: 0.3s;
-            background-size: cover; background-position: center;
+            width: 150px; height: 150px; border-radius: 4px; margin-bottom: 1rem; border: 3px solid transparent; 
+            display: flex; justify-content: center; align-items: center; font-size: 4rem; 
+            color: rgba(255,255,255,0.7); transition: 0.3s; background-size: cover; background-position: center;
         }
         .profile-card:hover .profile-avatar { border-color: white; color: white; }
-        
         .profile-name { color: gray; font-size: 1.3rem; transition: color 0.3s; }
         .profile-card:hover .profile-name { color: white; }
-
-        /* Colores de Perfiles */
         .av-gen { background: linear-gradient(135deg, #333, #666); }
         .av-corp { background: linear-gradient(135deg, #1e3a8a, var(--corp-blue)); }
         .av-edu { background: linear-gradient(135deg, #78350f, var(--edu-yellow)); }
-
         .gate-close { margin-top: 50px; background: transparent; border: 1px solid gray; color: gray; padding: 8px 25px; letter-spacing: 2px; text-transform: uppercase; }
         .gate-close:hover { border-color: white; color: white; }
 
-        /* --- MODAL LOGIN SECUNDARIO --- */
-        #dynamic-login-modal {
-            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px);
-            z-index: 4500; justify-content: center; align-items: center; animation: fadeIn 0.3s;
-        }
-        .modal-login-content { background: #181818; padding: 50px; width: 100%; max-width: 450px; border-radius: 8px; position: relative; border-top: 4px solid transparent; }
-        
         /* --- MODAL EDITAR PERFIL --- */
         #edit-profile-modal {
             display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(8px);
@@ -213,39 +180,29 @@
             content: 'Cambiar'; position: absolute; bottom: 0; left: 0; right: 0; 
             background: rgba(0,0,0,0.7); font-size: 0.8rem; padding: 5px; text-align:center;
         }
-        
         .form-row { display: flex; gap: 15px; margin-bottom: 15px; }
         .form-group { flex: 1; }
         .form-label { color: #aaa; font-size: 0.85rem; margin-bottom: 5px; display: block; }
-        
-        .edit-input { 
-            width: 100%; padding: 12px; background: #333; border: 1px solid #444; 
-            border-radius: 4px; color: white; font-size: 0.95rem; 
-        }
+        .edit-input { width: 100%; padding: 12px; background: #333; border: 1px solid #444; border-radius: 4px; color: white; font-size: 0.95rem; }
         .edit-input:focus { outline: none; border-color: var(--primary-red); }
         .edit-input.locked { background: #222; color: #777; border-color: #2a2a2a; cursor: not-allowed; }
-
-        select.edit-input { appearance: none; background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E"); background-repeat: no-repeat; background-position: right .7em top 50%; background-size: .65em auto; }
-
+        
         /* --- OTROS MODALES --- */
+        #dynamic-login-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 4500; justify-content: center; align-items: center; animation: fadeIn 0.3s; }
+        .modal-login-content { background: #181818; padding: 50px; width: 100%; max-width: 450px; border-radius: 8px; position: relative; border-top: 4px solid transparent; }
         #membership-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000; justify-content: center; align-items: center; }
         #video-modal { display: none; position: fixed; inset: 0; background: black; z-index: 5000; justify-content: center; align-items: center; flex-direction: column; }
         #viewer { display: none; position: fixed; inset: 0; background: black; z-index: 5500; flex-direction: column; }
         #details-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 4200; justify-content: center; align-items: center; }
 
-        /* Utility iframe/video */
         iframe { width: 100%; height: 100%; border: none; background: white; }
         video { width: 90%; max-width: 1000px; outline: none; }
-        
         @keyframes fadeIn { from { opacity: 0; transform: scale(1.05); } to { opacity: 1; transform: scale(1); } }
-        
-        /* Footer */
         footer { margin-top: 50px; padding: 30px; text-align: center; color: #777; font-size: 0.9rem; }
     </style>
 </head>
 <body>
 
-    <!-- AUDIO FONDO -->
     <audio id="bg-music" loop>
         <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
     </audio>
@@ -267,52 +224,7 @@
         </div>
     </div>
 
-    <!-- 2. SELECTOR DE PERFILES -->
-    <div id="profile-gate">
-        <h1 class="gate-title">¿Quién está viendo ahora?</h1>
-        <div class="gate-profiles">
-            <div class="profile-card" onclick="validarCambioPerfil('General')">
-                <div class="profile-avatar av-gen"><i class="fas fa-tools"></i></div>
-                <span class="profile-name">General</span>
-            </div>
-            <div class="profile-card" onclick="validarCambioPerfil('Corporativo')">
-                <div class="profile-avatar av-corp"><i class="fas fa-building"></i></div>
-                <span class="profile-name">Corporativo</span>
-            </div>
-            <div class="profile-card" onclick="validarCambioPerfil('Académico')">
-                <div class="profile-avatar av-edu"><i class="fas fa-graduation-cap"></i></div>
-                <span class="profile-name">Académico</span>
-            </div>
-        </div>
-        <button class="btn gate-close" onclick="cerrarGate()">VOLVER AL HUB</button>
-    </div>
-
-    <!-- 3. LOGIN SECUNDARIO -->
-    <div id="dynamic-login-modal">
-        <div class="modal-login-content" id="modal-content-style">
-            <button onclick="cerrarLoginSecundario()" style="position:absolute; top:15px; right:20px; background:none; border:none; color:gray; font-size:1.5rem; cursor:pointer;">&times;</button>
-            <h2 id="dyn-title" style="margin-bottom:10px; font-size:2rem; color:white;">Perfil</h2>
-            <p id="dyn-subtitle" style="color:#aaa; margin-bottom:30px;">Verifique sus credenciales</p>
-            <form onsubmit="intentarLogin(event, 'Dynamic')">
-                <input type="text" id="user-dyn" class="login-input" placeholder="Usuario" required>
-                <input type="password" id="pass-dyn" class="login-input" placeholder="Contraseña" required>
-                <button type="submit" id="btn-dyn" class="btn login-btn-primary">ACCEDER</button>
-                <p id="error-dyn" class="login-error">Datos incorrectos</p>
-            </form>
-        </div>
-    </div>
-
-    <!-- 4. MENSAJE DE MEMBRESÍA -->
-    <div id="membership-modal">
-        <div style="background:#1f1f1f; padding:40px; border-radius:8px; text-align:center; max-width:500px; border:1px solid #444;">
-            <i class="fas fa-check-circle" style="font-size:4rem; color:var(--secondary-green); margin-bottom:20px;"></i>
-            <h2 id="mem-greeting" style="margin-bottom:15px;">Hola</h2>
-            <div id="mem-details" style="color:#ccc; margin-bottom:30px; line-height:1.6;"></div>
-            <button class="btn login-btn-primary" onclick="finalizarCarga()">ACEPTAR</button>
-        </div>
-    </div>
-
-    <!-- 5. INTERFAZ PRINCIPAL -->
+    <!-- 2. INTERFAZ PRINCIPAL -->
     <div id="main-interface" class="hidden">
         <nav id="navbar" class="navbar">
             <div style="display:flex; align-items:center; gap:30px;">
@@ -325,17 +237,15 @@
             </div>
             
             <div class="user-menu">
-                <!-- BARRA DE BÚSQUEDA INTEGRADA -->
+                <!-- BUSCADOR -->
                 <div class="search-box" id="search-box">
                     <i class="fas fa-search" onclick="toggleBuscador()" style="cursor:pointer; font-size:1.1rem;"></i>
-                    <input type="text" id="search-input" class="search-input" placeholder="Títulos, categorías, descripción..." oninput="filtrarContenido(this.value)">
+                    <input type="text" id="search-input" class="search-input" placeholder="Títulos, categorías..." oninput="filtrarContenido(this.value)">
                 </div>
 
                 <span id="profile-indicator" class="profile-badge">GENERAL</span>
                 <i class="fas fa-users-cog" style="cursor:pointer" onclick="abrirGate()" title="Cambiar Perfil"></i>
-                
-                <!-- Avatar Navbar Dinámico (Clickeable para editar) -->
-                <div id="nav-avatar-icon" class="nav-avatar av-gen" onclick="abrirEditorPerfil()" title="Ver/Editar Perfil Profesional">
+                <div id="nav-avatar-icon" class="nav-avatar av-gen" onclick="abrirEditorPerfil()" title="Ver/Editar Perfil">
                     <i class="fas fa-user"></i>
                 </div>
             </div>
@@ -362,21 +272,49 @@
         </footer>
     </div>
 
-    <!-- 6. MODAL PERFIL PROFESIONAL -->
+    <!-- 3. PROFILE GATE -->
+    <div id="profile-gate">
+        <h1 class="gate-title">¿Quién está viendo ahora?</h1>
+        <div class="gate-profiles">
+            <div class="profile-card" onclick="validarCambioPerfil('General')">
+                <div class="profile-avatar av-gen"><i class="fas fa-tools"></i></div><span class="profile-name">General</span>
+            </div>
+            <div class="profile-card" onclick="validarCambioPerfil('Corporativo')">
+                <div class="profile-avatar av-corp"><i class="fas fa-building"></i></div><span class="profile-name">Corporativo</span>
+            </div>
+            <div class="profile-card" onclick="validarCambioPerfil('Académico')">
+                <div class="profile-avatar av-edu"><i class="fas fa-graduation-cap"></i></div><span class="profile-name">Académico</span>
+            </div>
+        </div>
+        <button class="btn gate-close" onclick="cerrarGate()">VOLVER AL HUB</button>
+    </div>
+
+    <!-- 4. MODAL LOGIN SECUNDARIO -->
+    <div id="dynamic-login-modal">
+        <div class="modal-login-content" id="modal-content-style">
+            <button onclick="cerrarLoginSecundario()" style="position:absolute; top:15px; right:20px; background:none; border:none; color:gray; font-size:1.5rem; cursor:pointer;">&times;</button>
+            <h2 id="dyn-title" style="margin-bottom:10px; font-size:2rem; color:white;">Perfil</h2>
+            <p id="dyn-subtitle" style="color:#aaa; margin-bottom:30px;">Verifique sus credenciales</p>
+            <form onsubmit="intentarLogin(event, 'Dynamic')">
+                <input type="text" id="user-dyn" class="login-input" placeholder="Usuario" required>
+                <input type="password" id="pass-dyn" class="login-input" placeholder="Contraseña" required>
+                <button type="submit" id="btn-dyn" class="btn login-btn-primary">ACCEDER</button>
+                <p id="error-dyn" class="login-error">Datos incorrectos</p>
+            </form>
+        </div>
+    </div>
+
+    <!-- 5. MODAL EDITAR PERFIL -->
     <div id="edit-profile-modal">
         <div class="edit-profile-box">
             <button onclick="document.getElementById('edit-profile-modal').style.display='none'" style="position:absolute; top:15px; right:20px; background:none; border:none; color:gray; font-size:1.5rem; cursor:pointer;">&times;</button>
             <h2 style="color:white; margin-bottom:25px; text-align:center;">Perfil Profesional</h2>
             
-            <!-- Avatar -->
             <label for="avatar-upload">
-                <div id="preview-avatar" class="edit-avatar-preview">
-                    <i class="fas fa-camera" style="font-size:2rem; color:#aaa;"></i>
-                </div>
+                <div id="preview-avatar" class="edit-avatar-preview"><i class="fas fa-camera" style="font-size:2rem; color:#aaa;"></i></div>
             </label>
             <input type="file" id="avatar-upload" accept="image/*" style="display:none;" onchange="previsualizarImagen(event)">
 
-            <!-- Credenciales Bloqueadas -->
             <div class="form-row">
                 <div class="form-group">
                     <label class="form-label"><i class="fas fa-envelope"></i> Usuario (Email)</label>
@@ -387,10 +325,7 @@
                     <input type="password" id="edit-pass" class="edit-input locked" readonly>
                 </div>
             </div>
-
             <hr style="border:0; border-top:1px solid #333; margin:20px 0;">
-
-            <!-- Datos Personales -->
             <div class="form-row">
                 <div class="form-group">
                     <label class="form-label">Nombre</label>
@@ -401,19 +336,16 @@
                     <input type="text" id="edit-lastname" class="edit-input" placeholder="Apellido">
                 </div>
             </div>
-
             <div class="form-row">
                 <div class="form-group">
                     <label class="form-label">Teléfono</label>
                     <input type="tel" id="edit-phone" class="edit-input" placeholder="+57 300...">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Ubicación (Opcional)</label>
+                    <label class="form-label">Ubicación</label>
                     <input type="text" id="edit-location" class="edit-input" placeholder="Ciudad, País">
                 </div>
             </div>
-
-            <!-- Datos Profesionales -->
             <div class="form-group" style="margin-bottom:15px;">
                 <label class="form-label">Profesión</label>
                 <select id="edit-profession" class="edit-input">
@@ -427,9 +359,8 @@
                     <option value="Otro">Otro</option>
                 </select>
             </div>
-
             <div class="form-group" style="margin-bottom:15px;">
-                <label class="form-label">Área de Conocimiento Específico</label>
+                <label class="form-label">Área de Conocimiento</label>
                 <select id="edit-area" class="edit-input" onchange="toggleConsultorArea()">
                     <option value="">Seleccione...</option>
                     <option value="Electricidad">Electricidad</option>
@@ -440,8 +371,6 @@
                     <option value="Consultor">Consultor</option>
                 </select>
             </div>
-
-            <!-- Campo Condicional para Consultor -->
             <div id="consultant-area-group" class="form-group hidden" style="margin-bottom:20px; border-left: 3px solid var(--secondary-green); padding-left: 10px;">
                 <label class="form-label" style="color:var(--secondary-green)">Especifique Área de Consultoría</label>
                 <select id="edit-consultant-area" class="edit-input">
@@ -453,51 +382,43 @@
                     <option value="Sistemas de combustión">Sistemas de combustión</option>
                 </select>
             </div>
-
             <button class="btn login-btn-primary" onclick="guardarCambiosPerfil()">GUARDAR DATOS</button>
         </div>
     </div>
 
-    <!-- --- COMPONENTES MODALES AUX --- -->
+    <!-- 6. MODAL MEMBRESIA -->
+    <div id="membership-modal">
+        <div style="background:#1f1f1f; padding:40px; border-radius:8px; text-align:center; max-width:500px; border:1px solid #444;">
+            <i class="fas fa-check-circle" style="font-size:4rem; color:var(--secondary-green); margin-bottom:20px;"></i>
+            <h2 id="mem-greeting" style="margin-bottom:15px;">Hola</h2>
+            <div id="mem-details" style="color:#ccc; margin-bottom:30px; line-height:1.6;"></div>
+            <button class="btn login-btn-primary" onclick="finalizarCarga()">ACEPTAR</button>
+        </div>
+    </div>
+
+    <!-- AUXILIARES -->
     <div id="video-modal" onclick="this.style.display='none'; document.getElementById('promo-video').pause();">
         <button style="position:absolute; top:30px; right:30px; background:none; border:none; color:white; font-size:2rem; cursor:pointer;">&times;</button>
         <video id="promo-video" controls src="VideoSaberMas.mp4"></video>
     </div>
-
     <div id="details-modal" onclick="cerrarDetalles(event)">
         <div style="background:#181818; width:90%; max-width:800px; border-radius:10px; overflow:hidden;" onclick="event.stopPropagation()">
-            <div id="modal-banner" style="height:350px; background-size:cover; position:relative;">
-                <div style="position:absolute; inset:0; background:linear-gradient(to top, #181818, transparent);"></div>
-                <button onclick="cerrarDetalles(null)" style="position:absolute; top:15px; right:15px; width:35px; height:35px; border-radius:50%; border:none; background:#181818; color:white; font-size:1.2rem; cursor:pointer;">&times;</button>
-            </div>
-            <div style="padding:30px 40px;">
-                <h1 id="modal-title" style="margin-bottom:10px;">Titulo</h1>
-                <div style="display:flex; gap:15px; margin-bottom:20px; font-size:0.9rem;">
-                    <span style="color:var(--secondary-green); font-weight:bold;">98% Coincidencia</span>
-                    <span id="modal-cat">Cat</span>
-                </div>
-                <p id="modal-desc" style="color:#ccc; line-height:1.6; margin-bottom:30px;">Desc</p>
-                <button class="btn btn-play" id="modal-btn-open"><i class="fas fa-play"></i> Abrir Herramienta</button>
-            </div>
+            <div id="modal-banner" style="height:350px; background-size:cover; position:relative;"><div style="position:absolute; inset:0; background:linear-gradient(to top, #181818, transparent);"></div><button onclick="cerrarDetalles(null)" style="position:absolute; top:15px; right:15px; width:35px; height:35px; border-radius:50%; border:none; background:#181818; color:white; font-size:1.2rem; cursor:pointer;">&times;</button></div>
+            <div style="padding:30px 40px;"><h1 id="modal-title" style="margin-bottom:10px;">Titulo</h1><div style="display:flex; gap:15px; margin-bottom:20px; font-size:0.9rem;"><span style="color:var(--secondary-green); font-weight:bold;">98% Coincidencia</span><span id="modal-cat">Cat</span></div><p id="modal-desc" style="color:#ccc; line-height:1.6; margin-bottom:30px;">Desc</p><button class="btn btn-play" id="modal-btn-open"><i class="fas fa-play"></i> Abrir Herramienta</button></div>
         </div>
     </div>
-
     <div id="viewer">
-        <div style="padding:10px 30px; background:#141414; display:flex; justify-content:space-between; align-items:center;">
-            <span id="viewer-title" style="font-weight:bold;">App</span>
-            <button class="btn" style="background:var(--primary-red); color:white; padding:5px 15px;" onclick="document.getElementById('viewer').style.display='none'; document.getElementById('app-frame').src='';">CERRAR</button>
-        </div>
+        <div style="padding:10px 30px; background:#141414; display:flex; justify-content:space-between; align-items:center;"><span id="viewer-title" style="font-weight:bold;">App</span><button class="btn" style="background:var(--primary-red); color:white; padding:5px 15px;" onclick="document.getElementById('viewer').style.display='none'; document.getElementById('app-frame').src='';">CERRAR</button></div>
         <iframe id="app-frame"></iframe>
     </div>
 
     <script>
-        // --- BASE DE DATOS INICIAL ---
+        // --- DATA ---
         const DATOS_INICIALES = [
             { u: "josetangarife14@gmail.com", p: "14568734", n: "Jose", apellido: "Tangarife", f: "29/11/2025", img: "", profesion: "", area: "", telefono: "", ubicacion: "" },
             { u: "julianvalencia@inse.net.co", p: "1211", n: "Julian", apellido: "Valencia", f: "29/11/2025", img: "", profesion: "", area: "", telefono: "", ubicacion: "" },
             { u: "alexander221977@gmail.com", p: "2505", n: "Alexander", apellido: "", f: "29/11/2025", img: "", profesion: "", area: "", telefono: "", ubicacion: "" }
         ];
-
         let dbUsuarios = JSON.parse(localStorage.getItem('sofia_users')) || DATOS_INICIALES;
 
         const HERRAMIENTAS = [
@@ -512,51 +433,107 @@
 
         let perfilActual = "General";
         let usuarioActivo = null;
+        let favoritos = JSON.parse(localStorage.getItem('favs')) || [];
         const fallbackImg = "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2070";
 
-        // --- SISTEMA DE LOGIN ---
+        // --- BUSCADOR (CORREGIDO) ---
+        function toggleBuscador() {
+            const box = document.getElementById('search-box');
+            box.classList.toggle('active');
+            if (box.classList.contains('active')) {
+                document.getElementById('search-input').focus();
+            } else {
+                document.getElementById('search-input').value = "";
+                renderizarFilas();
+            }
+        }
+
+        function filtrarContenido(texto) {
+            const container = document.getElementById('content-rows');
+            
+            if (!texto) {
+                renderizarFilas();
+                return;
+            }
+
+            const termino = texto.toLowerCase();
+            const resultados = HERRAMIENTAS.filter(h => 
+                h.nombre.toLowerCase().includes(termino) || 
+                h.descripcion.toLowerCase().includes(termino) ||
+                h.categoria.toLowerCase().includes(termino)
+            );
+
+            container.innerHTML = "";
+            
+            if (resultados.length > 0) {
+                const title = document.createElement('h3');
+                title.className = 'row-title';
+                title.textContent = `Resultados para "${texto}"`;
+                
+                const grid = document.createElement('div');
+                grid.className = 'search-results-grid';
+
+                resultados.forEach(tool => {
+                    const img = tool.imagen.includes('.') ? tool.imagen : tool.imagen + '.jpg';
+                    const isFav = favoritos.includes(tool.nombre);
+                    
+                    const tile = document.createElement('div');
+                    tile.className = 'tile';
+                    tile.onclick = () => verDetalles(tool.id);
+                    tile.innerHTML = `
+                        <img src="${img}" class="tile-img" onerror="this.src='${fallbackImg}'">
+                        <div class="tile-content">
+                            <div class="tile-actions">
+                                <div class="tile-icon icon-play" onclick="abrirApp('${tool.nombre}', '${tool.url}'); event.stopPropagation();"><i class="fas fa-play"></i></div>
+                                <div class="tile-icon" onclick="toggleFav('${tool.nombre}'); event.stopPropagation();"><i class="fas ${isFav ? 'fa-check' : 'fa-plus'}"></i></div>
+                                <div class="tile-icon" onclick="verDetalles(${tool.id}); event.stopPropagation();"><i class="fas fa-chevron-down"></i></div>
+                            </div>
+                            <div class="tile-title">${tool.nombre}</div>
+                        </div>`;
+                    grid.appendChild(tile);
+                });
+                container.appendChild(title);
+                container.appendChild(grid);
+            } else {
+                container.innerHTML = `<div style="padding:20px; color:#aaa; text-align:center;">No se encontraron resultados</div>`;
+            }
+        }
+
+        // --- LOGIN & PERFIL ---
         function intentarLogin(e, source) {
             e.preventDefault();
-            let u, p, errorEl;
-
+            let u, p, err;
             if (source === 'General') {
                 u = document.getElementById('user-static').value.trim();
                 p = document.getElementById('pass-static').value.trim();
-                errorEl = document.getElementById('error-static');
+                err = document.getElementById('error-static');
                 perfilActual = "General";
             } else {
                 u = document.getElementById('user-dyn').value.trim();
                 p = document.getElementById('pass-dyn').value.trim();
-                errorEl = document.getElementById('error-dyn');
+                err = document.getElementById('error-dyn');
             }
 
-            const usuarioFound = dbUsuarios.find(c => c.u === u && c.p === p);
-
-            if (usuarioFound) {
-                usuarioActivo = usuarioFound;
-                errorEl.style.display = 'none';
-                
-                let targetProfile = "General";
+            const user = dbUsuarios.find(c => c.u === u && c.p === p);
+            if (user) {
+                usuarioActivo = user;
+                err.style.display = 'none';
+                let target = "General";
                 if (source === 'Dynamic') {
                     cerrarLoginSecundario();
                     cerrarGate();
-                    targetProfile = document.getElementById('dynamic-login-modal').dataset.targetProfile;
+                    target = document.getElementById('dynamic-login-modal').dataset.targetProfile;
                 }
-
-                mostrarModalMembresia(usuarioActivo, targetProfile);
+                mostrarModalMembresia(user, target);
             } else {
-                errorEl.style.display = 'block';
-                errorEl.parentElement.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-10px)' }, { transform: 'translateX(10px)' }, { transform: 'translateX(0)' }], { duration: 300 });
+                err.style.display = 'block';
             }
         }
 
-        // --- GESTIÓN DE PERFIL PROFESIONAL ---
         function abrirEditorPerfil() {
             if (!usuarioActivo) return;
-
             document.getElementById('edit-email').value = usuarioActivo.u;
             document.getElementById('edit-pass').value = usuarioActivo.p;
-
             document.getElementById('edit-name').value = usuarioActivo.n || "";
             document.getElementById('edit-lastname').value = usuarioActivo.apellido || "";
             document.getElementById('edit-phone').value = usuarioActivo.telefono || "";
@@ -564,47 +541,42 @@
             document.getElementById('edit-profession').value = usuarioActivo.profesion || "";
             document.getElementById('edit-area').value = usuarioActivo.area || "";
             
-            const areaConsultorDiv = document.getElementById('consultant-area-group');
-            const areaConsultorSelect = document.getElementById('edit-consultant-area');
-            
+            const areaDiv = document.getElementById('consultant-area-group');
+            const areaSel = document.getElementById('edit-consultant-area');
             if (usuarioActivo.area === 'Consultor') {
-                areaConsultorDiv.classList.remove('hidden');
-                areaConsultorSelect.value = usuarioActivo.areaConsultor || "";
+                areaDiv.classList.remove('hidden');
+                areaSel.value = usuarioActivo.areaConsultor || "";
             } else {
-                areaConsultorDiv.classList.add('hidden');
-                areaConsultorSelect.value = "";
+                areaDiv.classList.add('hidden');
+                areaSel.value = "";
             }
             
-            const preview = document.getElementById('preview-avatar');
+            const pv = document.getElementById('preview-avatar');
             if (usuarioActivo.img) {
-                preview.style.backgroundImage = `url('${usuarioActivo.img}')`;
-                preview.innerHTML = '';
+                pv.style.backgroundImage = `url('${usuarioActivo.img}')`;
+                pv.innerHTML = '';
             } else {
-                preview.style.backgroundImage = '';
-                preview.innerHTML = '<i class="fas fa-camera" style="font-size:2rem; color:#aaa;"></i>';
+                pv.style.backgroundImage = '';
+                pv.innerHTML = '<i class="fas fa-camera" style="font-size:2rem; color:#aaa;"></i>';
             }
-
             document.getElementById('edit-profile-modal').style.display = 'flex';
         }
 
         function toggleConsultorArea() {
             const area = document.getElementById('edit-area').value;
-            const consultorDiv = document.getElementById('consultant-area-group');
-            if (area === 'Consultor') {
-                consultorDiv.classList.remove('hidden');
-            } else {
-                consultorDiv.classList.add('hidden');
-            }
+            const div = document.getElementById('consultant-area-group');
+            if (area === 'Consultor') div.classList.remove('hidden');
+            else div.classList.add('hidden');
         }
 
-        function previsualizarImagen(event) {
-            const file = event.target.files[0];
+        function previsualizarImagen(e) {
+            const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
-                    const preview = document.getElementById('preview-avatar');
-                    preview.style.backgroundImage = `url('${e.target.result}')`;
-                    preview.innerHTML = '';
+                reader.onload = function(evt) {
+                    const pv = document.getElementById('preview-avatar');
+                    pv.style.backgroundImage = `url('${evt.target.result}')`;
+                    pv.innerHTML = '';
                 }
                 reader.readAsDataURL(file);
             }
@@ -638,353 +610,179 @@
         }
 
         function persistirUsuario() {
-            const index = dbUsuarios.findIndex(u => u.u === usuarioActivo.u);
-            if (index !== -1) {
-                dbUsuarios[index] = usuarioActivo;
+            const idx = dbUsuarios.findIndex(u => u.u === usuarioActivo.u);
+            if (idx !== -1) {
+                dbUsuarios[idx] = usuarioActivo;
                 localStorage.setItem('sofia_users', JSON.stringify(dbUsuarios));
             }
-
             actualizarAvatarUI();
             document.getElementById('edit-profile-modal').style.display = 'none';
-            alert("Información profesional actualizada correctamente.");
+            alert("Información actualizada.");
         }
 
         function actualizarAvatarUI() {
-            const avatarDiv = document.getElementById('nav-avatar-icon');
+            const av = document.getElementById('nav-avatar-icon');
             if (usuarioActivo.img) {
-                avatarDiv.style.backgroundImage = `url('${usuarioActivo.img}')`;
-                avatarDiv.innerHTML = ''; 
-                avatarDiv.classList.remove('av-gen', 'av-corp', 'av-edu'); 
-                avatarDiv.style.border = "2px solid white";
+                av.style.backgroundImage = `url('${usuarioActivo.img}')`;
+                av.innerHTML = '';
+                av.className = 'nav-avatar'; // remove default classes
+                av.style.border = "2px solid white";
             } else {
-                avatarDiv.style.backgroundImage = '';
-                cambiarPerfilVisual(perfilActual); 
+                av.style.backgroundImage = '';
+                cambiarPerfilVisual(perfilActual);
             }
         }
 
-        // --- BUSCADOR ---
-        function toggleBuscador() {
-            const box = document.getElementById('search-box');
-            box.classList.toggle('active');
-            if (box.classList.contains('active')) {
-                document.getElementById('search-input').focus();
-            } else {
-                // Si se cierra, limpiamos búsqueda
-                document.getElementById('search-input').value = "";
-                renderizarFilas();
-            }
-        }
-
-        function filtradoEnTiempoReal(texto) {
-            const container = document.getElementById('content-rows');
-            
-            if (!texto) {
-                renderizarFilas(); // Restaurar vista original
-                return;
-            }
-
-            const termino = texto.toLowerCase();
-            const resultados = HERRAMIENTAS.filter(h => 
-                h.nombre.toLowerCase().includes(termino) || 
-                h.descripcion.toLowerCase().includes(termino) ||
-                h.categoria.toLowerCase().includes(termino)
-            );
-
-            container.innerHTML = "";
-            
-            if (resultados.length > 0) {
-                const title = document.createElement('h3');
-                title.className = 'row-title';
-                title.textContent = `Resultados para "${texto}"`;
-                
-                const grid = document.createElement('div');
-                grid.className = 'search-results-grid'; // Usar Grid en vez de scroll horizontal
-
-                resultados.forEach(tool => {
-                    const img = tool.imagen.includes('.') ? tool.imagen : tool.imagen + '.jpg';
-                    const isFav = favoritos.includes(tool.nombre);
-                    
-                    const tile = document.createElement('div');
-                    tile.className = 'tile';
-                    tile.onclick = () => verDetalles(tool.id);
-                    
-                    tile.innerHTML = `
-                        <img src="${img}" class="tile-img" onerror="this.src='${fallbackImg}'">
-                        <div class="tile-content">
-                            <div class="tile-actions">
-                                <div class="tile-icon icon-play" onclick="abrirApp('${tool.nombre}', '${tool.url}'); event.stopPropagation();"><i class="fas fa-play"></i></div>
-                                <div class="tile-icon" onclick="toggleFav('${tool.nombre}'); event.stopPropagation();"><i class="fas ${isFav ? 'fa-check' : 'fa-plus'}"></i></div>
-                                <div class="tile-icon" onclick="verDetalles(${tool.id}); event.stopPropagation();"><i class="fas fa-chevron-down"></i></div>
-                            </div>
-                            <div class="tile-title">${tool.nombre}</div>
-                        </div>
-                    `;
-                    grid.appendChild(tile);
-                });
-
-                container.appendChild(title);
-                container.appendChild(grid);
-            } else {
-                container.innerHTML = `<div style="padding:20px; color:#aaa; text-align:center;">No se encontraron resultados para "${texto}"</div>`;
-            }
-        }
-
-        // --- GESTIÓN DE PERFILES ---
+        // --- GESTIÓN DE PERFILES Y UI ---
         function abrirGate() { document.getElementById('profile-gate').style.display = 'flex'; }
         function cerrarGate() { document.getElementById('profile-gate').style.display = 'none'; }
-
-        function validarCambioPerfil(perfil) {
-            if (perfil === 'General') {
+        function validarCambioPerfil(p) {
+            if (p === 'General') {
                 cambiarPerfilVisual('General');
                 cerrarGate();
-                return;
+            } else {
+                abrirLoginSecundario(p);
             }
-            abrirLoginSecundario(perfil);
         }
-
-        function cambiarPerfilVisual(perfil) {
-            perfilActual = perfil;
+        function cambiarPerfilVisual(p) {
+            perfilActual = p;
             const badge = document.getElementById('profile-indicator');
-            const avatar = document.getElementById('nav-avatar-icon');
-            
-            badge.textContent = perfil.toUpperCase();
+            const av = document.getElementById('nav-avatar-icon');
+            badge.textContent = p.toUpperCase();
             
             if (!usuarioActivo || !usuarioActivo.img) {
-                avatar.style.backgroundImage = '';
-                avatar.className = 'nav-avatar';
-                
-                if (perfil === 'General') {
-                    badge.style.borderColor = 'white'; badge.style.color = 'white';
-                    avatar.classList.add('av-gen');
-                    avatar.innerHTML = '<i class="fas fa-tools"></i>';
-                } else if (perfil === 'Corporativo') {
-                    badge.style.borderColor = 'var(--corp-blue)'; badge.style.color = 'var(--corp-blue)';
-                    avatar.classList.add('av-corp');
-                    avatar.innerHTML = '<i class="fas fa-building"></i>';
-                } else if (perfil === 'Académico') {
-                    badge.style.borderColor = 'var(--edu-yellow)'; badge.style.color = 'var(--edu-yellow)';
-                    avatar.classList.add('av-edu');
-                    avatar.innerHTML = '<i class="fas fa-graduation-cap"></i>';
-                }
+                av.style.backgroundImage = '';
+                av.className = 'nav-avatar';
+                if (p === 'General') { badge.style.color='white'; badge.style.borderColor='white'; av.classList.add('av-gen'); av.innerHTML='<i class="fas fa-tools"></i>'; }
+                else if (p === 'Corporativo') { badge.style.color='var(--corp-blue)'; badge.style.borderColor='var(--corp-blue)'; av.classList.add('av-corp'); av.innerHTML='<i class="fas fa-building"></i>'; }
+                else { badge.style.color='var(--edu-yellow)'; badge.style.borderColor='var(--edu-yellow)'; av.classList.add('av-edu'); av.innerHTML='<i class="fas fa-graduation-cap"></i>'; }
             } else {
-                if (perfil === 'General') badge.style.borderColor = 'white';
-                if (perfil === 'Corporativo') badge.style.borderColor = 'var(--corp-blue)';
-                if (perfil === 'Académico') badge.style.borderColor = 'var(--edu-yellow)';
+                if (p === 'General') badge.style.borderColor='white';
+                else if (p === 'Corporativo') badge.style.borderColor='var(--corp-blue)';
+                else badge.style.borderColor='var(--edu-yellow)';
             }
         }
-
-        function abrirLoginSecundario(perfil) {
-            const modal = document.getElementById('dynamic-login-modal');
-            const content = document.getElementById('modal-content-style');
-            const title = document.getElementById('dyn-title');
-            const btn = document.getElementById('btn-dyn');
-
-            let color = (perfil === 'Corporativo') ? 'var(--corp-blue)' : 'var(--edu-yellow)';
-            content.style.borderTopColor = color;
-            title.textContent = perfil;
-            title.style.color = color;
-            btn.style.backgroundColor = color;
-
-            document.getElementById('user-dyn').value = '';
-            document.getElementById('pass-dyn').value = '';
+        function abrirLoginSecundario(p) {
+            const m = document.getElementById('dynamic-login-modal');
+            const c = document.getElementById('modal-content-style');
+            const t = document.getElementById('dyn-title');
+            const b = document.getElementById('btn-dyn');
+            let col = (p === 'Corporativo') ? 'var(--corp-blue)' : 'var(--edu-yellow)';
+            c.style.borderTopColor = col; t.textContent = p; t.style.color = col; b.style.backgroundColor = col;
+            document.getElementById('user-dyn').value = ''; document.getElementById('pass-dyn').value = '';
             document.getElementById('error-dyn').style.display = 'none';
-
-            modal.dataset.targetProfile = perfil;
-            modal.style.display = 'flex';
+            m.dataset.targetProfile = p; m.style.display = 'flex';
         }
-
-        function cerrarLoginSecundario() {
-            document.getElementById('dynamic-login-modal').style.display = 'none';
+        function cerrarLoginSecundario() { document.getElementById('dynamic-login-modal').style.display = 'none'; }
+        
+        function mostrarModalMembresia(u, target) {
+            const m = document.getElementById('membership-modal');
+            document.getElementById('mem-greeting').textContent = `Hola, ${u.n} ${u.apellido || ''}`;
+            const d = document.getElementById('mem-details');
+            if (target === 'General') d.innerHTML = `Bienvenido al Hub.<br>Acceso estándar.<br><span style="font-size:0.8rem;color:#777;">Cuenta: ${u.f}</span>`;
+            else d.innerHTML = `Membresía <strong>${target}</strong> Validada.<br><strong style="color:var(--secondary-green);">Vigente hasta 28-11-2025</strong>`;
+            m.dataset.pendingProfile = target; m.style.display = 'flex';
         }
-
-        function mostrarModalMembresia(usuario, perfilDestino) {
-            const modal = document.getElementById('membership-modal');
-            const nombreMostrar = usuario.n || "Usuario";
-            const apellidoMostrar = usuario.apellido || "";
-            document.getElementById('mem-greeting').textContent = `Hola, ${nombreMostrar} ${apellidoMostrar}`;
-            
-            const details = document.getElementById('mem-details');
-
-            if (perfilDestino === 'General') {
-                details.innerHTML = `Bienvenido al <strong>Hub de Herramientas</strong>.<br>Tu acceso estándar está activo.<br><span style="font-size:0.8rem; color:#777;">Cuenta: ${usuario.f}</span>`;
-            } else {
-                details.innerHTML = `Membresía <strong>${perfilDestino}</strong> Validada.<br>Tienes acceso completo a funciones premium.<br><strong style="color:var(--secondary-green); display:block; margin-top:10px;">Vigente hasta 28-11-2025</strong>`;
-            }
-
-            modal.dataset.pendingProfile = perfilDestino;
-            modal.style.display = 'flex';
-        }
-
         function finalizarCarga() {
-            const modal = document.getElementById('membership-modal');
-            const nuevoPerfil = modal.dataset.pendingProfile;
-            modal.style.display = 'none';
-
-            const loginScreen = document.getElementById('login-screen');
-            if (loginScreen.style.display !== 'none') {
-                loginScreen.style.opacity = '0';
+            const m = document.getElementById('membership-modal');
+            const p = m.dataset.pendingProfile;
+            m.style.display = 'none';
+            const ls = document.getElementById('login-screen');
+            if (ls.style.display !== 'none') {
+                ls.style.opacity = '0';
                 setTimeout(() => {
-                    loginScreen.style.display = 'none';
+                    ls.style.display = 'none';
                     document.getElementById('main-interface').classList.remove('hidden');
                     document.getElementById('main-interface').style.opacity = '1';
-                    
-                    renderizarFilas();
-                    iniciarCarrusel();
-                    actualizarAvatarUI(); 
-                    document.getElementById('bg-music').play().catch(e => console.log("Audio autoplay blocked"));
+                    renderizarFilas(); iniciarCarrusel(); actualizarAvatarUI();
+                    document.getElementById('bg-music').play().catch(e=>{});
                 }, 800);
             }
-
-            cambiarPerfilVisual(nuevoPerfil);
+            cambiarPerfilVisual(p);
         }
 
-        // --- RENDERIZADO DE CONTENIDO ---
-        let favoritos = JSON.parse(localStorage.getItem('favs')) || [];
-
+        // --- RENDER CONTENT ---
         function renderizarFilas() {
-            const container = document.getElementById('content-rows');
-            container.innerHTML = "";
-
+            const c = document.getElementById('content-rows');
+            c.innerHTML = "";
             if (favoritos.length > 0) {
-                const favs = HERRAMIENTAS.filter(h => favoritos.includes(h.nombre));
-                if(favs.length > 0) crearFilaHTML(container, "Mi Lista", favs);
+                const fs = HERRAMIENTAS.filter(h => favoritos.includes(h.nombre));
+                if(fs.length) crearFila(c, "Mi Lista", fs);
             }
-
-            const categorias = [...new Set(HERRAMIENTAS.map(h => h.categoria))];
-            categorias.forEach(cat => {
-                const items = HERRAMIENTAS.filter(h => h.categoria === cat);
-                crearFilaHTML(container, cat, items);
+            const cats = [...new Set(HERRAMIENTAS.map(h => h.categoria))];
+            cats.forEach(cat => {
+                const its = HERRAMIENTAS.filter(h => h.categoria === cat);
+                crearFila(c, cat, its);
             });
         }
-
-        function crearFilaHTML(container, titulo, items) {
-            const row = document.createElement('div');
-            row.className = 'row';
-            const titleEl = document.createElement('h3');
-            titleEl.className = 'row-title';
-            titleEl.textContent = titulo;
-            const scroller = document.createElement('div');
-            scroller.className = 'row-scroller';
-
+        function crearFila(cont, tit, items) {
+            const row = document.createElement('div'); row.className = 'row';
+            const tEl = document.createElement('h3'); tEl.className = 'row-title'; tEl.textContent = tit;
+            const scr = document.createElement('div'); scr.className = 'row-scroller';
             items.forEach(tool => {
                 const img = tool.imagen.includes('.') ? tool.imagen : tool.imagen + '.jpg';
                 const isFav = favoritos.includes(tool.nombre);
-                
-                const tile = document.createElement('div');
-                tile.className = 'tile';
+                const tile = document.createElement('div'); tile.className = 'tile';
                 tile.onclick = () => verDetalles(tool.id);
-                
-                tile.innerHTML = `
-                    <img src="${img}" class="tile-img" onerror="this.src='${fallbackImg}'">
-                    <div class="tile-content">
-                        <div class="tile-actions">
-                            <div class="tile-icon icon-play" onclick="abrirApp('${tool.nombre}', '${tool.url}'); event.stopPropagation();"><i class="fas fa-play"></i></div>
-                            <div class="tile-icon" onclick="toggleFav('${tool.nombre}'); event.stopPropagation();"><i class="fas ${isFav ? 'fa-check' : 'fa-plus'}"></i></div>
-                            <div class="tile-icon" onclick="verDetalles(${tool.id}); event.stopPropagation();"><i class="fas fa-chevron-down"></i></div>
-                        </div>
-                        <div class="tile-title">${tool.nombre}</div>
-                        <div class="tile-meta">98% para ti</div>
-                    </div>
-                `;
-                scroller.appendChild(tile);
+                tile.innerHTML = `<img src="${img}" class="tile-img" onerror="this.src='${fallbackImg}'"><div class="tile-content"><div class="tile-actions"><div class="tile-icon icon-play" onclick="abrirApp('${tool.nombre}','${tool.url}');event.stopPropagation()"><i class="fas fa-play"></i></div><div class="tile-icon" onclick="toggleFav('${tool.nombre}');event.stopPropagation()"><i class="fas ${isFav?'fa-check':'fa-plus'}"></i></div><div class="tile-icon" onclick="verDetalles(${tool.id});event.stopPropagation()"><i class="fas fa-chevron-down"></i></div></div><div class="tile-title">${tool.nombre}</div></div>`;
+                scr.appendChild(tile);
             });
-
-            row.appendChild(titleEl);
-            row.appendChild(scroller);
-            container.appendChild(row);
+            row.appendChild(tEl); row.appendChild(scr); cont.appendChild(row);
         }
-
-        function toggleFav(nombre) {
-            const idx = favoritos.indexOf(nombre);
-            if (idx > -1) favoritos.splice(idx, 1); else favoritos.push(nombre);
+        function toggleFav(n) {
+            const i = favoritos.indexOf(n);
+            if(i > -1) favoritos.splice(i,1); else favoritos.push(n);
             localStorage.setItem('favs', JSON.stringify(favoritos));
-            
-            // Si estamos en modo búsqueda, no re-renderizar todo
-            const searchVal = document.getElementById('search-input').value;
-            if(searchVal) filtradoEnTiempoReal(searchVal);
-            else renderizarFilas();
+            const sv = document.getElementById('search-input').value;
+            if(sv) filtrarContenido(sv); else renderizarFilas();
         }
 
-        // --- CARRUSEL HERO ---
-        let heroIdx = 0;
-        let heroInterval;
-        function iniciarCarrusel() {
-            if(heroInterval) return;
-            actualizarHero();
-            heroInterval = setInterval(() => {
-                heroIdx = (heroIdx + 1) % HERRAMIENTAS.length;
-                actualizarHero();
-            }, 8000);
-        }
-
-        function actualizarHero() {
-            const t = HERRAMIENTAS[heroIdx];
-            const content = document.getElementById('hero-content');
-            const section = document.getElementById('hero-section');
-            
-            content.classList.add('fade-out');
+        // --- HERO ---
+        let hIdx = 0; let hInt;
+        function iniciarCarrusel() { if(hInt) return; actHero(); hInt = setInterval(() => { hIdx=(hIdx+1)%HERRAMIENTAS.length; actHero(); }, 8000); }
+        function actHero() {
+            const t = HERRAMIENTAS[hIdx];
+            const c = document.getElementById('hero-content');
+            const s = document.getElementById('hero-section');
+            c.classList.add('fade-out');
             setTimeout(() => {
                 document.getElementById('hero-title').textContent = t.nombre;
                 document.getElementById('hero-desc').textContent = t.descripcion;
-                
-                const btnPlay = document.getElementById('hero-btn-play');
-                const btnInfo = document.getElementById('hero-btn-details');
-                
-                const newPlay = btnPlay.cloneNode(true);
-                const newInfo = btnInfo.cloneNode(true);
-                btnPlay.parentNode.replaceChild(newPlay, btnPlay);
-                btnInfo.parentNode.replaceChild(newInfo, btnInfo);
-                
-                newPlay.onclick = () => abrirApp(t.nombre, t.url);
-                newInfo.onclick = () => verDetalles(t.id);
-
+                const bp = document.getElementById('hero-btn-play').cloneNode(true);
+                const bi = document.getElementById('hero-btn-details').cloneNode(true);
+                document.getElementById('hero-btn-play').replaceWith(bp);
+                document.getElementById('hero-btn-details').replaceWith(bi);
+                bp.onclick = () => abrirApp(t.nombre, t.url);
+                bi.onclick = () => verDetalles(t.id);
                 const img = t.imagen.includes('.') ? t.imagen : t.imagen + '.jpg';
-                section.style.backgroundImage = `url('${img}')`;
-                
-                content.classList.remove('fade-out');
+                s.style.backgroundImage = `url('${img}')`;
+                c.classList.remove('fade-out');
             }, 500);
         }
 
-        // --- FUNCIONES AUXILIARES ---
-        function mostrarVideoPresentacion() {
-            const v = document.getElementById('promo-video');
-            document.getElementById('video-modal').style.display = 'flex';
-            v.play().catch(e => console.log(e));
-        }
-
+        // --- AUX ---
+        function mostrarVideoPresentacion() { document.getElementById('video-modal').style.display='flex'; document.getElementById('promo-video').play().catch(e=>{}); }
         function verDetalles(id) {
-            const t = HERRAMIENTAS.find(h => h.id === id);
-            if(!t) return;
+            const t = HERRAMIENTAS.find(h => h.id === id); if(!t) return;
             const m = document.getElementById('details-modal');
             document.getElementById('modal-title').textContent = t.nombre;
             document.getElementById('modal-cat').textContent = t.categoria;
             document.getElementById('modal-desc').textContent = t.descripcion;
             document.getElementById('modal-btn-open').onclick = () => abrirApp(t.nombre, t.url);
-            
             const img = t.imagen.includes('.') ? t.imagen : t.imagen + '.jpg';
             document.getElementById('modal-banner').style.backgroundImage = `url('${img}')`;
-            
             m.style.display = 'flex';
         }
-
-        function cerrarDetalles(e) {
-            if(!e || e.target.id === 'details-modal') {
-                document.getElementById('details-modal').style.display = 'none';
-            }
+        function cerrarDetalles(e) { if(!e || e.target.id === 'details-modal') document.getElementById('details-modal').style.display='none'; }
+        function abrirApp(t, u) {
+            document.getElementById('details-modal').style.display='none';
+            document.getElementById('viewer').style.display='flex';
+            document.getElementById('app-frame').src = u;
         }
-
-        function abrirApp(titulo, url) {
-            document.getElementById('details-modal').style.display = 'none';
-            document.getElementById('viewer').style.display = 'flex';
-            document.getElementById('app-frame').src = url;
-        }
-
         window.addEventListener('scroll', () => {
-            const nav = document.getElementById('navbar');
-            if (window.scrollY > 50) nav.classList.add('scrolled');
-            else nav.classList.remove('scrolled');
+            const n = document.getElementById('navbar');
+            if (window.scrollY > 50) n.classList.add('scrolled'); else n.classList.remove('scrolled');
         });
-
     </script>
 </body>
 </html>
