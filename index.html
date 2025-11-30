@@ -4,14 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SofI.A. | Git de Ingeniería</title>
+    <!-- Iconos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Fuente Roboto -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     
     <style>
-        /* --- ESTILOS (Mismos que la versión anterior) --- */
+        /* --- ESTILOS GENERALES Y PALETA DE COLORES --- */
         :root {
-            --primary-blue: #0071eb; 
-            --bg-black: #141414;
+            --primary-blue: #0071eb; /* Azul Eléctrico */
+            --bg-black: #141414; /* Fondo Streaming Dark */
             --card-bg: #2f2f2f;
             --text-white: #ffffff;
             --text-gray: #b3b3b3;
@@ -40,7 +42,7 @@
         }
         .btn:hover { transform: scale(1.02); filter: brightness(1.1); }
 
-        a { text-decoration: none; color: inherit; } 
+        a { text-decoration: none; color: inherit; cursor: pointer; } 
 
         /* --- LOGIN SCREEN --- */
         #login-screen {
@@ -87,7 +89,7 @@
         
         .login-error { color: #ff6b6b; font-size: 0.9rem; margin-top: 15px; display: none; }
 
-        /* --- NAVBAR --- */
+        /* --- NAVBAR COMÚN --- */
         .navbar {
             position: fixed; top: 0; width: 100%; padding: 15px 4%;
             display: flex; justify-content: space-between; align-items: center;
@@ -206,6 +208,17 @@
         .tile-title { font-size: 1rem; font-weight: 700; color: white; margin-bottom: 5px; }
         .tile-meta { font-size: 0.75rem; color: var(--secondary-green); font-weight: 700; }
 
+        /* --- HOME INTERFACE ESTILOS (Nuevo) --- */
+        #home-interface .home-container {
+            flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; 
+            text-align: center; padding: 20px; min-height: 80vh;
+            background: radial-gradient(circle at center, rgba(0, 113, 235, 0.15) 0%, #141414 70%);
+        }
+        #home-interface h1 { font-size: 3.5rem; margin-bottom: 20px; text-transform: uppercase; letter-spacing: -1px; text-shadow: 0 0 20px rgba(0, 113, 235, 0.5); }
+        #home-interface p { font-size: 1.2rem; color: #ccc; max-width: 600px; margin-bottom: 40px; font-weight: 300; line-height: 1.6; }
+        .btn-large { padding: 15px 40px; background-color: var(--primary-blue); color: white; font-weight: 700; border-radius: 4px; font-size: 1.1rem; box-shadow: 0 5px 15px rgba(0,113,235,0.3); }
+        .btn-large:hover { transform: scale(1.05); filter: brightness(1.1); }
+
         /* --- PERFILES --- */
         #profile-gate {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -288,11 +301,8 @@
 </head>
 <body>
 
-    <!-- ELEMENTO DE AUDIO PARA FONDO -->
-    <audio id="bg-music" loop>
-        <source src="" type="audio/mpeg"> <!-- Se llena dinámicamente -->
-        Tu navegador no soporta el elemento de audio.
-    </audio>
+    <!-- ELEMENTO DE AUDIO PARA FONDO (SRC ELIMINADO PARA EVITAR ERROR INICIAL) -->
+    <audio id="bg-music" loop></audio>
 
     <!-- 1. LOGIN PRINCIPAL -->
     <div id="login-screen">
@@ -311,15 +321,17 @@
         </div>
     </div>
 
-    <!-- 2. INTERFAZ PRINCIPAL -->
-    <div id="main-interface" class="hidden">
+    <!-- 2. APP CONTAINER (SPA) -->
+    <div id="app-container" class="hidden" style="width:100%; min-height:100vh;">
+        
+        <!-- Navbar Común -->
         <nav id="navbar" class="navbar">
             <div style="display:flex; align-items:center; gap:40px;">
                 <div class="nav-logo" onclick="location.reload()">SofI.A.</div>
                 <div class="nav-links">
-                    <!-- ENLACE A INICIO con guardado de estado de audio -->
-                    <a href="#" class="nav-item" onclick="navegarA('interfazDeOpcionInicio.html')">Inicio</a>
-                    <a href="#" class="nav-item active" onclick="location.reload()">Herramientas</a>
+                    <!-- ENLACES DE NAVEGACIÓN SPA -->
+                    <a class="nav-item" onclick="cambiarVista('home')" id="link-home">Inicio</a>
+                    <a class="nav-item" onclick="cambiarVista('tools')" id="link-tools">Herramientas</a>
                     <span class="nav-item">Mi Lista</span>
                 </div>
             </div>
@@ -339,20 +351,31 @@
             </div>
         </nav>
 
-        <div class="hero" id="hero-section">
-            <div class="hero-overlay"></div>
-            <div class="hero-overlay-btm"></div>
-            <div class="hero-content" id="hero-content">
-                <h1 class="hero-title" id="hero-title">Cargando...</h1>
-                <p class="hero-desc" id="hero-desc">...</p>
-                <div class="hero-buttons">
-                    <button class="btn btn-play" id="hero-btn-play"><i class="fas fa-play"></i> Abrir</button>
-                    <button class="btn btn-info" id="hero-btn-details"><i class="fas fa-info-circle"></i> Más Información</button>
+        <!-- VISTA DE HERRAMIENTAS (Dashboard) -->
+        <div id="tools-interface">
+            <div class="hero" id="hero-section">
+                <div class="hero-overlay"></div>
+                <div class="hero-overlay-btm"></div>
+                <div class="hero-content" id="hero-content">
+                    <h1 class="hero-title" id="hero-title">Cargando...</h1>
+                    <p class="hero-desc" id="hero-desc">...</p>
+                    <div class="hero-buttons">
+                        <button class="btn btn-play" id="hero-btn-play"><i class="fas fa-play"></i> Abrir</button>
+                        <button class="btn btn-info" id="hero-btn-details"><i class="fas fa-info-circle"></i> Más Información</button>
+                    </div>
                 </div>
             </div>
+            <div class="content-container" id="content-rows"></div>
         </div>
 
-        <div class="content-container" id="content-rows"></div>
+        <!-- VISTA DE INICIO (Welcome / Home) -->
+        <div id="home-interface" class="hidden">
+            <div class="home-container">
+                <h1>Bienvenido al Git de Ingeniería</h1>
+                <p>Explora nuestras herramientas especializadas, consulta normativas y optimiza tus proyectos de ingeniería con el poder de la inteligencia artificial.</p>
+                <button class="btn btn-large" onclick="cambiarVista('tools')"><i class="fas fa-tools"></i> Ir a Herramientas</button>
+            </div>
+        </div>
 
         <footer>
             <div style="margin-bottom:20px; font-size:1.2rem;"><i class="fab fa-facebook-f" style="margin:0 15px;"></i> <i class="fab fa-instagram" style="margin:0 15px;"></i></div>
@@ -523,14 +546,11 @@
             { u: "julianvalencia@inse.net.co", p: "1211", n: "Julian", apellido: "Valencia", f: "29/11/2025", img: "", profesion: "", area: "", telefono: "", ubicacion: "" },
             { u: "alexander221977@gmail.com", p: "2505", n: "Alexander", apellido: "", f: "29/11/2025", img: "", profesion: "", area: "", telefono: "", ubicacion: "" }
         ];
-        let dbUsuarios = JSON.parse(localStorage.getItem('sofia_users')) || DATOS_INICIALES;
-
-        // MUSICA EPICA ALEATORIA
-        const EPIC_TRACKS = [
-            "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
-            "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
-            "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3"
-        ];
+        
+        let dbUsuarios = JSON.parse(localStorage.getItem('sofia_users'));
+        if (!dbUsuarios || dbUsuarios.length === 0) {
+            dbUsuarios = DATOS_INICIALES;
+        }
 
         const HERRAMIENTAS = [
             { id: 1, nombre: "Calculadora de ventilación", url: "Calculadora de ventilacion 3631 V_Libre.html", imagen: "Imagen001.png", descripcion: "Cálculo de ventilación según dimensiones.", categoria: "Ventilación" },
@@ -547,53 +567,66 @@
         let favoritos = JSON.parse(localStorage.getItem('favs')) || [];
         const fallbackImg = "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2070";
 
+        // --- MUSICA EPICA ALEATORIA ---
+        const EPIC_TRACKS = [
+            "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+            "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+            "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3"
+        ];
+
         // --- SISTEMA DE AUDIO INTELIGENTE ---
         const audioPlayer = document.getElementById('bg-music');
 
         function gestionarMusica() {
-            // Recuperar estado previo
             const savedTime = localStorage.getItem('audio_time');
             const savedTrack = localStorage.getItem('audio_track');
             
             if (savedTrack && savedTime) {
-                // Si ya venimos de otra página, seguimos la misma canción
                 audioPlayer.src = savedTrack;
                 audioPlayer.currentTime = parseFloat(savedTime);
             } else {
-                // Si es primera vez o reset, elegimos una nueva al azar
                 const randomTrack = EPIC_TRACKS[Math.floor(Math.random() * EPIC_TRACKS.length)];
                 audioPlayer.src = randomTrack;
                 localStorage.setItem('audio_track', randomTrack);
             }
 
-            // Intentar reproducir (requiere interacción previa en algunos navegadores)
             const playPromise = audioPlayer.play();
             if (playPromise !== undefined) {
                 playPromise.catch(error => {
-                    console.log("Autoplay prevenido por el navegador. Se iniciará al primer clic.");
-                    // Agregar listener global para iniciar audio al primer clic
-                    document.body.addEventListener('click', () => {
-                        audioPlayer.play();
-                    }, { once: true });
+                    // Autoplay fue prevenido. Se iniciará tras la primera interacción.
+                    document.body.addEventListener('click', () => { audioPlayer.play(); }, { once: true });
                 });
             }
         }
 
-        // Guardar progreso cada segundo para continuidad
         audioPlayer.addEventListener('timeupdate', () => {
             localStorage.setItem('audio_time', audioPlayer.currentTime);
         });
 
-        // --- NAVEGACIÓN ENTRE PÁGINAS ---
-        function navegarA(url) {
-            // Guardamos el estado del audio antes de salir
-            localStorage.setItem('audio_time', audioPlayer.currentTime);
-            window.location.href = url;
+        // --- NAVEGACIÓN SPA ---
+        function cambiarVista(vista) {
+            const toolsView = document.getElementById('tools-interface');
+            const homeView = document.getElementById('home-interface');
+            const linkTools = document.getElementById('link-tools');
+            const linkHome = document.getElementById('link-home');
+
+            if (vista === 'home') {
+                toolsView.classList.add('hidden');
+                homeView.classList.remove('hidden');
+                linkHome.classList.add('active');
+                linkTools.classList.remove('active');
+            } else {
+                homeView.classList.add('hidden');
+                toolsView.classList.remove('hidden');
+                linkTools.classList.add('active');
+                linkHome.classList.remove('active');
+                iniciarCarrusel();
+            }
         }
 
-        // --- INICIALIZACIÓN DE SESIÓN ---
+        // --- INICIALIZACIÓN DE SESIÓN (PERSISTENCIA AGRESIVA) ---
         window.addEventListener('load', () => {
-            gestionarMusica(); // Iniciar sistema de música
+            gestionarMusica();
 
             const sessionUser = JSON.parse(localStorage.getItem('sofia_session'));
             
@@ -602,13 +635,14 @@
                 usuarioActivo = updatedUser || sessionUser; 
                 
                 document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('main-interface').classList.remove('hidden');
-                document.getElementById('main-interface').style.opacity = '1';
+                document.getElementById('app-container').classList.remove('hidden');
+                document.getElementById('app-container').style.opacity = '1';
                 
                 renderizarFilas();
                 iniciarCarrusel();
                 actualizarAvatarUI();
                 cambiarPerfilVisual("General");
+                cambiarVista('tools');
             } else {
                 document.getElementById('login-screen').style.display = 'flex';
             }
@@ -649,9 +683,9 @@
 
         function cerrarSesion() {
             localStorage.removeItem('sofia_session');
-            localStorage.removeItem('audio_time'); // Resetear música al salir
+            localStorage.removeItem('audio_time'); 
             localStorage.removeItem('audio_track');
-            window.location.href = "index.html"; 
+            window.location.reload(); 
         }
 
         // --- BUSCADOR ---
@@ -667,6 +701,8 @@
         }
 
         function filtrarContenido(texto) {
+            cambiarVista('tools');
+            
             const container = document.getElementById('content-rows');
             if (!texto) { renderizarFilas(); return; }
 
@@ -764,7 +800,11 @@
             }
             actualizarAvatarUI();
             document.getElementById('edit-profile-modal').style.display = 'none';
-            alert("Información actualizada.");
+            // Feedback
+            const btn = document.querySelector('#edit-profile-modal .login-btn-primary');
+            const originalText = btn.innerText;
+            btn.innerText = "¡GUARDADO!";
+            setTimeout(() => btn.innerText = originalText, 2000);
         }
 
         function actualizarAvatarUI() {
@@ -831,10 +871,10 @@
                 ls.style.opacity = '0';
                 setTimeout(() => {
                     ls.style.display = 'none';
-                    document.getElementById('main-interface').classList.remove('hidden');
-                    document.getElementById('main-interface').style.opacity = '1';
+                    document.getElementById('app-container').classList.remove('hidden');
+                    document.getElementById('app-container').style.opacity = '1';
                     renderizarFilas(); iniciarCarrusel(); actualizarAvatarUI();
-                    document.getElementById('bg-music').play().catch(e=>{});
+                    // Audio Play is handled in load/gestionarMusica
                 }, 800);
             }
             cambiarPerfilVisual(p);
