@@ -75,7 +75,15 @@
         
         .user-menu { display: flex; align-items: center; gap: 20px; font-size: 1rem; }
         .profile-badge { border: 1px solid white; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; transition: all 0.3s; }
-        .nav-avatar { width: 32px; height: 32px; border-radius: 4px; cursor: pointer; background-color: #333; display: flex; justify-content: center; align-items: center; font-size: 1rem; }
+        
+        /* Avatar Interactivo */
+        .nav-avatar { 
+            width: 32px; height: 32px; border-radius: 4px; cursor: pointer; 
+            background-color: #333; display: flex; justify-content: center; align-items: center; 
+            font-size: 1rem; overflow: hidden; background-size: cover; background-position: center;
+            border: 1px solid transparent;
+        }
+        .nav-avatar:hover { border-color: white; }
 
         /* --- HERO SECTION (Style V2) --- */
         .hero {
@@ -172,6 +180,25 @@
         }
         .modal-login-content { background: #181818; padding: 50px; width: 100%; max-width: 450px; border-radius: 8px; position: relative; border-top: 4px solid transparent; }
         
+        /* --- MODAL EDITAR PERFIL (NUEVO) --- */
+        #edit-profile-modal {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px);
+            z-index: 5000; justify-content: center; align-items: center; animation: fadeIn 0.3s;
+        }
+        .edit-profile-box {
+            background: #181818; padding: 40px; width: 100%; max-width: 500px; border-radius: 8px; 
+            border: 1px solid #333; position: relative;
+        }
+        .edit-avatar-preview {
+            width: 100px; height: 100px; border-radius: 4px; background-color: #333; margin: 0 auto 20px auto;
+            background-size: cover; background-position: center; border: 2px solid #555; cursor: pointer;
+            display: flex; justify-content: center; align-items: center; position: relative; overflow: hidden;
+        }
+        .edit-avatar-preview:hover::after {
+            content: 'Cambiar'; position: absolute; bottom: 0; left: 0; right: 0; 
+            background: rgba(0,0,0,0.7); font-size: 0.8rem; padding: 5px;
+        }
+        
         /* --- OTROS MODALES --- */
         #membership-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000; justify-content: center; align-items: center; }
         #video-modal { display: none; position: fixed; inset: 0; background: black; z-index: 5000; justify-content: center; align-items: center; flex-direction: column; }
@@ -212,40 +239,32 @@
         </div>
     </div>
 
-    <!-- 2. SELECTOR DE PERFILES (Estilo "Quién está viendo") -->
+    <!-- 2. SELECTOR DE PERFILES -->
     <div id="profile-gate">
         <h1 class="gate-title">¿Quién está viendo ahora?</h1>
         <div class="gate-profiles">
-            
-            <!-- Perfil General -->
             <div class="profile-card" onclick="validarCambioPerfil('General')">
                 <div class="profile-avatar av-gen"><i class="fas fa-tools"></i></div>
                 <span class="profile-name">General</span>
             </div>
-
-            <!-- Perfil Corporativo -->
             <div class="profile-card" onclick="validarCambioPerfil('Corporativo')">
                 <div class="profile-avatar av-corp"><i class="fas fa-building"></i></div>
                 <span class="profile-name">Corporativo</span>
             </div>
-
-            <!-- Perfil Académico -->
             <div class="profile-card" onclick="validarCambioPerfil('Académico')">
                 <div class="profile-avatar av-edu"><i class="fas fa-graduation-cap"></i></div>
                 <span class="profile-name">Académico</span>
             </div>
-
         </div>
         <button class="btn gate-close" onclick="cerrarGate()">VOLVER AL HUB</button>
     </div>
 
-    <!-- 3. LOGIN SECUNDARIO (Para perfiles restringidos) -->
+    <!-- 3. LOGIN SECUNDARIO -->
     <div id="dynamic-login-modal">
         <div class="modal-login-content" id="modal-content-style">
             <button onclick="cerrarLoginSecundario()" style="position:absolute; top:15px; right:20px; background:none; border:none; color:gray; font-size:1.5rem; cursor:pointer;">&times;</button>
             <h2 id="dyn-title" style="margin-bottom:10px; font-size:2rem; color:white;">Perfil</h2>
             <p id="dyn-subtitle" style="color:#aaa; margin-bottom:30px;">Verifique sus credenciales</p>
-            
             <form onsubmit="intentarLogin(event, 'Dynamic')">
                 <input type="text" id="user-dyn" class="login-input" placeholder="Usuario" required>
                 <input type="password" id="pass-dyn" class="login-input" placeholder="Contraseña" required>
@@ -267,7 +286,6 @@
 
     <!-- 5. INTERFAZ PRINCIPAL -->
     <div id="main-interface" class="hidden">
-        <!-- Navbar -->
         <nav id="navbar" class="navbar">
             <div style="display:flex; align-items:center; gap:30px;">
                 <div class="nav-logo" onclick="location.reload()">SofI.A.</div>
@@ -282,14 +300,14 @@
                 <span id="profile-indicator" class="profile-badge">GENERAL</span>
                 <i class="fas fa-search" style="cursor:pointer"></i>
                 <i class="fas fa-users-cog" style="cursor:pointer" onclick="abrirGate()" title="Cambiar Perfil"></i>
-                <!-- Avatar Navbar Dinámico -->
-                <div id="nav-avatar-icon" class="nav-avatar av-gen">
+                
+                <!-- Avatar Navbar Dinámico (Clickeable para editar) -->
+                <div id="nav-avatar-icon" class="nav-avatar av-gen" onclick="abrirEditorPerfil()" title="Editar Perfil">
                     <i class="fas fa-user"></i>
                 </div>
             </div>
         </nav>
 
-        <!-- Hero -->
         <div class="hero" id="hero-section">
             <div class="hero-overlay"></div>
             <div class="hero-overlay-btm"></div>
@@ -303,7 +321,6 @@
             </div>
         </div>
 
-        <!-- Filas de Contenido -->
         <div class="content-container" id="content-rows"></div>
 
         <footer>
@@ -312,7 +329,32 @@
         </footer>
     </div>
 
-    <!-- --- COMPONENTES MODALES (VIDEO, DETALLES, APP) --- -->
+    <!-- 6. MODAL EDITAR PERFIL -->
+    <div id="edit-profile-modal">
+        <div class="edit-profile-box">
+            <button onclick="document.getElementById('edit-profile-modal').style.display='none'" style="position:absolute; top:15px; right:20px; background:none; border:none; color:gray; font-size:1.5rem; cursor:pointer;">&times;</button>
+            <h2 style="color:white; margin-bottom:20px; text-align:center;">Editar Perfil</h2>
+            
+            <!-- Vista Previa Avatar -->
+            <label for="avatar-upload">
+                <div id="preview-avatar" class="edit-avatar-preview">
+                    <i class="fas fa-camera" style="font-size:2rem; color:#aaa;"></i>
+                </div>
+            </label>
+            <input type="file" id="avatar-upload" accept="image/*" style="display:none;" onchange="previsualizarImagen(event)">
+
+            <label style="color:#aaa; display:block; margin-bottom:5px;">Nombre</label>
+            <input type="text" id="edit-name" class="login-input" placeholder="Tu Nombre">
+            
+            <label style="color:#aaa; display:block; margin-bottom:5px;">Contraseña</label>
+            <input type="password" id="edit-pass" class="login-input" placeholder="Nueva Contraseña">
+
+            <button class="btn login-btn-primary" onclick="guardarCambiosPerfil()">GUARDAR</button>
+            <button class="btn login-btn-secondary" onclick="document.getElementById('edit-profile-modal').style.display='none'">CANCELAR</button>
+        </div>
+    </div>
+
+    <!-- --- COMPONENTES MODALES AUX --- -->
     <div id="video-modal" onclick="this.style.display='none'; document.getElementById('promo-video').pause();">
         <button style="position:absolute; top:30px; right:30px; background:none; border:none; color:white; font-size:2rem; cursor:pointer;">&times;</button>
         <video id="promo-video" controls src="VideoSaberMas.mp4"></video>
@@ -345,12 +387,15 @@
     </div>
 
     <script>
-        // --- BASE DE DATOS ---
-        const CREDENCIALES = [
-            { u: "josetangarife14@gmail.com", p: "14568734", n: "Jose Tangarife", f: "29/11/2025" },
-            { u: "julianvalencia@inse.net.co", p: "1211", n: "Julian Valencia", f: "29/11/2025" },
-            { u: "alexander221977@gmail.com", p: "2505", n: "Alexander", f: "29/11/2025" }
+        // --- BASE DE DATOS INICIAL ---
+        const DATOS_INICIALES = [
+            { u: "josetangarife14@gmail.com", p: "14568734", n: "Jose Tangarife", f: "29/11/2025", img: "" },
+            { u: "julianvalencia@inse.net.co", p: "1211", n: "Julian Valencia", f: "29/11/2025", img: "" },
+            { u: "alexander221977@gmail.com", p: "2505", n: "Alexander", f: "29/11/2025", img: "" }
         ];
+
+        // Cargar usuarios desde LocalStorage o iniciar con default
+        let dbUsuarios = JSON.parse(localStorage.getItem('sofia_users')) || DATOS_INICIALES;
 
         const HERRAMIENTAS = [
             { id: 1, nombre: "Calculadora de ventilación", url: "Calculadora de ventilacion 3631 V_Libre.html", imagen: "Imagen001.png", descripcion: "Cálculo de ventilación según dimensiones.", categoria: "Ventilación" },
@@ -363,7 +408,130 @@
         ];
 
         let perfilActual = "General";
+        let usuarioActivo = null; // Objeto del usuario logueado
         const fallbackImg = "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2070";
+
+        // --- SISTEMA DE LOGIN ---
+
+        function intentarLogin(e, source) {
+            e.preventDefault();
+            let u, p, errorEl;
+
+            if (source === 'General') {
+                u = document.getElementById('user-static').value.trim();
+                p = document.getElementById('pass-static').value.trim();
+                errorEl = document.getElementById('error-static');
+                perfilActual = "General";
+            } else {
+                u = document.getElementById('user-dyn').value.trim();
+                p = document.getElementById('pass-dyn').value.trim();
+                errorEl = document.getElementById('error-dyn');
+            }
+
+            // Buscar en la "Base de Datos" local
+            const usuarioFound = dbUsuarios.find(c => c.u === u && c.p === p);
+
+            if (usuarioFound) {
+                usuarioActivo = usuarioFound; // Guardar sesión
+                errorEl.style.display = 'none';
+                
+                // Determinar perfil destino
+                let targetProfile = "General";
+                if (source === 'Dynamic') {
+                    cerrarLoginSecundario();
+                    cerrarGate();
+                    targetProfile = document.getElementById('dynamic-login-modal').dataset.targetProfile;
+                }
+
+                mostrarModalMembresia(usuarioActivo, targetProfile);
+            } else {
+                errorEl.style.display = 'block';
+                errorEl.parentElement.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-10px)' }, { transform: 'translateX(10px)' }, { transform: 'translateX(0)' }], { duration: 300 });
+            }
+        }
+
+        // --- GESTIÓN DE PERFIL DE USUARIO (NUEVO) ---
+
+        function abrirEditorPerfil() {
+            if (!usuarioActivo) return;
+
+            document.getElementById('edit-name').value = usuarioActivo.n;
+            document.getElementById('edit-pass').value = usuarioActivo.p;
+            
+            const preview = document.getElementById('preview-avatar');
+            if (usuarioActivo.img) {
+                preview.style.backgroundImage = `url('${usuarioActivo.img}')`;
+                preview.innerHTML = ''; // Quitar icono cámara
+            } else {
+                preview.style.backgroundImage = '';
+                preview.innerHTML = '<i class="fas fa-camera" style="font-size:2rem; color:#aaa;"></i>';
+            }
+
+            document.getElementById('edit-profile-modal').style.display = 'flex';
+        }
+
+        function previsualizarImagen(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('preview-avatar');
+                    preview.style.backgroundImage = `url('${e.target.result}')`;
+                    preview.innerHTML = '';
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function guardarCambiosPerfil() {
+            const nuevoNombre = document.getElementById('edit-name').value;
+            const nuevaPass = document.getElementById('edit-pass').value;
+            const fileInput = document.getElementById('avatar-upload');
+            
+            // Actualizar datos básicos
+            usuarioActivo.n = nuevoNombre;
+            usuarioActivo.p = nuevaPass;
+
+            // Manejo de imagen
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    usuarioActivo.img = e.target.result; // Base64
+                    persistirUsuario();
+                }
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                persistirUsuario(); // Guardar solo texto si no hay foto nueva
+            }
+        }
+
+        function persistirUsuario() {
+            // Actualizar en el array global
+            const index = dbUsuarios.findIndex(u => u.u === usuarioActivo.u);
+            if (index !== -1) {
+                dbUsuarios[index] = usuarioActivo;
+                localStorage.setItem('sofia_users', JSON.stringify(dbUsuarios));
+            }
+
+            // Actualizar UI
+            actualizarAvatarUI();
+            document.getElementById('edit-profile-modal').style.display = 'none';
+            alert("Perfil actualizado correctamente");
+        }
+
+        function actualizarAvatarUI() {
+            const avatarDiv = document.getElementById('nav-avatar-icon');
+            if (usuarioActivo.img) {
+                avatarDiv.style.backgroundImage = `url('${usuarioActivo.img}')`;
+                avatarDiv.innerHTML = ''; // Quitar icono por defecto
+                avatarDiv.classList.remove('av-gen', 'av-corp', 'av-edu'); // Quitar colores por defecto
+                avatarDiv.style.border = "2px solid white";
+            } else {
+                // Restaurar estilo por defecto según perfil si no hay foto
+                avatarDiv.style.backgroundImage = '';
+                cambiarPerfilVisual(perfilActual); 
+            }
+        }
 
         // --- GESTIÓN DE PERFILES Y NAVEGACIÓN ---
 
@@ -376,43 +544,49 @@
         }
 
         function validarCambioPerfil(perfil) {
-            // Lógica Inteligente: Si es General y ya estamos logueados, pase directo
             if (perfil === 'General') {
                 cambiarPerfilVisual('General');
                 cerrarGate();
                 return;
             }
-
-            // Si es perfil Premium, abrir login secundario
             abrirLoginSecundario(perfil);
         }
 
         function cambiarPerfilVisual(perfil) {
             perfilActual = perfil;
             
-            // Actualizar Badge y Colores
             const badge = document.getElementById('profile-indicator');
             const avatar = document.getElementById('nav-avatar-icon');
             
             badge.textContent = perfil.toUpperCase();
-            avatar.className = 'nav-avatar'; // Reset
             
-            if (perfil === 'General') {
-                badge.style.borderColor = 'white'; badge.style.color = 'white';
-                avatar.classList.add('av-gen');
-                avatar.innerHTML = '<i class="fas fa-tools"></i>';
-            } else if (perfil === 'Corporativo') {
-                badge.style.borderColor = 'var(--corp-blue)'; badge.style.color = 'var(--corp-blue)';
-                avatar.classList.add('av-corp');
-                avatar.innerHTML = '<i class="fas fa-building"></i>';
-            } else if (perfil === 'Académico') {
-                badge.style.borderColor = 'var(--edu-yellow)'; badge.style.color = 'var(--edu-yellow)';
-                avatar.classList.add('av-edu');
-                avatar.innerHTML = '<i class="fas fa-graduation-cap"></i>';
+            // Solo reseteamos el avatar si el usuario NO tiene foto personalizada
+            if (!usuarioActivo || !usuarioActivo.img) {
+                avatar.style.backgroundImage = '';
+                avatar.className = 'nav-avatar'; // Reset
+                
+                if (perfil === 'General') {
+                    badge.style.borderColor = 'white'; badge.style.color = 'white';
+                    avatar.classList.add('av-gen');
+                    avatar.innerHTML = '<i class="fas fa-tools"></i>';
+                } else if (perfil === 'Corporativo') {
+                    badge.style.borderColor = 'var(--corp-blue)'; badge.style.color = 'var(--corp-blue)';
+                    avatar.classList.add('av-corp');
+                    avatar.innerHTML = '<i class="fas fa-building"></i>';
+                } else if (perfil === 'Académico') {
+                    badge.style.borderColor = 'var(--edu-yellow)'; badge.style.color = 'var(--edu-yellow)';
+                    avatar.classList.add('av-edu');
+                    avatar.innerHTML = '<i class="fas fa-graduation-cap"></i>';
+                }
+            } else {
+                // Mantener borde acorde al perfil aunque tenga foto
+                if (perfil === 'General') badge.style.borderColor = 'white';
+                if (perfil === 'Corporativo') badge.style.borderColor = 'var(--corp-blue)';
+                if (perfil === 'Académico') badge.style.borderColor = 'var(--edu-yellow)';
             }
         }
 
-        // --- SISTEMA DE LOGIN ---
+        // --- SISTEMA DE LOGIN (Auxiliar) ---
 
         function abrirLoginSecundario(perfil) {
             const modal = document.getElementById('dynamic-login-modal');
@@ -420,61 +594,22 @@
             const title = document.getElementById('dyn-title');
             const btn = document.getElementById('btn-dyn');
 
-            // Estilizar según perfil
             let color = (perfil === 'Corporativo') ? 'var(--corp-blue)' : 'var(--edu-yellow)';
-            
             content.style.borderTopColor = color;
             title.textContent = perfil;
             title.style.color = color;
             btn.style.backgroundColor = color;
 
-            // Reset forms
             document.getElementById('user-dyn').value = '';
             document.getElementById('pass-dyn').value = '';
             document.getElementById('error-dyn').style.display = 'none';
 
-            // Guardar intento
             modal.dataset.targetProfile = perfil;
             modal.style.display = 'flex';
         }
 
         function cerrarLoginSecundario() {
             document.getElementById('dynamic-login-modal').style.display = 'none';
-        }
-
-        function intentarLogin(e, source) {
-            e.preventDefault();
-            let u, p, errorEl;
-
-            if (source === 'General') {
-                u = document.getElementById('user-static').value.trim();
-                p = document.getElementById('pass-static').value.trim();
-                errorEl = document.getElementById('error-static');
-            } else {
-                u = document.getElementById('user-dyn').value.trim();
-                p = document.getElementById('pass-dyn').value.trim();
-                errorEl = document.getElementById('error-dyn');
-            }
-
-            const usuario = CREDENCIALES.find(c => c.u === u && c.p === p);
-
-            if (usuario) {
-                errorEl.style.display = 'none';
-                
-                // Determinar perfil destino
-                let targetProfile = "General";
-                if (source === 'Dynamic') {
-                    cerrarLoginSecundario();
-                    cerrarGate();
-                    targetProfile = document.getElementById('dynamic-login-modal').dataset.targetProfile;
-                }
-
-                // Mostrar Membresía
-                mostrarModalMembresia(usuario, targetProfile);
-            } else {
-                errorEl.style.display = 'block';
-                errorEl.parentElement.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-10px)' }, { transform: 'translateX(10px)' }, { transform: 'translateX(0)' }], { duration: 300 });
-            }
         }
 
         function mostrarModalMembresia(usuario, perfilDestino) {
@@ -488,7 +623,6 @@
                 details.innerHTML = `Membresía <strong>${perfilDestino}</strong> Validada.<br>Tienes acceso completo a funciones premium.<br><strong style="color:var(--secondary-green); display:block; margin-top:10px;">Vigente hasta 28-11-2025</strong>`;
             }
 
-            // Guardar estado para aplicar al cerrar
             modal.dataset.pendingProfile = perfilDestino;
             modal.style.display = 'flex';
         }
@@ -498,7 +632,6 @@
             const nuevoPerfil = modal.dataset.pendingProfile;
             modal.style.display = 'none';
 
-            // Si venimos del login inicial
             const loginScreen = document.getElementById('login-screen');
             if (loginScreen.style.display !== 'none') {
                 loginScreen.style.opacity = '0';
@@ -507,9 +640,9 @@
                     document.getElementById('main-interface').classList.remove('hidden');
                     document.getElementById('main-interface').style.opacity = '1';
                     
-                    // Iniciar todo
                     renderizarFilas();
                     iniciarCarrusel();
+                    actualizarAvatarUI(); // Cargar avatar si existe
                     document.getElementById('bg-music').play().catch(e => console.log("Audio autoplay blocked"));
                 }, 800);
             }
@@ -517,20 +650,18 @@
             cambiarPerfilVisual(nuevoPerfil);
         }
 
-        // --- RENDERIZADO DE CONTENIDO (Estilo Tile V2) ---
+        // --- RENDERIZADO DE CONTENIDO ---
         let favoritos = JSON.parse(localStorage.getItem('favs')) || [];
 
         function renderizarFilas() {
             const container = document.getElementById('content-rows');
             container.innerHTML = "";
 
-            // Favoritos
             if (favoritos.length > 0) {
                 const favs = HERRAMIENTAS.filter(h => favoritos.includes(h.nombre));
                 if(favs.length > 0) crearFilaHTML(container, "Mi Lista", favs);
             }
 
-            // Por Categoría
             const categorias = [...new Set(HERRAMIENTAS.map(h => h.categoria))];
             categorias.forEach(cat => {
                 const items = HERRAMIENTAS.filter(h => h.categoria === cat);
@@ -609,7 +740,6 @@
                 const btnPlay = document.getElementById('hero-btn-play');
                 const btnInfo = document.getElementById('hero-btn-details');
                 
-                // Clonar para limpiar eventos anteriores
                 const newPlay = btnPlay.cloneNode(true);
                 const newInfo = btnInfo.cloneNode(true);
                 btnPlay.parentNode.replaceChild(newPlay, btnPlay);
@@ -659,7 +789,6 @@
             document.getElementById('app-frame').src = url;
         }
 
-        // Efecto scroll navbar
         window.addEventListener('scroll', () => {
             const nav = document.getElementById('navbar');
             if (window.scrollY > 50) nav.classList.add('scrolled');
