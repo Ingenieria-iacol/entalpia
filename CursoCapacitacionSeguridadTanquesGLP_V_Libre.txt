@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inducción: Uso Seguro de GLP en Tanques Estacionarios</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Palette Name: Vibrant Safety (Blue & Orange) 
+         Primary: #0056D2 (Strong Blue)
+         Secondary: #FF6B00 (Safety Orange)
+         Accent: #FFC107 (Warning Yellow)
+         Bg: #F3F4F6 (Light Gray)
+    -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-blue': '#0056D2',
+                        'brand-orange': '#FF6B00',
+                        'brand-yellow': '#FFC107',
+                        'brand-dark': '#1F2937',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Chart Container Styling - Mandatory Requirements */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px; /* Prevent excessive width */
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px; /* Base height */
+            max-height: 400px; /* Cap height */
+        }
+        
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        /* Custom Scrollbar for a polished look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #0056D2; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #004494; 
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+    </style>
+    <!-- HTML Comment: Plan Summary
+    1. Introduction: Define LPG (Liquid to Gas expansion). Vis: Bar Chart.
+    2. Properties: Density & Odor. Vis: Comparison Bar Chart (Air vs LPG).
+    3. Tank Anatomy: The 6 critical parts. Vis: Styled CSS Grid Cards.
+    4. Operational Limits: 90% Fill Rule & Safety Distances. Vis: Doughnut Chart & Horizontal Bar Chart.
+    5. Emergency Protocol: Two distinct flows (Leak vs Fire). Vis: Structured HTML Columns with Unicode Icons.
+    -->
+    <!-- HTML Comment: Chart Selection Justification
+    1. Expansion Ratio -> Compare -> Bar Chart -> Shows drastic volume difference (1 vs 270). NO SVG.
+    2. Vapor Density -> Compare -> Bar Chart -> Shows LPG is heavier than Air. NO SVG.
+    3. Fill Limit -> Inform -> Doughnut Chart -> Visualizes the 90% cap clearly. NO SVG.
+    4. Safety Distances -> Compare -> Horizontal Bar Chart -> Clear ranking of distances (4m to 15m). NO SVG.
+    -->
+    <!-- HTML Comment: NO MERMAID JS USED. NO SVG USED. -->
+</head>
+<body class="bg-gray-50 text-brand-dark">
+
+    <!-- Navigation / Header -->
+    <header class="bg-brand-blue text-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-bold">Inducción GLP Estacionario</h1>
+            <span class="text-sm bg-brand-orange px-3 py-1 rounded-full font-semibold">Uso Seguro</span>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8 space-y-12">
+
+        <!-- Intro Section -->
+        <section class="bg-white rounded-xl shadow-md p-6 border-t-4 border-brand-orange">
+            <h2 class="text-3xl font-bold text-brand-blue mb-4">Módulo 1: ¿Qué es el GLP?</h2>
+            <p class="text-lg text-gray-700 mb-6 leading-relaxed">
+                El <strong>Gas Licuado del Petróleo (GLP)</strong> es una mezcla de propano y butano. Su característica más importante para el almacenamiento es que se guarda en estado <strong>líquido</strong> para concentrar energía, pero se consume en estado <strong>gaseoso</strong>.
+            </p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h3 class="text-xl font-semibold mb-3 text-brand-dark">Poder de Expansión</h3>
+                    <p class="mb-4 text-gray-600">
+                        Al pasar de líquido a gas, el GLP aumenta su volumen drásticamente. ¡Un solo litro de líquido se convierte en 270 litros de gas! Esto explica por qué es tan eficiente, pero también por qué una pequeña fuga líquida genera una gran nube de gas.
+                    </p>
+                    <ul class="list-disc pl-5 space-y-2 text-gray-700">
+                        <li><strong>Estado Almacenado:</strong> Líquido</li>
+                        <li><strong>Estado Consumo:</strong> Vapor/Gas</li>
+                        <li><strong>Relación:</strong> 1 a 270</li>
+                    </ul>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg shadow-inner">
+                    <h4 class="text-center text-sm font-bold text-gray-500 mb-2 uppercase">Expansión de Volumen (Litros)</h4>
+                    <div class="chart-container">
+                        <canvas id="expansionChart"></canvas>
+                    </div>
+                    <p class="text-xs text-center text-gray-500 mt-2">1 Litro Líquido = 270 Litros Gas</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Safety Properties Section -->
+        <section class="bg-white rounded-xl shadow-md p-6 border-l-4 border-brand-blue">
+            <h2 class="text-3xl font-bold text-brand-blue mb-4">Características Críticas de Seguridad</h2>
+            <p class="text-lg text-gray-700 mb-6">
+                Para manejar el GLP con seguridad, debemos entender sus propiedades invisibles. Dos factores son vitales para prevenir accidentes: su <strong>densidad</strong> y su <strong>olor</strong>.
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Density Chart -->
+                <div class="bg-white p-4 rounded-lg border border-gray-200">
+                    <h3 class="text-xl font-semibold mb-2 text-brand-orange">Densidad del Vapor</h3>
+                    <p class="text-sm text-gray-600 mb-4">
+                        El GLP en estado de vapor es <strong>más pesado que el aire</strong>. A diferencia del gas natural que sube, el GLP baja y se acumula en el suelo, sótanos o desagües, creando trampas invisibles.
+                    </p>
+                    <div class="chart-container" style="height: 250px;">
+                        <canvas id="densityChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Odor Card -->
+                <div class="bg-gradient-to-br from-brand-blue to-blue-800 text-white p-6 rounded-lg flex flex-col justify-center">
+                    <h3 class="text-2xl font-bold mb-4">El Olor a "Huevo Podrido"</h3>
+                    <div class="text-6xl mb-4 text-center">👃</div>
+                    <p class="text-lg leading-relaxed text-center">
+                        El GLP natural <strong>NO TIENE OLOR</strong>.
+                    </p>
+                    <p class="mt-4 text-blue-100 text-center">
+                        Se le agrega un químico llamado <strong>MERCAPTANO</strong> exclusivamente para seguridad. Si huele a azufre o huevo podrido, ¡hay una fuga!
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tank Anatomy Section (HTML/CSS Diagram) -->
+        <section class="bg-white rounded-xl shadow-md p-6">
+            <h2 class="text-3xl font-bold text-brand-blue mb-6">Módulo 2: Conociendo el Tanque</h2>
+            <p class="text-lg text-gray-700 mb-8">
+                Todo operador debe ser capaz de identificar los 6 componentes vitales del tanque estacionario.
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Part 1 -->
+                <div class="border-2 border-gray-100 rounded-lg p-4 hover:border-brand-orange transition-colors duration-300">
+                    <div class="text-brand-orange text-3xl mb-2 font-bold">01</div>
+                    <h4 class="text-xl font-bold mb-2">Válvula de Alivio</h4>
+                    <p class="text-gray-600 text-sm">Libera presión automáticamente para evitar explosiones. <strong>¡Nunca bloquearla!</strong></p>
+                </div>
+                <!-- Part 2 -->
+                <div class="border-2 border-gray-100 rounded-lg p-4 hover:border-brand-blue transition-colors duration-300">
+                    <div class="text-brand-blue text-3xl mb-2 font-bold">02</div>
+                    <h4 class="text-xl font-bold mb-2">Válvula de Drenaje</h4>
+                    <p class="text-gray-600 text-sm">Permite la extracción de líquido y mantenimiento (Check lock).</p>
+                </div>
+                <!-- Part 3 -->
+                <div class="border-2 border-gray-100 rounded-lg p-4 hover:border-brand-blue transition-colors duration-300">
+                    <div class="text-brand-blue text-3xl mb-2 font-bold">03</div>
+                    <h4 class="text-xl font-bold mb-2">Multiválvula</h4>
+                    <p class="text-gray-600 text-sm">Controla el paso de gas hacia los equipos de consumo.</p>
+                </div>
+                <!-- Part 4 -->
+                <div class="border-2 border-gray-100 rounded-lg p-4 hover:border-brand-orange transition-colors duration-300">
+                    <div class="text-brand-orange text-3xl mb-2 font-bold">04</div>
+                    <h4 class="text-xl font-bold mb-2">Indicador de Nivel</h4>
+                    <p class="text-gray-600 text-sm">Muestra el porcentaje. <strong>Regla de Oro: Máximo 90%</strong>.</p>
+                </div>
+                <!-- Part 5 -->
+                <div class="border-2 border-gray-100 rounded-lg p-4 hover:border-brand-blue transition-colors duration-300">
+                    <div class="text-brand-blue text-3xl mb-2 font-bold">05</div>
+                    <h4 class="text-xl font-bold mb-2">Válvula de Llenado</h4>
+                    <p class="text-gray-600 text-sm">Entrada exclusiva para el suministro por el carrotanque.</p>
+                </div>
+                <!-- Part 6 -->
+                <div class="border-2 border-gray-100 rounded-lg p-4 hover:border-brand-blue transition-colors duration-300">
+                    <div class="text-brand-blue text-3xl mb-2 font-bold">06</div>
+                    <h4 class="text-xl font-bold mb-2">Manómetro</h4>
+                    <p class="text-gray-600 text-sm">Instrumento que mide la presión interna del tanque.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Operational Limits Section -->
+        <section class="bg-gray-100 rounded-xl shadow-inner p-6">
+            <h2 class="text-3xl font-bold text-brand-blue mb-6">Módulo 3: Normas y Límites de Seguridad</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Fill Limit Chart -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-xl font-bold mb-2 text-center">Límite Máximo de Llenado</h3>
+                    <p class="text-sm text-gray-500 text-center mb-4">El tanque nunca debe llenarse al 100% para permitir la expansión del gas.</p>
+                    <div class="chart-container">
+                        <canvas id="fillLimitChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Distances Chart -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-xl font-bold mb-2 text-center">Distancias Mínimas de Seguridad</h3>
+                    <p class="text-sm text-gray-500 text-center mb-4">Metros de separación obligatorios desde el tanque.</p>
+                    <div class="chart-container">
+                        <canvas id="distanceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Prohibitions List -->
+            <div class="mt-8 bg-red-50 border-l-4 border-red-500 p-6 rounded-r-lg">
+                <h3 class="text-xl font-bold text-red-700 mb-4">⛔ Prohibiciones Estrictas</h3>
+                <ul class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <li class="flex items-start"><span class="text-red-500 mr-2">✖</span> <strong>No transvasar GLP</strong> (pasar de tanque a tanque).</li>
+                    <li class="flex items-start"><span class="text-red-500 mr-2">✖</span> <strong>No quemar basura</strong> cerca del área.</li>
+                    <li class="flex items-start"><span class="text-red-500 mr-2">✖</span> <strong>No mover el tanque</strong> si tiene >5% de carga.</li>
+                    <li class="flex items-start"><span class="text-red-500 mr-2">✖</span> <strong>No modificar</strong> la instalación sin autorización.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Emergency Protocol Section -->
+        <section class="bg-white rounded-xl shadow-md p-6 border-t-4 border-brand-orange">
+            <h2 class="text-3xl font-bold text-brand-blue mb-6">Módulo 4: Protocolo de Emergencias</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                
+                <!-- Scenario A: Leak No Fire -->
+                <div class="bg-blue-50 p-6 rounded-xl border border-blue-100">
+                    <h3 class="text-2xl font-bold text-brand-blue mb-4 flex items-center">
+                        <span class="text-3xl mr-2">⚠️</span> Fuga SIN Fuego
+                    </h3>
+                    <ol class="space-y-4">
+                        <li class="flex items-center bg-white p-3 rounded shadow-sm">
+                            <span class="bg-brand-blue text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 font-bold flex-shrink-0">1</span>
+                            <span><strong>Conserve la Calma.</strong> No corra.</span>
+                        </li>
+                        <li class="flex items-center bg-white p-3 rounded shadow-sm">
+                            <span class="bg-brand-blue text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 font-bold flex-shrink-0">2</span>
+                            <span><strong>Cero Chispas.</strong> No use celulares ni interruptores.</span>
+                        </li>
+                        <li class="flex items-center bg-white p-3 rounded shadow-sm">
+                            <span class="bg-brand-blue text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 font-bold flex-shrink-0">3</span>
+                            <span><strong>Cierre la Válvula.</strong> Corte el servicio si es seguro.</span>
+                        </li>
+                        <li class="flex items-center bg-white p-3 rounded shadow-sm">
+                            <span class="bg-brand-blue text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 font-bold flex-shrink-0">4</span>
+                            <span><strong>Ventile Áreas Bajas.</strong> Abra puertas y ventanas.</span>
+                        </li>
+                        <li class="flex items-center bg-white p-3 rounded shadow-sm">
+                            <span class="bg-brand-blue text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 font-bold flex-shrink-0">5</span>
+                            <span><strong>Verifique con Agua Jabonosa.</strong> ¡NUNCA use fuego!</span>
+                        </li>
+                    </ol>
+                </div>
+
+                <!-- Scenario B: With Fire -->
+                <div class="bg-orange-50 p-6 rounded-xl border border-orange-100">
+                    <h3 class="text-2xl font-bold text-brand-orange mb-4 flex items-center">
+                        <span class="text-3xl mr-2">🔥</span> Escape CON Fuego
+                    </h3>
+                    <ol class="space-y-4">
+                        <li class="flex items-center bg-white p-3 rounded shadow-sm">
+                            <span class="bg-brand-orange text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 font-bold flex-shrink-0">1</span>
+                            <span><strong>Evacúe Inmediatamente.</strong> Aísle el área.</span>
+                        </li>
+                        <li class="flex items-center bg-white p-3 rounded shadow-sm">
+                            <span class="bg-brand-orange text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 font-bold flex-shrink-0">2</span>
+                            <span><strong>Llame a Emergencias.</strong> 01-8000 96 0888 y Bomberos.</span>
+                        </li>
+                        <li class="flex items-center bg-white p-3 rounded shadow-sm">
+                            <span class="bg-brand-orange text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 font-bold flex-shrink-0">3</span>
+                            <span><strong>Refrigere el Tanque.</strong> Use agua en neblina si es seguro.</span>
+                        </li>
+                        <li class="flex items-center bg-white p-3 rounded shadow-sm">
+                            <span class="bg-brand-orange text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 font-bold flex-shrink-0">4</span>
+                            <span><strong>NO Apague la Llama.</strong> Si no puede cortar el gas, deje que arda controladamente.</span>
+                        </li>
+                        <li class="flex items-center bg-white p-3 rounded shadow-sm">
+                            <span class="bg-brand-orange text-white rounded-full w-8 h-8 flex items-center justify-center mr-3 font-bold flex-shrink-0">5</span>
+                            <span><strong>Su Vida es Primero.</strong> Usted no es bombero profesional.</span>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer / Commitment -->
+        <footer class="bg-brand-dark text-white p-8 rounded-t-xl mt-8">
+            <div class="text-center max-w-2xl mx-auto">
+                <h3 class="text-xl font-bold mb-4">Compromiso de Seguridad</h3>
+                <p class="mb-6 opacity-80">
+                    "Me comprometo a seguir las indicaciones de seguridad para el manejo de GLP en tanques estacionarios, priorizando mi vida y la de mis compañeros."
+                </p>
+                <div class="inline-block border border-white px-6 py-2 rounded text-sm">
+                    Línea de Emergencia: <strong>01-8000 96 0888</strong>
+                </div>
+            </div>
+        </footer>
+
+    </main>
+
+    <script>
+        // --- UTILITY: LABEL WRAPPING ---
+        function wrapLabel(label) {
+            const MAX_LENGTH = 16;
+            if (label.length <= MAX_LENGTH) return label;
+            
+            const words = label.split(' ');
+            const lines = [];
+            let currentLine = words[0];
+
+            for (let i = 1; i < words.length; i++) {
+                if ((currentLine.length + 1 + words[i].length) <= MAX_LENGTH) {
+                    currentLine += ' ' + words[i];
+                } else {
+                    lines.push(currentLine);
+                    currentLine = words[i];
+                }
+            }
+            lines.push(currentLine);
+            return lines;
+        }
+
+        // --- SHARED CHART CONFIG ---
+        const commonOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                tooltip: {
+                    backgroundColor: 'rgba(31, 41, 55, 0.9)',
+                    padding: 12,
+                    callbacks: {
+                        title: function(tooltipItems) {
+                            const item = tooltipItems[0];
+                            let label = item.chart.data.labels[item.dataIndex];
+                            if (Array.isArray(label)) {
+                              return label.join(' ');
+                            } else {
+                              return label;
+                            }
+                        }
+                    }
+                },
+                legend: {
+                    labels: {
+                        font: { family: "'Segoe UI', sans-serif", size: 12 },
+                        color: '#374151'
+                    }
+                }
+            }
+        };
+
+        // --- CHART 1: EXPANSION RATIO (Bar Chart) ---
+        const ctxExpansion = document.getElementById('expansionChart').getContext('2d');
+        const expansionLabels = ['1 Litro Líquido', 'Expansión a Gas'];
+        new Chart(ctxExpansion, {
+            type: 'bar',
+            data: {
+                labels: expansionLabels.map(wrapLabel),
+                datasets: [{
+                    label: 'Volumen (Litros)',
+                    data: [1, 270],
+                    backgroundColor: ['#0056D2', '#FF6B00'], // Blue for liquid, Orange for Gas
+                    borderColor: ['#004494', '#E65100'],
+                    borderWidth: 1,
+                    barPercentage: 0.6
+                }]
+            },
+            options: {
+                ...commonOptions,
+                plugins: {
+                    ...commonOptions.plugins,
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Volumen (Litros)' }
+                    }
+                }
+            }
+        });
+
+        // --- CHART 2: DENSITY COMPARISON (Bar Chart) ---
+        const ctxDensity = document.getElementById('densityChart').getContext('2d');
+        const densityLabels = ['Aire (Referencia)', 'Vapor de GLP'];
+        new Chart(ctxDensity, {
+            type: 'bar',
+            data: {
+                labels: densityLabels.map(wrapLabel),
+                datasets: [{
+                    label: 'Densidad Relativa',
+                    data: [1.0, 1.8], // Approx values: Air=1, Propane~1.5, Butane~2.0. Using 1.8 for visual impact
+                    backgroundColor: ['#E5E7EB', '#1F2937'], // Light gray for Air, Dark/Heavy for Gas
+                    borderColor: ['#D1D5DB', '#111827'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                ...commonOptions,
+                indexAxis: 'y', // Horizontal bar to suggest "levels"
+                plugins: {
+                    ...commonOptions.plugins,
+                    legend: { display: false },
+                    tooltip: {
+                        ...commonOptions.plugins.tooltip,
+                        callbacks: {
+                            ...commonOptions.plugins.tooltip.callbacks,
+                            afterLabel: function() { return "El GLP es más pesado y baja al suelo."; }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Densidad (Aire = 1)' }
+                    }
+                }
+            }
+        });
+
+        // --- CHART 3: FILL LIMIT (Doughnut) ---
+        const ctxFill = document.getElementById('fillLimitChart').getContext('2d');
+        const fillLabels = ['Llenado Permitido', 'Espacio de Seguridad'];
+        new Chart(ctxFill, {
+            type: 'doughnut',
+            data: {
+                labels: fillLabels.map(wrapLabel),
+                datasets: [{
+                    data: [90, 10],
+                    backgroundColor: ['#0056D2', '#FFC107'], // Blue for liquid, Yellow for warning space
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                ...commonOptions,
+                cutout: '70%',
+                plugins: {
+                    ...commonOptions.plugins,
+                    title: {
+                        display: true,
+                        text: 'Máximo 90% de Capacidad',
+                        font: { size: 16 }
+                    }
+                }
+            }
+        });
+
+        // --- CHART 4: SAFETY DISTANCES (Horizontal Bar) ---
+        const ctxDist = document.getElementById('distanceChart').getContext('2d');
+        // Data points: Storage(4m), Other Fuels(6m), Heat(10m), Flames(15m)
+        const rawDistLabels = [
+            'Material Combustible',
+            'Otros Combustibles',
+            'Fuentes de Calor',
+            'Llamas Abiertas'
+        ];
+        const distData = [4, 6, 10, 15];
+        
+        new Chart(ctxDist, {
+            type: 'bar',
+            data: {
+                labels: rawDistLabels.map(wrapLabel),
+                datasets: [{
+                    label: 'Distancia Mínima (Metros)',
+                    data: distData,
+                    backgroundColor: [
+                        '#60A5FA', // Light blue
+                        '#3B82F6', // Blue
+                        '#F59E0B', // Orange/Yellow
+                        '#EF4444'  // Red (Danger)
+                    ],
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                ...commonOptions,
+                indexAxis: 'y', // Horizontal for clearer distance reading
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Metros' }
+                    }
+                },
+                plugins: {
+                    ...commonOptions.plugins,
+                    legend: { display: false }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
