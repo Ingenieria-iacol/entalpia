@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IngenieroCAD - P&ID Web</title>
+    <title>IngenieroCAD - P&ID Web (Autosave & Scale)</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -33,6 +33,7 @@
         .context-menu-item { padding: 8px 16px; cursor: pointer; color: #d1d5db; font-size: 14px; display: flex; align-items: center; gap: 8px; }
         .context-menu-item:hover { background-color: #374151; color: white; }
         .prop-input { background-color: #374151; border: 1px solid #4b5563; color: white; font-size: 0.75rem; padding: 2px 4px; border-radius: 4px; width: 100%; }
+        .prop-label { font-size: 0.7rem; color: #9ca3af; margin-bottom: 2px; display: block; }
     </style>
 </head>
 <body>
@@ -85,7 +86,8 @@
             TeeIcon: <path d="M12 2v20M2 12h20" />, 
             ReducerIcon: <path d="M4 20l16-8L4 4z" />,
             TermIcon: <circle cx="12" cy="12" r="8" />,
-            RotateCw: <React.Fragment><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></React.Fragment>
+            RotateCw: <React.Fragment><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></React.Fragment>,
+            Save: <React.Fragment><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></React.Fragment>
         };
 
         const GRID_SIZE = 40; 
@@ -249,9 +251,36 @@
             const [drawingLength, setDrawingLength] = useState('');
             const [isDraggingSelected, setIsDraggingSelected] = useState(false);
             const [dragStartPos, setDragStartPos] = useState({ x: 0, y: 0 });
-            
-            // Rotation for current placement (Flip state) - Stepped by 90 deg equivalent index
             const [flipRotation, setFlipRotation] = useState(0);
+            const [autosaveMsg, setAutosaveMsg] = useState(null);
+
+            // --- AUTOSAVE LOGIC ---
+            // Cargar
+            useEffect(() => {
+                const saved = localStorage.getItem('ing-cad-autosave-v2');
+                if (saved) {
+                    try {
+                        const parsed = JSON.parse(saved);
+                        if (parsed.elements && Array.isArray(parsed.elements)) setElements(parsed.elements);
+                        if (parsed.layers && Array.isArray(parsed.layers)) setLayers(parsed.layers);
+                        console.log("Datos restaurados del almacenamiento local.");
+                    } catch (e) {
+                        console.error("Error cargando autoguardado:", e);
+                    }
+                }
+            }, []);
+
+            // Guardar
+            useEffect(() => {
+                const timer = setTimeout(() => {
+                    if (elements.length > 0) {
+                        localStorage.setItem('ing-cad-autosave-v2', JSON.stringify({ elements, layers }));
+                        setAutosaveMsg("Guardado autom.");
+                        setTimeout(() => setAutosaveMsg(null), 2000);
+                    }
+                }, 2000); // Guardar 2 segs después del último cambio
+                return () => clearTimeout(timer);
+            }, [elements, layers]);
 
             useEffect(() => {
                 const handleResize = () => { if (containerRef.current) { const w = containerRef.current.clientWidth; const h = containerRef.current.clientHeight; setCanvasSize(p => (p.width === w && p.height === h) ? p : { width: w, height: h }); } };
@@ -270,7 +299,7 @@
                         if (selectedIds.length > 0) { setElements(prev => prev.filter(el => !selectedIds.includes(el.id))); setSelectedIds([]); }
                     }
                     if ((e.key === 'r' || e.key === 'R') && !currentElement && [TOOLS.VALVE, TOOLS.REGULATOR, TOOLS.REDUCER, TOOLS.TERMINAL, TOOLS.TEE].includes(tool)) {
-                        setFlipRotation(prev => (prev + 1) % 4); // Cycle 4 directions
+                        setFlipRotation(prev => (prev + 1) % 4);
                     }
                     if (currentElement && tool === TOOLS.LINE) {
                         if ((e.key >= '0' && e.key <= '9') || e.key === '.') { setDrawingLength(prev => prev + e.key); } 
@@ -319,7 +348,8 @@
                     }
                 }
                 else if ([TOOLS.VALVE, TOOLS.REGULATOR, TOOLS.REDUCER, TOOLS.TERMINAL, TOOLS.TEE].includes(tool)) {
-                    drawElement(ctx, { type: tool, x1: mouseWorldPos.x, y1: mouseWorldPos.y, color: color + '80', lineWidth, rotation: snapRotation, extraData: { flipIndex: flipRotation }, anchor }, false);
+                    // Preview with default scale 1
+                    drawElement(ctx, { type: tool, x1: mouseWorldPos.x, y1: mouseWorldPos.y, color: color + '80', lineWidth, rotation: snapRotation, extraData: { flipIndex: flipRotation }, anchor, elementScale: 1 }, false);
                     ctx.save(); ctx.fillStyle = '#9ca3af'; ctx.font = `${10/scale}px sans-serif`; ctx.fillText("[R] Rotar", mouseWorldPos.x + 20/scale, mouseWorldPos.y + 20/scale); ctx.restore();
                 }
                 ctx.restore();
@@ -352,13 +382,15 @@
                 if (isSelected) { ctx.shadowBlur = 10; ctx.shadowColor = "#06b6d4"; } 
 
                 const { type, x1, y1, x2, y2, rotation = 0, anchor = ANCHORS.CENTER.id, extraData } = element;
-                const baseSize = GRID_SIZE * 0.6; 
+                
+                // --- SCALE LOGIC ADDED ---
+                const localScale = element.elementScale || 1; 
+                const baseSize = GRID_SIZE * 0.6 * localScale; 
+                
                 const isSymbol = [TOOLS.VALVE, TOOLS.REGULATOR, TOOLS.REDUCER, TOOLS.TERMINAL, TOOLS.TEE].includes(type);
                 
                 if (isSymbol && type !== TOOLS.TEE && type !== TOOLS.VALVE && type !== TOOLS.REGULATOR) {
-                    // Standard logic for simple symbols (Terminal, Reducer)
                     ctx.translate(x1, y1); ctx.rotate(rotation);
-                    // Flip not implemented for them yet or just 180?
                     if (anchor === ANCHORS.TOP.id) ctx.translate(baseSize*0.5, 0); 
                     else if (anchor === ANCHORS.BOTTOM.id) ctx.translate(-baseSize*0.5, 0);
                 }
@@ -386,55 +418,31 @@
                         break;
                     
                     case TOOLS.VALVE: 
-                        // Custom logic for Valve similar to Tee
                         const vS = baseSize * 0.8;
-                        // Handle rotation logic
                         const vBranches = getValidBranchAngles(rotation);
                         const vFlip = extraData && extraData.flipIndex ? extraData.flipIndex : 0;
                         const vHandleAngle = vBranches[vFlip % vBranches.length];
-                        
-                        const vRunX = Math.cos(rotation) * vS;
-                        const vRunY = Math.sin(rotation) * vS;
-                        // Perpendicular vector for height
-                        const vpX = -Math.sin(rotation) * (vS * 0.5);
-                        const vpY = Math.cos(rotation) * (vS * 0.5);
-                        
-                        // Hourglass shape
-                        ctx.moveTo(x1 - vRunX + vpX, y1 - vRunY + vpY);
-                        ctx.lineTo(x1 - vRunX - vpX, y1 - vRunY - vpY);
-                        ctx.lineTo(x1, y1); 
-                        ctx.lineTo(x1 + vRunX - vpX, y1 + vRunY - vpY);
-                        ctx.lineTo(x1 + vRunX + vpX, y1 + vRunY + vpY);
-                        ctx.lineTo(x1, y1);
+                        const vRunX = Math.cos(rotation) * vS; const vRunY = Math.sin(rotation) * vS;
+                        const vpX = -Math.sin(rotation) * (vS * 0.5); const vpY = Math.cos(rotation) * (vS * 0.5);
+                        ctx.moveTo(x1 - vRunX + vpX, y1 - vRunY + vpY); ctx.lineTo(x1 - vRunX - vpX, y1 - vRunY - vpY); ctx.lineTo(x1, y1); ctx.lineTo(x1 + vRunX - vpX, y1 + vRunY - vpY); ctx.lineTo(x1 + vRunX + vpX, y1 + vRunY + vpY); ctx.lineTo(x1, y1);
                         ctx.fill(); ctx.stroke();
-                        
-                        // Handle
-                        const vHx = Math.cos(vHandleAngle) * (vS * 0.6);
-                        const vHy = Math.sin(vHandleAngle) * (vS * 0.6);
+                        const vHx = Math.cos(vHandleAngle) * (vS * 0.6); const vHy = Math.sin(vHandleAngle) * (vS * 0.6);
                         ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x1 + vHx, y1 + vHy);
-                        // T-Bar handle
-                        const hbX = -Math.sin(vHandleAngle) * (vS * 0.3);
-                        const hbY = Math.cos(vHandleAngle) * (vS * 0.3);
-                        ctx.moveTo(x1 + vHx + hbX, y1 + vHy + hbY);
-                        ctx.lineTo(x1 + vHx - hbX, y1 + vHy - hbY);
+                        const hbX = -Math.sin(vHandleAngle) * (vS * 0.3); const hbY = Math.cos(vHandleAngle) * (vS * 0.3);
+                        ctx.moveTo(x1 + vHx + hbX, y1 + vHy + hbY); ctx.lineTo(x1 + vHx - hbX, y1 + vHy - hbY);
                         ctx.stroke();
                         break;
 
                     case TOOLS.REGULATOR:
                         const regR = baseSize * 0.8; 
-                        ctx.translate(x1, y1); ctx.rotate(rotation); // Base rotation ok for body
+                        ctx.translate(x1, y1); ctx.rotate(rotation); 
                         ctx.arc(0, 0, regR, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
                         ctx.beginPath(); ctx.arc(0, 0, regR * 0.5, 0, 2 * Math.PI); ctx.stroke(); 
-                        // Reset for dynamic dome
                         ctx.rotate(-rotation); ctx.translate(-x1, -y1);
-                        
-                        // Dome
                         const rBranches = getValidBranchAngles(rotation);
                         const rFlip = extraData && extraData.flipIndex ? extraData.flipIndex : 0;
                         const rDomeAngle = rBranches[rFlip % rBranches.length];
-                        
-                        const rDx = Math.cos(rDomeAngle) * regR;
-                        const rDy = Math.sin(rDomeAngle) * regR;
+                        const rDx = Math.cos(rDomeAngle) * regR; const rDy = Math.sin(rDomeAngle) * regR;
                         ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x1 + rDx, y1 + rDy); ctx.stroke();
                         break;
 
@@ -472,9 +480,9 @@
                 ctx.restore(); 
             };
 
-            // --- SNAP Y DIBUJO DE SÍMBOLOS ---
             const getSymbolSnapPoints = (el) => {
-                 const baseSize = GRID_SIZE * 0.6; 
+                 const localScale = el.elementScale || 1; 
+                 const baseSize = GRID_SIZE * 0.6 * localScale; // Use scale
                  const points = [];
                  
                  if (el.type === TOOLS.TEE) {
@@ -514,7 +522,6 @@
                  return points;
             };
 
-            // ... (Rest of functions getNearestEndpoint, getNearestLine, checkHit, handleMouseDown, handleMouseMove, handleMouseUp, handleWheel, handleContextMenu, addText remain SAME)
             const getNearestEndpoint = (pos) => {
                 let nearest = null; let minDist = 15 / scale; 
                 const visibleLayersIds = new Set(layers.filter(l => l.visible).map(l => l.id));
@@ -591,7 +598,8 @@
                 if (tool === TOOLS.DIMENSION) { if (dimensionStep === 0) { setCurrentElement({ id: Date.now(), type: TOOLS.DIMENSION, x1: worldPos.x, y1: worldPos.y, x2: worldPos.x, y2: worldPos.y, color: '#fbbf24', lineWidth: 1, layerId: activeLayer }); setDimensionStep(1); } else { setElements(prev => [...prev, currentElement]); setCurrentElement(null); setDimensionStep(0); } return; }
                 if (tool === TOOLS.TEXT) { setTextPos(worldPos); setShowTextModal(true); return; }
                 if (tool === TOOLS.BEZIER) { if (bezierStep === 0) { setCurrentElement({ id: Date.now(), type: TOOLS.BEZIER, x1: worldPos.x, y1: worldPos.y, x2: worldPos.x, y2: worldPos.y, cx: worldPos.x, cy: worldPos.y, color, lineWidth, layerId: activeLayer }); setBezierStep(1); } else { setElements(prev => [...prev, currentElement]); setCurrentElement(null); setBezierStep(0); } return; }
-                if ([TOOLS.VALVE, TOOLS.REGULATOR, TOOLS.REDUCER, TOOLS.TERMINAL, TOOLS.TEE].includes(tool)) { setElements(prev => [...prev, { id: Date.now(), type: tool, x1: mouseWorldPos.x, y1: mouseWorldPos.y, x2: mouseWorldPos.x, y2: mouseWorldPos.y, color, lineWidth, rotation: snapRotation, extraData: { flipIndex: flipRotation }, anchor, layerId: activeLayer }]); return; }
+                // Insert Symbol with default scale 1
+                if ([TOOLS.VALVE, TOOLS.REGULATOR, TOOLS.REDUCER, TOOLS.TERMINAL, TOOLS.TEE].includes(tool)) { setElements(prev => [...prev, { id: Date.now(), type: tool, x1: mouseWorldPos.x, y1: mouseWorldPos.y, x2: mouseWorldPos.x, y2: mouseWorldPos.y, color, lineWidth, rotation: snapRotation, extraData: { flipIndex: flipRotation }, anchor, layerId: activeLayer, elementScale: 1 }]); return; }
                 setCurrentElement({ id: Date.now(), type: tool, x1: worldPos.x, y1: worldPos.y, x2: worldPos.x, y2: worldPos.y, color, lineWidth, layerId: activeLayer });
                 if (tool === TOOLS.LINE) setDrawingLength(''); 
             };
@@ -702,7 +710,7 @@
             };
             
             const undo = () => setElements(prev => prev.slice(0, -1));
-            const clearCanvas = () => window.confirm('¿Borrar todo?') && setElements([]);
+            const clearCanvas = () => { if(window.confirm('¿Borrar todo el dibujo y la memoria local?')) { setElements([]); localStorage.removeItem('ing-cad-autosave-v2'); } };
             const openTagModal = (type) => { setTagModal({ visible: true, type, x: contextMenu.worldX, y: contextMenu.worldY }); setContextMenu({ ...contextMenu, visible: false }); };
             const handleAddTag = (tagData) => { 
                 if (tagModal.editData) { setElements(prev => prev.map(el => el.id === tagModal.editData.id ? { ...el, ...tagData } : el)); } 
@@ -716,6 +724,7 @@
             const changeSelectionLayer = (newLayerId) => { setElements(prev => prev.map(el => selectedIds.includes(el.id) ? { ...el, layerId: newLayerId } : el)); };
             const changeSelectionLineWidth = (newWidth) => { setElements(prev => prev.map(el => selectedIds.includes(el.id) ? { ...el, lineWidth: Number(newWidth) } : el)); };
             const updateSelectedCoord = (prop, val) => { const num = parseFloat(val); if (isNaN(num)) return; setElements(prev => prev.map(el => selectedIds.includes(el.id) ? { ...el, [prop]: num } : el)); };
+            const updateSelectedScale = (val) => { const num = parseFloat(val); if (isNaN(num) || num <= 0) return; setElements(prev => prev.map(el => selectedIds.includes(el.id) ? { ...el, elementScale: num } : el)); };
             const updateSelectedText = (val) => { setElements(prev => prev.map(el => selectedIds.includes(el.id) ? { ...el, text: val } : el)); };
             const deleteSelection = () => { setElements(prev => prev.filter(el => !selectedIds.includes(el.id))); setSelectedIds([]); };
             const handleEditTramo = () => { const el = elements.find(e => e.id === selectedIds[0]); if (el && el.tagMetadata) { setTagModal({ visible: true, type: el.tagMetadata.type === 'Punto' ? TAG_TYPES.PUNTO : TAG_TYPES.TRAMO_COMPLETO, x: el.x1, y: el.y1, editData: el, initialData: el }); } };
@@ -740,6 +749,7 @@
                                     </select>
                                 </div>
                             )}
+                            {autosaveMsg && <span className="ml-4 text-xs text-green-400 font-bold animate-pulse flex items-center gap-1"><Icon path={ICONS.Save} size={14}/> {autosaveMsg}</span>}
                         </div>
                         <div className="flex items-center gap-4">
                             <button onClick={() => setShowHelp(true)} className="p-2 hover:bg-gray-700 rounded-lg text-blue-400 hover:text-white transition" title="Manual de Uso"><Icon path={ICONS.HelpCircle} /></button>
@@ -815,6 +825,9 @@
                                             const el = elements.find(e => e.id === selectedIds[0]);
                                             return (
                                                 <div className="pt-2 border-t border-gray-600 space-y-2">
+                                                    {[TOOLS.VALVE, TOOLS.REGULATOR, TOOLS.REDUCER, TOOLS.TERMINAL, TOOLS.TEE].includes(el.type) && (
+                                                        <div><span className="prop-label font-bold text-blue-300">Escala del Objeto</span><input type="number" step="0.1" className="prop-input" value={el.elementScale || 1} onChange={(e) => updateSelectedScale(e.target.value)} /></div>
+                                                    )}
                                                     {el.x1 !== undefined && (
                                                         <div className="grid grid-cols-2 gap-2">
                                                             <div><span className="prop-label">X1</span><input type="number" className="prop-input" value={el.x1.toFixed(1)} onChange={(e) => updateSelectedCoord('x1', e.target.value)} /></div>
