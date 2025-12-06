@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IngenieroCAD - P&ID Web</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- Babel para JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- jsPDF para exportar PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <!-- SheetJS para exportar Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #111827; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1f2937; }
+        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+        .fade-in { animation: fadeIn 0.2s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .glass-panel { background: rgba(31, 41, 55, 0.95); backdrop-filter: blur(4px); border: 1px solid rgba(75, 85, 99, 0.5); }
+        .manual-icon { display: inline-flex; vertical-align: middle; background: #374151; padding: 2px; border-radius: 4px; margin: 0 4px; }
+        .context-menu { position: fixed; background: #1f2937; border: 1px solid #4b5563; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5); padding: 4px 0; z-index: 100; min-width: 180px; }
+        .context-menu-item { padding: 8px 16px; cursor: pointer; color: #d1d5db; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+        .context-menu-item:hover { background-color: #374151; color: white; }
+        /* Inputs compactos */
+        .prop-input { background-color: #374151; border: 1px solid #4b5563; color: white; font-size: 0.75rem; padding: 2px 4px; border-radius: 4px; width: 100%; }
+        .prop-label { display: block; color: #9ca3af; font-size: 0.7rem; margin-bottom: 1px; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useRef, useEffect, useCallback } = React;
+
+        // --- ICONOS SVG ---
+        const Icon = ({ path, className, size = 20 }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                {path}
+            </svg>
+        );
+
+        const ICONS = {
+            MousePointer2: <path d="m12 12 5.83 2.92-3.42 1.75 3 6-2.6 1.3-3-6-3 3z M22 2l-10 10" />,
+            Minus: <path d="M5 12h14" />,
+            Square: <rect width="18" height="18" x="3" y="3" rx="2" />,
+            Circle: <circle cx="12" cy="12" r="10" />,
+            Type: <React.Fragment><polyline points="4 7 4 4 20 4 20 7" /><line x1="9" x2="15" y1="20" y2="20" /><line x1="12" x2="12" y1="4" y2="20" /></React.Fragment>,
+            Undo2: <React.Fragment><path d="M9 14 4 9l5-5" /><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11" /></React.Fragment>,
+            Trash2: <React.Fragment><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></React.Fragment>,
+            Download: <React.Fragment><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></React.Fragment>,
+            Spline: <React.Fragment><path d="M19 22v-3a3 3 0 0 0-3-3H8a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h3" /><path d="M22 19a3 3 0 0 0-3-3" /><path d="M5 5a3 3 0 0 1 3-3" /></React.Fragment>,
+            Settings2: <React.Fragment><path d="M20 7h-9" /><path d="M14 17H5" /><circle cx="17" cy="17" r="3" /><circle cx="7" cy="7" r="3" /></React.Fragment>,
+            Activity: <path d="M22 12h-4l-3 9L9 3l-3 9H2" />,
+            Droplet: <path d="M12 22a7 7 0 0 0 7-7c0-2-2-5-7-13-5 8-7 11-7 13a7 7 0 0 0 7 7z" />,
+            Cylinder: <React.Fragment><path d="M5 6v12" /><path d="M19 6v12" /><ellipse cx="12" cy="6" rx="7" ry="3" /><path d="M19 18c0 1.7-3.1 3-7 3s-7-1.3-7-3" /></React.Fragment>,
+            Thermometer: <path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z" />,
+            Move: <path d="M5 9l-3 3 3 3M9 5l3-3 3 3M19 9l3 3-3 3M9 19l3 3 3-3M2 12h20M12 2v20" />,
+            PlusSquare: <React.Fragment><rect width="18" height="18" x="3" y="3" rx="2" /><path d="M8 12h8" /><path d="M12 8v8" /></React.Fragment>,
+            Anchor: <path d="M12 22a9 9 0 0 0 9-9H12V2z" />,
+            Layers: <path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z" />,
+            Eye: <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />,
+            EyeOff: <React.Fragment><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" /><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.9 3.23" /><path d="M1.73 1.73l20.54 20.54" /><path d="m17.5 17.5c-1.55 1.26-3.37 2.5-5.5 2.5-7 0-10-7-10-7a13.16 13.16 0 0 1 3.12-4.19" /></React.Fragment>,
+            Plus: <path d="M5 12h14M12 5v14"/>,
+            Palette: <React.Fragment><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.093 0-.679.637-1.203 1.25-1.203H17c2.75 0 5-2.25 5-5 0-3.875-4.5-8-10-8Z"/></React.Fragment>,
+            HelpCircle: <React.Fragment><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></React.Fragment>,
+            Mouse: <React.Fragment><rect x="5" y="2" width="14" height="20" rx="7" /><path d="M12 6v4" /></React.Fragment>,
+            Tag: <path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z" />,
+            FileSpreadsheet: <React.Fragment><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h2"/><path d="M8 17h2"/><path d="M14 13h2"/><path d="M14 17h2"/></React.Fragment>,
+            Ruler: <React.Fragment><path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z"/><path d="m14.5 12.5 2-2"/><path d="m11.5 9.5 2-2"/><path d="m8.5 6.5 2-2"/><path d="m17.5 15.5 2-2"/></React.Fragment>,
+            TableProperties: <React.Fragment><path d="M12 3v18"/><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/></React.Fragment>,
+            Edit2: <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />,
+            BookOpen: <React.Fragment><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></React.Fragment>,
+            FileText: <React.Fragment><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><polyline points="10 9 9 9 8 9"/></React.Fragment>,
+            
+            // Nuevos Iconos para Librería
+            Valve: <path d="M4 10h16v4H4z M4 10l8 8 8-8" />,
+            Regulator: <React.Fragment><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="5" /></React.Fragment>,
+            TeeIcon: <path d="M12 2v20M2 12h20" />, 
+            ReducerIcon: <path d="M4 20l16-8L4 4z" />,
+            TermIcon: <circle cx="12" cy="12" r="8" />,
+            RotateCw: <React.Fragment><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></React.Fragment>
+        };
+
+        const GRID_SIZE = 40; 
+
+        const TOOLS = {
+            SELECT: 'select', PAN: 'pan', LINE: 'line', RECTANGLE: 'rectangle', CIRCLE: 'circle', BEZIER: 'bezier', TEXT: 'text',
+            VALVE: 'valve', PUMP: 'pump', TANK: 'tank', HEAT_EXCHANGER: 'heat_exchanger', INSTRUMENT: 'instrument',
+            TAG: 'tag_tool', DIMENSION: 'dimension_tool', TRAMO_DATA: 'tramo_data_tool',
+            REGULATOR: 'regulator', REDUCER: 'reducer', TERMINAL: 'terminal', TEE: 'tee'
+        };
+
+        const UNITS = { M: { label: 'Metros (m)', factor: 1 }, CM: { label: 'Centímetros (cm)', factor: 100 }, MM: { label: 'Milímetros (mm)', factor: 1000 } };
+        const ANCHORS = { CENTER: { id: 'center', label: 'Centro' }, TOP: { id: 'top', label: 'Extremo Sup / Inicio' }, BOTTOM: { id: 'bottom', label: 'Extremo Inf / Fin' } };
+        const PALETTE = [ { color: '#ffffff', name: 'Blanco (Base)' }, { color: '#9ca3af', name: 'Gris (Estructura)' }, { color: '#ef4444', name: 'Rojo (Incendio/Seguridad)' }, { color: '#f97316', name: 'Naranja (Tóxico)' }, { color: '#eab308', name: 'Amarillo (Gases/Inflamable)' }, { color: '#22c55e', name: 'Verde (Agua)' }, { color: '#3b82f6', name: 'Azul (Aire)' }, { color: '#a855f7', name: 'Violeta (Ácidos)' } ];
+        const TAG_TYPES = { TRAMO_COMPLETO: 'Datos de Tramo', PUNTO: 'Punto / Nodo' };
+        
+        const MATERIALS = ['Ag', 'Ac', 'Cu Flex', 'Cu Rig', 'Multicapa', 'PEAD'];
+        const DIAMETERS = ['1/4"', '3/8"', '1/2"', '3/4"', '1"', '1 1/4"', '1 1/2"', '2"', '2 1/2"', '3"', '4"', '6"', '8"'];
+        
+        const DIAMETER_DB = {
+            'Ag': { '1/2"': 21.34, '3/4"': 26.67, '1"': 33.40, '1 1/4"': 42.16, '1 1/2"': 48.26, '2"': 60.33, '3"': 88.90, '4"': 114.30, '6"': 168.30, '8"': 219.10 },
+            'Ac': { '1/2"': 15.8, '3/4"': 20.9, '1"': 26.6, '1 1/4"': 35.1, '1 1/2"': 40.9, '2"': 52.5, '2 1/2"': 62.7, '3"': 77.9, '4"': 102.3, '6"': 154.1, '8"': 202.7 },
+            'Cu Flex': { '1/4"': 6.35, '3/8"': 9.53, '1/2"': 12.7, '3/4"': 19.05, '1"': 25.4 },
+            'Cu Rig': { '1/2"': 13.84, '3/4"': 19.94, '1"': 26.04, '1 1/4"': 32.13, '1 1/2"': 38.23, '2"': 50.42, '3"': 74.8, '4"': 99.2 },
+            'Multicapa': { '1/2"': 16, '3/4"': 20, '1"': 25, '1 1/4"': 32, '1 1/2"': 40, '2"': 50 },
+            'PEAD': { '1/2"': 15.8, '3/4"': 20.9, '1"': 26.6, '2"': 52.5, '3"': 77.9, '4"': 102.3, '6"': 154.1, '8"': 202.7 }
+        };
+
+        const getRealDiameter = (nominal, material) => {
+            if (DIAMETER_DB[material] && DIAMETER_DB[material][nominal]) {
+                return DIAMETER_DB[material][nominal];
+            }
+            const numeric = parseFloat(nominal);
+            return isNaN(numeric) ? 0 : (numeric * 25.4).toFixed(2);
+        };
+
+        const LOAD_UNITS = ['m³/h', 'BTU/h', 'kW', 'L/min'];
+        const LENGTH_UNITS = ['m', 'cm', 'mm'];
+        const LINE_WIDTHS = [0.1, 0.25, 0.5, 0.75, 1, 1.5, 2, 3, 4, 5, 6];
+
+        const DownloadModal = ({ visible, type, onClose, onConfirm }) => {
+            const [formData, setFormData] = useState({ draftsman: '', project: '', location: '', client: '', date: '', id: '' });
+            useEffect(() => {
+                if (visible) {
+                    const now = new Date();
+                    setFormData(prev => ({ ...prev, date: now.toLocaleDateString('es-ES'), id: `PL-${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}-${now.getHours()}${now.getMinutes()}` }));
+                }
+            }, [visible]);
+            if (!visible) return null;
+            return (
+                <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-[200] fade-in" onClick={onClose}>
+                    <div className="bg-gray-800 p-6 rounded-xl shadow-2xl border border-gray-600 w-[500px]" onClick={e => e.stopPropagation()}>
+                        <h3 className="text-xl font-bold mb-4 text-white flex items-center gap-2"><Icon path={type === 'PDF' ? ICONS.FileText : ICONS.FileSpreadsheet} className={type === 'PDF' ? "text-blue-400" : "text-green-400"}/> Exportar {type}</h3>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div className="col-span-2"><label className="block text-gray-400 mb-1">Nombre del Proyecto</label><input type="text" className="w-full bg-gray-700 border border-gray-600 text-white rounded p-2 outline-none focus:border-blue-500" value={formData.project} onChange={e => setFormData({...formData, project: e.target.value})} autoFocus /></div>
+                            <div><label className="block text-gray-400 mb-1">Dibujante</label><input type="text" className="w-full bg-gray-700 border border-gray-600 text-white rounded p-2 outline-none" value={formData.draftsman} onChange={e => setFormData({...formData, draftsman: e.target.value})} /></div>
+                            <div><label className="block text-gray-400 mb-1">Residente / Cliente</label><input type="text" className="w-full bg-gray-700 border border-gray-600 text-white rounded p-2 outline-none" value={formData.client} onChange={e => setFormData({...formData, client: e.target.value})} /></div>
+                            <div className="col-span-2"><label className="block text-gray-400 mb-1">Ubicación</label><input type="text" className="w-full bg-gray-700 border border-gray-600 text-white rounded p-2 outline-none" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} /></div>
+                            <div><label className="block text-gray-500 mb-1">Fecha (Auto)</label><input type="text" className="w-full bg-gray-900 border border-gray-700 text-gray-400 rounded p-2 outline-none cursor-not-allowed" value={formData.date} readOnly /></div>
+                            <div><label className="block text-gray-500 mb-1">ID Plano (Auto)</label><input type="text" className="w-full bg-gray-900 border border-gray-700 text-gray-400 rounded p-2 outline-none cursor-not-allowed" value={formData.id} readOnly /></div>
+                        </div>
+                        <div className="flex justify-end gap-3 mt-6"><button onClick={onClose} className="px-4 py-2 text-gray-400 hover:text-white transition">Cancelar</button><button onClick={() => onConfirm(formData)} className={`px-6 py-2 rounded font-bold text-white transition shadow-lg ${type === 'PDF' ? 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/30' : 'bg-green-600 hover:bg-green-700 shadow-green-500/30'}`}>Descargar {type}</button></div>
+                    </div>
+                </div>
+            );
+        };
+
+        const TagModal = ({ visible, type, x, y, onClose, onAdd, initialData }) => {
+            const [tramoData, setTramoData] = useState({ id: '', length: '', lengthUnit: 'm', diameter: DIAMETERS[0], material: MATERIALS[0], load: '', loadUnit: 'm³/h' });
+            const [pointVal, setPointVal] = useState('');
+
+            useEffect(() => {
+                if (initialData) {
+                    if (type === TAG_TYPES.PUNTO) setPointVal(initialData.tagMetadata.value);
+                    else setTramoData(initialData.tagMetadata);
+                } else {
+                    setTramoData({ id: '', length: '', lengthUnit: 'm', diameter: DIAMETERS[0], material: MATERIALS[0], load: '', loadUnit: 'm³/h' });
+                    setPointVal('');
+                }
+            }, [visible, type, initialData]);
+
+            if (!visible) return null;
+
+            const handleSubmit = () => {
+                let newData;
+                if (type === TAG_TYPES.PUNTO) { 
+                    if (pointVal) newData = { type: TOOLS.TEXT, text: `Punto: ${pointVal}`, color: '#22d3ee', scale: 0.8, tagMetadata: { type: 'Punto', value: pointVal } }; 
+                } else { 
+                    if (tramoData.id) newData = { type: TOOLS.TRAMO_DATA, text: `T-${tramoData.id}`, color: '#fbbf24', scale: 0.6, tagMetadata: { type: 'Tramo', ...tramoData } }; 
+                }
+                
+                if (newData) onAdd(newData);
+                onClose();
+            };
+
+            return (
+                <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-[150] fade-in" onClick={onClose}>
+                    <div className="bg-gray-800 p-6 rounded-lg shadow-xl border border-gray-600 w-96" onClick={e => e.stopPropagation()}>
+                        <h3 className="text-lg font-bold mb-4 text-white flex items-center gap-2"><Icon path={type === TAG_TYPES.PUNTO ? ICONS.MousePointer2 : ICONS.TableProperties} className="text-blue-400"/> {initialData ? 'Editar ' : 'Nuevo '}{type}</h3>
+                        {type === TAG_TYPES.PUNTO ? (<div><label className="block text-gray-400 text-xs mb-1">Número / ID</label><input type="text" autoFocus className="w-full bg-gray-700 border border-gray-600 text-white rounded p-2 mb-4 outline-none" value={pointVal} onChange={e => setPointVal(e.target.value)} /></div>) : (
+                            <div className="space-y-3"><div className="grid grid-cols-2 gap-3"><div className="col-span-2"><label className="block text-blue-300 text-xs mb-1 font-bold">ID Tramo</label><input type="text" autoFocus className="w-full bg-gray-700 border border-blue-500/50 text-white rounded p-2 outline-none" value={tramoData.id} onChange={e => setTramoData({...tramoData, id: e.target.value})} /></div><div><label className="block text-gray-400 text-xs mb-1">Longitud</label><div className="flex"><input type="number" className="w-2/3 bg-gray-700 border border-gray-600 text-white rounded-l p-2 outline-none" value={tramoData.length} onChange={e => setTramoData({...tramoData, length: e.target.value})} /><select className="w-1/3 bg-gray-600 text-white text-xs rounded-r outline-none border-y border-r border-gray-600" value={tramoData.lengthUnit} onChange={e => setTramoData({...tramoData, lengthUnit: e.target.value})}>{LENGTH_UNITS.map(u => <option key={u} value={u}>{u}</option>)}</select></div></div><div><label className="block text-gray-400 text-xs mb-1">Carga</label><div className="flex"><input type="number" className="w-2/3 bg-gray-700 border border-gray-600 text-white rounded-l p-2 outline-none" value={tramoData.load} onChange={e => setTramoData({...tramoData, load: e.target.value})} /><select className="w-1/3 bg-gray-600 text-white text-xs rounded-r outline-none border-y border-r border-gray-600" value={tramoData.loadUnit} onChange={e => setTramoData({...tramoData, loadUnit: e.target.value})}>{LOAD_UNITS.map(u => <option key={u} value={u}>{u}</option>)}</select></div></div><div><label className="block text-gray-400 text-xs mb-1">Diámetro</label><select className="w-full bg-gray-700 border border-gray-600 text-white rounded p-2 outline-none" value={tramoData.diameter} onChange={e => setTramoData({...tramoData, diameter: e.target.value})}>{DIAMETERS.map(d => <option key={d} value={d}>{d}</option>)}</select></div><div><label className="block text-gray-400 text-xs mb-1">Material</label><select className="w-full bg-gray-700 border border-gray-600 text-white rounded p-2 outline-none" value={tramoData.material} onChange={e => setTramoData({...tramoData, material: e.target.value})}>{MATERIALS.map(m => <option key={m} value={m}>{m}</option>)}</select></div></div></div>
+                        )}
+                        <div className="flex justify-end gap-2 mt-6"><button onClick={onClose} className="px-4 py-2 text-gray-400 hover:text-white text-sm">Cancelar</button><button onClick={handleSubmit} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-bold text-sm shadow-lg shadow-blue-500/30">{initialData ? 'Actualizar' : 'Insertar'}</button></div>
+                    </div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const canvasRef = useRef(null);
+            const containerRef = useRef(null);
+            const [elements, setElements] = useState([]);
+            const [layers, setLayers] = useState([{ id: 'default', name: 'Capa 0', visible: true }]);
+            const [activeLayer, setActiveLayer] = useState('default');
+            const [currentElement, setCurrentElement] = useState(null);
+            const [tool, setTool] = useState(TOOLS.LINE);
+            const [color, setColor] = useState('#ffffff');
+            const [lineWidth, setLineWidth] = useState(2);
+            const [anchor, setAnchor] = useState(ANCHORS.CENTER.id);
+            const [textInput, setTextInput] = useState('');
+            const [showTextModal, setShowTextModal] = useState(false);
+            const [textPos, setTextPos] = useState({ x: 0, y: 0 });
+            const [showLibrary, setShowLibrary] = useState(false);
+            const [showLayers, setShowLayers] = useState(false);
+            const [showHelp, setShowHelp] = useState(false);
+            const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, worldX: 0, worldY: 0 });
+            const [tagModal, setTagModal] = useState({ visible: false, type: null, x: 0, y: 0, editData: null });
+            const [scale, setScale] = useState(1);
+            const [offset, setOffset] = useState({ x: 0, y: 0 });
+            const [isPanning, setIsPanning] = useState(false);
+            const [lastMousePos, setLastMousePos] = useState({ x: 0, y: 0 });
+            const [mouseWorldPos, setMouseWorldPos] = useState({ x: 0, y: 0 });
+            const [snapRotation, setSnapRotation] = useState(0); 
+            const [guideLine, setGuideLine] = useState(null);
+            const [snapPoint, setSnapPoint] = useState(null);
+            const [bezierStep, setBezierStep] = useState(0);
+            const [dimensionStep, setDimensionStep] = useState(0); 
+            const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
+            const [unit, setUnit] = useState('M'); 
+            const [selectedIds, setSelectedIds] = useState([]);
+            const [downloadModal, setDownloadModal] = useState({ visible: false, type: null });
+            const [drawingLength, setDrawingLength] = useState('');
+            const [isDraggingSelected, setIsDraggingSelected] = useState(false);
+            const [dragStartPos, setDragStartPos] = useState({ x: 0, y: 0 });
+            
+            // Rotation for current placement (Flip state)
+            const [flipRotation, setFlipRotation] = useState(0);
+
+            useEffect(() => {
+                const handleResize = () => { if (containerRef.current) { const w = containerRef.current.clientWidth; const h = containerRef.current.clientHeight; setCanvasSize(p => (p.width === w && p.height === h) ? p : { width: w, height: h }); } };
+                window.addEventListener('resize', handleResize); handleResize(); return () => window.removeEventListener('resize', handleResize);
+            }, []);
+
+            useEffect(() => {
+                const handleClick = () => { if (contextMenu.visible) setContextMenu(p => ({ ...p, visible: false })); };
+                window.addEventListener('click', handleClick); return () => window.removeEventListener('click', handleClick);
+            }, [contextMenu.visible]);
+
+            useEffect(() => {
+                const handleKeyDown = (e) => {
+                    if (e.key === 'Delete' || e.key === 'Backspace') {
+                        if (currentElement && tool === TOOLS.LINE && drawingLength.length > 0) { e.preventDefault(); setDrawingLength(prev => prev.slice(0, -1)); return; }
+                        if (selectedIds.length > 0) { setElements(prev => prev.filter(el => !selectedIds.includes(el.id))); setSelectedIds([]); }
+                    }
+                    if ((e.key === 'r' || e.key === 'R') && !currentElement) {
+                        // Rotate pending symbol
+                        setFlipRotation(prev => (prev + Math.PI / 2) % (2 * Math.PI));
+                    }
+                    if (currentElement && tool === TOOLS.LINE) {
+                        if ((e.key >= '0' && e.key <= '9') || e.key === '.') { setDrawingLength(prev => prev + e.key); } 
+                        else if (e.key === 'Enter' && drawingLength.length > 0) {
+                            e.preventDefault(); const len = parseFloat(drawingLength);
+                            if (!isNaN(len)) {
+                                const angle = Math.atan2(mouseWorldPos.y - currentElement.y1, mouseWorldPos.x - currentElement.x1);
+                                const pxLen = len * GRID_SIZE; 
+                                const finalX = currentElement.x1 + pxLen * Math.cos(angle);
+                                const finalY = currentElement.y1 + pxLen * Math.sin(angle);
+                                setElements(prev => [...prev, { ...currentElement, x2: finalX, y2: finalY }]);
+                                setCurrentElement(null); setDrawingLength('');
+                            }
+                        }
+                    }
+                };
+                window.addEventListener('keydown', handleKeyDown); return () => window.removeEventListener('keydown', handleKeyDown);
+            }, [selectedIds, currentElement, tool, drawingLength, mouseWorldPos]);
+
+            useEffect(() => {
+                const canvas = canvasRef.current; const ctx = canvas.getContext('2d'); const { width, height } = canvasSize;
+                canvas.width = width; canvas.height = height; ctx.clearRect(0, 0, width, height);
+                ctx.fillStyle = '#1e1e1e'; ctx.fillRect(0, 0, width, height);
+                ctx.save(); ctx.translate(offset.x, offset.y); ctx.scale(scale, scale);
+                drawGrid(ctx, width, height);
+                const visibleLayersIds = new Set(layers.filter(l => l.visible).map(l => l.id));
+                elements.forEach(element => { 
+                    if (!element.layerId || visibleLayersIds.has(element.layerId)) {
+                        drawElement(ctx, element, selectedIds.includes(element.id));
+                    }
+                });
+                if (guideLine) { ctx.save(); ctx.strokeStyle = '#00ff00'; ctx.setLineDash([5, 5]); ctx.lineWidth = 1 / scale; ctx.beginPath(); ctx.moveTo(guideLine.x1, guideLine.y1); ctx.lineTo(guideLine.x2, guideLine.y2); ctx.stroke(); ctx.restore(); }
+                if (snapPoint) { ctx.save(); ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 2 / scale; const bs = 10 / scale; ctx.strokeRect(snapPoint.x - bs/2, snapPoint.y - bs/2, bs, bs); ctx.restore(); }
+                if (currentElement) {
+                    drawElement(ctx, currentElement, false);
+                    if (tool === TOOLS.LINE) {
+                        ctx.save();
+                        let displayLen = drawingLength;
+                        if (!displayLen) { const distPx = Math.sqrt(Math.pow(mouseWorldPos.x - currentElement.x1, 2) + Math.pow(mouseWorldPos.y - currentElement.y1, 2)); displayLen = (distPx / GRID_SIZE).toFixed(2); }
+                        const text = `L: ${displayLen}`;
+                        ctx.font = `bold ${14/scale}px sans-serif`; const textWidth = ctx.measureText(text).width;
+                        ctx.fillStyle = 'rgba(31, 41, 55, 0.8)'; const padding = 6/scale; const boxX = mouseWorldPos.x + 15/scale; const boxY = mouseWorldPos.y - 25/scale;
+                        ctx.fillRect(boxX, boxY, textWidth + padding*2, 20/scale);
+                        ctx.fillStyle = drawingLength ? '#22c55e' : '#9ca3af'; ctx.textBaseline = 'middle'; ctx.fillText(text, boxX + padding, boxY + 10/scale);
+                        ctx.restore();
+                    }
+                }
+                else if ([TOOLS.VALVE, TOOLS.REGULATOR, TOOLS.REDUCER, TOOLS.TERMINAL, TOOLS.TEE].includes(tool)) {
+                    // Combined rotation: Snap Angle + User Flip
+                    const combinedRot = snapRotation + flipRotation;
+                    drawElement(ctx, { type: tool, x1: mouseWorldPos.x, y1: mouseWorldPos.y, color: color + '80', lineWidth, rotation: combinedRot, anchor }, false);
+                    
+                    // Hint
+                    ctx.save(); ctx.fillStyle = '#9ca3af'; ctx.font = `${10/scale}px sans-serif`; 
+                    ctx.fillText("[R] Rotar", mouseWorldPos.x + 20/scale, mouseWorldPos.y + 20/scale);
+                    ctx.restore();
+                }
+                ctx.restore();
+            }, [elements, currentElement, scale, offset, canvasSize, unit, mouseWorldPos, snapRotation, flipRotation, color, lineWidth, tool, anchor, layers, guideLine, snapPoint, selectedIds, drawingLength]);
+
+            const screenToWorld = (screenX, screenY) => ({ x: (screenX - offset.x) / scale, y: (screenY - offset.y) / scale });
+
+            const drawGrid = (ctx, width, height) => {
+                const startX = -offset.x / scale; const startY = -offset.y / scale; const endX = (width - offset.x) / scale; const endY = (height - offset.y) / scale;
+                const gridStartX = Math.floor(startX / GRID_SIZE) * GRID_SIZE; const gridStartY = Math.floor(startY / GRID_SIZE) * GRID_SIZE;
+                ctx.strokeStyle = '#333333'; ctx.lineWidth = 0.5 / scale; ctx.beginPath();
+                for (let x = gridStartX; x < endX; x += GRID_SIZE) { ctx.moveTo(x, startY); ctx.lineTo(x, endY); }
+                for (let y = gridStartY; y < endY; y += GRID_SIZE) { ctx.moveTo(startX, y); ctx.lineTo(endX, y); }
+                ctx.stroke();
+                ctx.strokeStyle = '#2a2a2a'; const tan30 = 0.57735;
+                const drawAngled = (m) => {
+                    const c1 = startY - m * startX; const c2 = startY - m * endX; const c3 = endY - m * startX; const c4 = endY - m * endX;
+                    const minC = Math.min(c1, c2, c3, c4); const maxC = Math.max(c1, c2, c3, c4); const startC = Math.floor(minC / GRID_SIZE) * GRID_SIZE;
+                    ctx.beginPath(); for (let c = startC; c < maxC; c += GRID_SIZE) { ctx.moveTo(startX, m * startX + c); ctx.lineTo(endX, m * endX + c); } ctx.stroke();
+                };
+                drawAngled(tan30); drawAngled(-tan30);
+            };
+
+            const drawElement = (ctx, element, isSelected) => {
+                ctx.save(); 
+                ctx.strokeStyle = isSelected ? '#06b6d4' : element.color; 
+                ctx.lineWidth = element.lineWidth; 
+                ctx.fillStyle = isSelected ? '#06b6d4' : element.color;
+                ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                if (isSelected) { ctx.shadowBlur = 10; ctx.shadowColor = "#06b6d4"; } 
+
+                const { type, x1, y1, x2, y2, rotation = 0, anchor = ANCHORS.CENTER.id } = element;
+                const baseSize = GRID_SIZE * 0.6; 
+                const isSymbol = [TOOLS.VALVE, TOOLS.REGULATOR, TOOLS.REDUCER, TOOLS.TERMINAL, TOOLS.TEE].includes(type);
+                
+                if (isSymbol) {
+                    ctx.translate(x1, y1); ctx.rotate(rotation);
+                    let ox = 0, oy = 0;
+                    
+                    // Ajuste de Centrado Perfecto sobre la línea
+                    // Solo desplazamos en X (longitudinal) si es Inicio/Fin. Y (lateral) siempre es 0 para simetría.
+                    const halfWidth = baseSize * 0.8; // Base width aprox of symbols
+
+                    if (type === TOOLS.VALVE || type === TOOLS.REGULATOR) ox = halfWidth;
+                    else if (type === TOOLS.REDUCER) ox = halfWidth * 0.8;
+                    else if (type === TOOLS.TEE) ox = 0; // Tee is center anchored by default geometry
+                    else if (type === TOOLS.TERMINAL) ox = baseSize * 0.4;
+
+                    if (anchor === ANCHORS.TOP.id) ctx.translate(ox, 0); 
+                    else if (anchor === ANCHORS.BOTTOM.id) ctx.translate(-ox, 0);
+                }
+                
+                ctx.beginPath();
+                switch (type) {
+                    case TOOLS.LINE: ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); break;
+                    case TOOLS.RECTANGLE: ctx.strokeRect(x1, y1, x2 - x1, y2 - y1); break;
+                    case TOOLS.CIRCLE: const r = Math.sqrt((x2 - x1)**2 + (y2 - y1)**2); ctx.arc(x1, y1, r, 0, 2 * Math.PI); ctx.stroke(); break;
+                    case TOOLS.BEZIER: ctx.moveTo(x1, y1); if(element.cx) ctx.quadraticCurveTo(element.cx, element.cy, x2, y2); else ctx.lineTo(x2, y2); ctx.stroke(); break;
+                    case TOOLS.TEXT: ctx.font = `${element.fontSize || GRID_SIZE * 0.35}px monospace`; ctx.fillText(element.text || 'Texto', x1, y1); break;
+                    case TOOLS.TRAMO_DATA:
+                        const meta = element.tagMetadata;
+                        ctx.font = `bold ${GRID_SIZE * 0.45}px monospace`; ctx.fillStyle = isSelected ? '#06b6d4' : '#22d3ee'; ctx.fillText(`TRAMO ${meta.id}`, x1, y1);
+                        ctx.font = `${GRID_SIZE * 0.35}px monospace`; const lh = GRID_SIZE * 0.45;
+                        ctx.fillStyle = isSelected ? '#06b6d4' : '#fbbf24'; ctx.fillText(`Ø${meta.diameter} | ${meta.material}`, x1, y1 + lh);
+                        ctx.fillStyle = isSelected ? '#06b6d4' : '#9ca3af'; ctx.fillText(`L:${meta.length}${meta.lengthUnit} | Q:${meta.load}${meta.loadUnit}`, x1, y1 + lh * 2);
+                        ctx.strokeStyle = '#374151'; ctx.lineWidth = 1 / scale; ctx.fillStyle = 'rgba(31, 41, 55, 0.4)'; ctx.fillRect(x1 - 5, y1 - lh, 130, lh * 3.5); ctx.strokeRect(x1 - 5, y1 - lh, 130, lh * 3.5);
+                        break;
+                    case TOOLS.VALVE: 
+                        const v = baseSize * 0.8; ctx.moveTo(-v, -v/2); ctx.lineTo(-v, v/2); ctx.lineTo(0, 0); ctx.lineTo(v, v/2); ctx.lineTo(v, -v/2); ctx.lineTo(0, 0); ctx.closePath(); ctx.stroke(); break;
+                    case TOOLS.REGULATOR:
+                        const regR = baseSize * 0.8; 
+                        ctx.arc(0, 0, regR, 0, 2 * Math.PI); ctx.stroke();
+                        ctx.beginPath(); ctx.arc(0, 0, regR * 0.5, 0, 2 * Math.PI); ctx.stroke(); 
+                        // Lineas de conexión si se desea, pero círculo concéntrico es lo pedido
+                        ctx.beginPath(); ctx.moveTo(-regR, 0); ctx.lineTo(-regR*0.5, 0); ctx.stroke();
+                        ctx.beginPath(); ctx.moveTo(regR, 0); ctx.lineTo(regR*0.5, 0); ctx.stroke();
+                        break;
+                    case TOOLS.REDUCER:
+                        const redH = baseSize * 0.6; const redL = baseSize * 1.2;
+                        // Triángulo isósceles centrado verticalmente
+                        ctx.moveTo(-redL/2, -redH); ctx.lineTo(-redL/2, redH); ctx.lineTo(redL/2, redH/2); ctx.lineTo(redL/2, -redH/2); ctx.closePath(); ctx.stroke(); break;
+                    case TOOLS.TERMINAL:
+                        const termR = baseSize * 0.4; ctx.arc(0, 0, termR, 0, Math.PI*2); ctx.stroke(); 
+                        // Línea cruzada para indicar final
+                        ctx.beginPath(); ctx.moveTo(-termR, -termR); ctx.lineTo(termR, termR); ctx.moveTo(-termR, termR); ctx.lineTo(termR, -termR); ctx.stroke(); break;
+                    case TOOLS.TEE:
+                        const teeS = baseSize * 0.8;
+                        // T invertida (la barra está en X para alinearse con la línea)
+                        // (0,0) es la intersección
+                        ctx.moveTo(-teeS, 0); ctx.lineTo(teeS, 0); // Main run
+                        ctx.moveTo(0, 0); ctx.lineTo(0, teeS); // Branch (Hacia abajo localmente, rotación controla dirección real)
+                        ctx.stroke(); break;
+                    case TOOLS.DIMENSION:
+                        const dx = x2 - x1, dy = y2 - y1; const distPx = Math.sqrt(dx**2 + dy**2); const angle = Math.atan2(dy, dx);
+                        ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+                        const ts = 5 / scale;
+                        ctx.translate(x1, y1); ctx.rotate(angle); ctx.moveTo(0, -ts); ctx.lineTo(0, ts); ctx.stroke(); ctx.rotate(-angle); ctx.translate(-x1, -y1);
+                        ctx.translate(x2, y2); ctx.rotate(angle); ctx.moveTo(0, -ts); ctx.lineTo(0, ts); ctx.stroke(); ctx.rotate(-angle); ctx.translate(-x2, -y2);
+                        ctx.fillStyle = isSelected ? '#06b6d4' : '#fbbf24'; ctx.font = `${GRID_SIZE * 0.35}px monospace`;
+                        const unitVal = (distPx / GRID_SIZE).toFixed(2); const text = `${unitVal} ${unit}`;
+                        const midX = (x1 + x2) / 2; const midY = (y1 + y2) / 2;
+                        const perpX = -dy / distPx * 15; const perpY = dx / distPx * 15;
+                        ctx.fillText(text, midX + perpX, midY + perpY);
+                        break;
+                }
+                ctx.restore();
+            };
+
+            // ... (getNearestEndpoint, getNearestLine, checkHit, handleMouseDown, handleMouseMove, handleMouseUp, handleWheel, handleContextMenu, addText remain SAME)
+            const getNearestEndpoint = (pos) => {
+                let nearest = null; let minDist = 15 / scale; 
+                const visibleLayersIds = new Set(layers.filter(l => l.visible).map(l => l.id));
+                const visibleElements = elements.filter(el => !el.layerId || visibleLayersIds.has(el.layerId));
+                visibleElements.forEach(el => {
+                    if (el.x1 !== undefined && el.y1 !== undefined) { const d1 = Math.sqrt((pos.x - el.x1)**2 + (pos.y - el.y1)**2); if (d1 < minDist) { minDist = d1; nearest = { x: el.x1, y: el.y1 }; } }
+                    if (el.x2 !== undefined && el.y2 !== undefined) { const d2 = Math.sqrt((pos.x - el.x2)**2 + (pos.y - el.y2)**2); if (d2 < minDist) { minDist = d2; nearest = { x: el.x2, y: el.y2 }; } }
+                });
+                return nearest;
+            };
+
+            const getNearestLine = (pos) => {
+                let nearest = null; let minDist = 15 / scale;
+                elements.forEach(el => {
+                    const layer = layers.find(l => l.id === el.layerId); if (layer && !layer.visible) return;
+                    if (el.type === TOOLS.LINE) {
+                        const { x1, y1, x2, y2 } = el; const A = pos.x - x1; const B = pos.y - y1; const C = x2 - x1; const D = y2 - y1;
+                        const dot = A * C + B * D; const lenSq = C * C + D * D; let param = -1; if (lenSq !== 0) param = dot / lenSq;
+                        let xx, yy; if (param < 0) { xx = x1; yy = y1; } else if (param > 1) { xx = x2; yy = y2; } else { xx = x1 + param * C; yy = y1 + param * D; }
+                        const dist = Math.sqrt((pos.x - xx)**2 + (pos.y - yy)**2); if (dist < minDist) { minDist = dist; nearest = { x: xx, y: yy, angle: Math.atan2(y2 - y1, x2 - x1) }; }
+                    }
+                });
+                return nearest;
+            };
+
+            const checkHit = (pos, el) => {
+                const tol = 10 / scale;
+                if (el.type === TOOLS.LINE || el.type === TOOLS.DIMENSION) {
+                    const {x1, y1, x2, y2} = el;
+                    const A = pos.x - x1; const B = pos.y - y1; const C = x2 - x1; const D = y2 - y1;
+                    const dot = A * C + B * D; const lenSq = C * C + D * D;
+                    let param = -1; if (lenSq !== 0) param = dot / lenSq;
+                    let xx, yy; if (param < 0) { xx = x1; yy = y1; } else if (param > 1) { xx = x2; yy = y2; } else { xx = x1 + param * C; yy = y1 + param * D; }
+                    return Math.sqrt((pos.x - xx)**2 + (pos.y - yy)**2) < tol;
+                } else if (el.type === TOOLS.RECTANGLE) {
+                    return (Math.abs(pos.x - el.x1) < tol || Math.abs(pos.x - el.x2) < tol) && (pos.y > Math.min(el.y1, el.y2) && pos.y < Math.max(el.y1, el.y2)) ||
+                           (Math.abs(pos.y - el.y1) < tol || Math.abs(pos.y - el.y2) < tol) && (pos.x > Math.min(el.x1, el.x2) && pos.x < Math.max(el.x1, el.x2));
+                } else if (el.type === TOOLS.CIRCLE || [TOOLS.VALVE, TOOLS.REGULATOR, TOOLS.REDUCER, TOOLS.TERMINAL, TOOLS.TEE].includes(el.type)) {
+                    const d = Math.sqrt((pos.x - el.x1)**2 + (pos.y - el.y1)**2); return d < (GRID_SIZE); 
+                } else if (el.type === TOOLS.TEXT || el.type === TOOLS.TRAMO_DATA) {
+                    return Math.abs(pos.x - el.x1) < 100 && Math.abs(pos.y - el.y1) < 20;
+                }
+                return false;
+            };
+
+            const handleMouseDown = (e) => {
+                if (contextMenu.visible) return;
+                const screenPos = { x: e.clientX - canvasRef.current.getBoundingClientRect().left, y: e.clientY - canvasRef.current.getBoundingClientRect().top };
+                let worldPos = screenToWorld(screenPos.x, screenPos.y);
+
+                if (e.button === 1 || tool === TOOLS.PAN) { setIsPanning(true); setLastMousePos(screenPos); return; }
+                
+                if (tool === TOOLS.SELECT) {
+                    const clickedElement = elements.slice().reverse().find(el => {
+                        const layer = layers.find(l => l.id === el.layerId);
+                        if (layer && !layer.visible) return false;
+                        return checkHit(worldPos, el);
+                    });
+                    if (clickedElement) {
+                        if (e.shiftKey) {
+                            if (selectedIds.includes(clickedElement.id)) {
+                                setSelectedIds(prev => prev.filter(id => id !== clickedElement.id));
+                            } else {
+                                setSelectedIds(prev => [...prev, clickedElement.id]);
+                            }
+                        } else {
+                            if (!selectedIds.includes(clickedElement.id)) {
+                                setSelectedIds([clickedElement.id]);
+                            }
+                            setIsDraggingSelected(true);
+                            setDragStartPos(worldPos);
+                        }
+                    } else {
+                        if (!e.shiftKey) setSelectedIds([]);
+                    }
+                    return;
+                }
+
+                if (snapPoint) worldPos = snapPoint; 
+
+                if (tool === TOOLS.TAG) { setContextMenu({ visible: false }); setContextMenu({ visible: true, x: e.clientX, y: e.clientY, worldX: worldPos.x, worldY: worldPos.y }); return; }
+                if (tool === TOOLS.DIMENSION) {
+                    if (dimensionStep === 0) { setCurrentElement({ id: Date.now(), type: TOOLS.DIMENSION, x1: worldPos.x, y1: worldPos.y, x2: worldPos.x, y2: worldPos.y, color: '#fbbf24', lineWidth: 1, layerId: activeLayer }); setDimensionStep(1); }
+                    else { setElements(prev => [...prev, currentElement]); setCurrentElement(null); setDimensionStep(0); }
+                    return;
+                }
+                if (tool === TOOLS.TEXT) { setTextPos(worldPos); setShowTextModal(true); return; }
+                if (tool === TOOLS.BEZIER) {
+                    if (bezierStep === 0) { setCurrentElement({ id: Date.now(), type: TOOLS.BEZIER, x1: worldPos.x, y1: worldPos.y, x2: worldPos.x, y2: worldPos.y, cx: worldPos.x, cy: worldPos.y, color, lineWidth, layerId: activeLayer }); setBezierStep(1); }
+                    else { setElements(prev => [...prev, currentElement]); setCurrentElement(null); setBezierStep(0); }
+                    return;
+                }
+                if ([TOOLS.VALVE, TOOLS.REGULATOR, TOOLS.REDUCER, TOOLS.TERMINAL, TOOLS.TEE].includes(tool)) {
+                    // Reset flip when placing new
+                    const combinedRot = snapRotation + flipRotation;
+                    setElements(prev => [...prev, { id: Date.now(), type: tool, x1: mouseWorldPos.x, y1: mouseWorldPos.y, x2: mouseWorldPos.x, y2: mouseWorldPos.y, color, lineWidth, rotation: combinedRot, anchor, layerId: activeLayer }]); 
+                    return;
+                }
+                // LINE / RECT / CIRCLE start
+                setCurrentElement({ id: Date.now(), type: tool, x1: worldPos.x, y1: worldPos.y, x2: worldPos.x, y2: worldPos.y, color, lineWidth, layerId: activeLayer });
+                if (tool === TOOLS.LINE) setDrawingLength(''); 
+            };
+
+            const handleMouseMove = (e) => {
+                const screenPos = { x: e.clientX - canvasRef.current.getBoundingClientRect().left, y: e.clientY - canvasRef.current.getBoundingClientRect().top };
+                const worldPos = screenToWorld(screenPos.x, screenPos.y);
+                if (isPanning) { setOffset(prev => ({ x: prev.x + (screenPos.x - lastMousePos.x), y: prev.y + (screenPos.y - lastMousePos.y) })); setLastMousePos(screenPos); setMouseWorldPos(worldPos); return; }
+                
+                if (isDraggingSelected) {
+                    const dx = worldPos.x - dragStartPos.x; const dy = worldPos.y - dragStartPos.y;
+                    setElements(prev => prev.map(el => {
+                        if (selectedIds.includes(el.id)) {
+                            let newEl = { ...el };
+                            if (newEl.x1 !== undefined) newEl.x1 += dx; if (newEl.y1 !== undefined) newEl.y1 += dy;
+                            if (newEl.x2 !== undefined) newEl.x2 += dx; if (newEl.y2 !== undefined) newEl.y2 += dy;
+                            if (newEl.cx !== undefined) newEl.cx += dx; if (newEl.cy !== undefined) newEl.cy += dy;
+                            return newEl;
+                        }
+                        return el;
+                    }));
+                    setDragStartPos(worldPos); return;
+                }
+
+                let finalPos = { ...worldPos };
+                let foundSnap = null; let foundGuide = null;
+
+                if ([TOOLS.LINE, TOOLS.RECTANGLE, TOOLS.DIMENSION, TOOLS.BEZIER].includes(tool)) {
+                    const endpoint = getNearestEndpoint(worldPos);
+                    if (endpoint) { foundSnap = endpoint; finalPos = endpoint; }
+                }
+
+                if (!foundSnap && tool === TOOLS.LINE && currentElement) {
+                    const startX = currentElement.x1; const startY = currentElement.y1;
+                    const dx = worldPos.x - startX; const dy = worldPos.y - startY;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist > 5) {
+                        const angle = Math.atan2(dy, dx);
+                        const snapAngles = [0, 30, 90, 150, 180, 210, 270, 330, -30, -90, -150, -210, -270, -330];
+                        for (let target of snapAngles) {
+                            const targetRad = target * (Math.PI / 180);
+                            let diff = Math.abs(angle - targetRad); if (diff > Math.PI) diff = 2 * Math.PI - diff;
+                            if (diff < 0.1) {
+                                const snapX = startX + dist * Math.cos(targetRad); const snapY = startY + dist * Math.sin(targetRad);
+                                finalPos = { x: snapX, y: snapY };
+                                foundGuide = { x1: startX, y1: startY, x2: startX + (dist + 10000) * Math.cos(targetRad), y2: startY + (dist + 10000) * Math.sin(targetRad) }; break;
+                            }
+                        }
+                    }
+                }
+                setSnapPoint(foundSnap); setGuideLine(foundGuide); setMouseWorldPos(finalPos);
+
+                if ([TOOLS.VALVE, TOOLS.REGULATOR, TOOLS.REDUCER, TOOLS.TERMINAL, TOOLS.TEE].includes(tool)) {
+                    const snapInfo = getNearestLine(worldPos);
+                    if (snapInfo) { setMouseWorldPos({ x: snapInfo.x, y: snapInfo.y }); setSnapRotation(snapInfo.angle); } else { setMouseWorldPos(worldPos); setSnapRotation(0); }
+                } 
+                if (tool === TOOLS.DIMENSION && currentElement && dimensionStep === 1) { setCurrentElement(prev => ({ ...prev, x2: finalPos.x, y2: finalPos.y })); }
+                if (tool === TOOLS.BEZIER && currentElement && bezierStep === 1) setCurrentElement(prev => ({ ...prev, x2: finalPos.x, y2: finalPos.y, cx: (prev.x1 + finalPos.x)/2, cy: (prev.y1 + finalPos.y)/2 }));
+                if (currentElement && [TOOLS.LINE, TOOLS.RECTANGLE, TOOLS.CIRCLE].includes(tool)) { setCurrentElement(prev => ({ ...prev, x2: finalPos.x, y2: finalPos.y })); }
+            };
+
+            const handleMouseUp = () => { 
+                if (isPanning) setIsPanning(false); 
+                else if (isDraggingSelected) setIsDraggingSelected(false); 
+                else if (![TOOLS.BEZIER, TOOLS.DIMENSION].includes(tool) && currentElement) { setElements(prev => [...prev, currentElement]); setCurrentElement(null); setGuideLine(null); setSnapPoint(null); } 
+            };
+            const handleWheel = (e) => { e.preventDefault(); const f = 1 + (0.1 * (e.deltaY < 0 ? 1 : -1)); let ns = Math.max(0.1, Math.min(scale * f, 10)); const r = canvasRef.current.getBoundingClientRect(); const mx = e.clientX - r.left; const my = e.clientY - r.top; setOffset({ x: mx - (mx - offset.x) * (ns / scale), y: my - (my - offset.y) * (ns / scale) }); setScale(ns); };
+            const handleContextMenu = (e) => { e.preventDefault(); const r = canvasRef.current.getBoundingClientRect(); setContextMenu({ visible: true, x: e.clientX, y: e.clientY, worldX: screenToWorld(e.clientX - r.left, e.clientY - r.top).x, worldY: screenToWorld(e.clientX - r.left, e.clientY - r.top).y }); };
+            const addText = () => { if (!textInput.trim()) { setShowTextModal(false); return; } setElements(prev => [...prev, { id: Date.now(), type: TOOLS.TEXT, x1: textPos.x, y1: textPos.y, text: textInput, color, lineWidth, layerId: activeLayer }]); setTextInput(''); setShowTextModal(false); };
+            
+            const exportPDF = (metadata) => {
+                try {
+                    setDownloadModal({ visible: false, type: null });
+                    if (!window.jspdf || elements.length === 0) return alert("Nada que exportar.");
+                    const visibleLayersIds = new Set(layers.filter(l => l.visible).map(l => l.id));
+                    const visibleElements = elements.filter(el => !el.layerId || visibleLayersIds.has(el.layerId));
+                    if (visibleElements.length === 0) return alert("No hay elementos visibles.");
+                    
+                    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                    visibleElements.forEach(el => { 
+                        const r = GRID_SIZE; 
+                        [el.x1, el.x2].forEach(p => { if(p!=null) { minX = Math.min(minX, p-r); maxX = Math.max(maxX, p+r); }}); 
+                        [el.y1, el.y2].forEach(p => { if(p!=null) { minY = Math.min(minY, p-r); maxY = Math.max(maxY, p+r); }}); 
+                        if(el.cx!=null) { minX = Math.min(minX, el.cx-r); maxX = Math.max(maxX, el.cx+r); } 
+                        if(el.cy!=null) { minY = Math.min(minY, el.cy-r); maxY = Math.max(maxY, el.cy+r); }
+                    });
+                    
+                    if (!isFinite(minX) || !isFinite(maxX)) { minX = 0; maxX = 800; minY = 0; maxY = 600; }
+                    const width = Math.max(100, maxX - minX + 100); 
+                    const height = Math.max(100, maxY - minY + 100);
+
+                    const tempCanvas = document.createElement('canvas');
+                    const MAX_DIM = 4000;
+                    const scaleFactor = Math.min(1, MAX_DIM / width, MAX_DIM / height);
+                    tempCanvas.width = width * scaleFactor;
+                    tempCanvas.height = height * scaleFactor;
+                    const ctx = tempCanvas.getContext('2d');
+                    
+                    ctx.scale(scaleFactor, scaleFactor);
+                    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, width, height);
+                    
+                    ctx.save();
+                    ctx.translate(-minX + 50, -minY + 50); 
+                    visibleElements.forEach(el => drawElement(ctx, el, false));
+                    ctx.restore();
+
+                    const { jsPDF } = window.jspdf; 
+                    const doc = new jsPDF('l', 'mm', 'a4');
+                    const pageW = 297, pageH = 210, margin = 10, headerH = 35;
+                    
+                    const imgData = tempCanvas.toDataURL('image/png');
+                    const availW = pageW - margin*2;
+                    const availH = pageH - margin*2 - headerH;
+                    const imgProps = doc.getImageProperties(imgData);
+                    const imgRatio = imgProps.width / imgProps.height;
+                    const pageRatio = availW / availH;
+                    let finalW, finalH;
+                    if (imgRatio > pageRatio) { finalW = availW; finalH = availW / imgRatio; } 
+                    else { finalH = availH; finalW = availH * imgRatio; }
+                    
+                    const ix = margin + (availW - finalW)/2;
+                    const iy = margin + (availH - finalH)/2;
+                    doc.addImage(imgData, 'PNG', ix, iy, finalW, finalH);
+
+                    const hy = pageH - margin - headerH;
+                    doc.setLineWidth(0.5); doc.setDrawColor(0); doc.setFillColor(245, 245, 245); doc.rect(margin, hy, availW, headerH, 'FD');
+                    doc.line(margin + availW/2, hy, margin + availW/2, hy+headerH);
+
+                    doc.setFontSize(10);
+                    doc.setFont("helvetica", "bold"); doc.text("PROYECTO:", margin+5, hy+8);
+                    doc.setFont("helvetica", "normal"); doc.text(metadata.project || "-", margin+30, hy+8);
+
+                    doc.setFont("helvetica", "bold"); doc.text("CLIENTE:", margin+5, hy+12);
+                    doc.setFont("helvetica", "normal"); doc.text(metadata.client || "-", margin+30, hy+12);
+
+                    doc.setFont("helvetica", "bold"); doc.text("UBICACIÓN:", margin+5, hy+16);
+                    doc.setFont("helvetica", "normal"); doc.text(metadata.location || "-", margin+30, hy+16);
+
+                    const col2 = margin + availW/2 + 5;
+                    doc.setFont("helvetica", "bold"); doc.text("DIBUJANTE:", col2, hy+8);
+                    doc.setFont("helvetica", "normal"); doc.text(metadata.draftsman || "-", col2+25, hy+8);
+
+                    doc.setFont("helvetica", "bold"); doc.text("FECHA:", col2, hy+12);
+                    doc.setFont("helvetica", "normal"); doc.text(metadata.date || "-", col2+25, hy+12);
+
+                    doc.setFont("helvetica", "bold"); doc.text("ID:", col2, hy+16);
+                    doc.setFont("helvetica", "normal"); doc.text(metadata.id || "-", col2+25, hy+16);
+
+                    const tramos = visibleElements.filter(el => el.type === TOOLS.TRAMO_DATA && el.tagMetadata);
+                    if (tramos.length > 0) {
+                        doc.addPage();
+                        doc.setFontSize(14); doc.setFont("helvetica", "bold"); doc.text("TABLA DE TRAMOS", margin, margin+10);
+                        let ty = margin+20;
+                        const cols = ["ID", "Longitud", "Diámetro", "Real (mm)", "Material", "Carga", "Capa"];
+                        const colW = [20, 35, 30, 30, 40, 40, 40];
+                        doc.setFontSize(10); doc.setFillColor(220);
+                        let tx = margin;
+                        cols.forEach((c, i) => { doc.rect(tx, ty, colW[i], 8, 'FD'); doc.text(c, tx+2, ty+5); tx += colW[i]; });
+                        ty += 8;
+                        doc.setFont("helvetica", "normal");
+                        tramos.forEach(t => {
+                            const m = t.tagMetadata;
+                            const layer = layers.find(l => l.id === t.layerId);
+                            const real = getRealDiameter(m.diameter, m.material);
+                            const row = [m.id, `${m.length} ${m.lengthUnit}`, m.diameter, real, m.material, `${m.load} ${m.loadUnit}`, (layer ? layer.name : 'Def')];
+                            tx = margin;
+                            row.forEach((val, i) => { doc.rect(tx, ty, colW[i], 8); doc.text(String(val), tx+2, ty+5); tx += colW[i]; });
+                            ty += 8;
+                        });
+                    }
+
+                    doc.save(`Plano_${metadata.id}.pdf`);
+                } catch (e) { alert("Error PDF: " + e.message); }
+            };
+
+            const exportExcel = (metadata) => {
+                setDownloadModal({ visible: false, type: null });
+                if (!window.XLSX || elements.length === 0) return alert("Nada que exportar.");
+                
+                const metaRows = [
+                    ['DATOS DEL PROYECTO'], ['Proyecto:', metadata.project], ['Cliente:', metadata.client], ['Ubicación:', metadata.location], ['Dibujante:', metadata.draftsman], ['Fecha:', metadata.date], ['ID Plano:', metadata.id], []
+                ];
+
+                const headers = ['ID Tramo', 'Longitud', 'Unidad Longitud', 'Diámetro Nominal', 'Diámetro Real (mm)', 'Material', 'Carga / Caudal', 'Unidad Carga', 'Capa'];
+                const data = [...metaRows, headers];
+                
+                let tramoFound = false;
+                elements.forEach((el) => {
+                    if (el.type === TOOLS.TRAMO_DATA && el.tagMetadata) {
+                        const layer = layers.find(l => l.id === el.layerId); if (layer && !layer.visible) return;
+                        const m = el.tagMetadata;
+                        const realDia = getRealDiameter(m.diameter, m.material);
+                        data.push([m.id, m.length, m.lengthUnit, m.diameter, realDia, m.material, m.load, m.loadUnit, layer ? layer.name : 'Default']);
+                        tramoFound = true;
+                    }
+                });
+                
+                if (!tramoFound) alert("Nota: El Excel solo contiene datos del proyecto (sin tramos).");
+                const ws = XLSX.utils.aoa_to_sheet(data); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Datos"); XLSX.writeFile(wb, `Datos_${metadata.id}.xlsx`);
+            };
+            
+            const undo = () => setElements(prev => prev.slice(0, -1));
+            const clearCanvas = () => window.confirm('¿Borrar todo?') && setElements([]);
+            const openTagModal = (type) => { setTagModal({ visible: true, type, x: contextMenu.worldX, y: contextMenu.worldY }); setContextMenu({ ...contextMenu, visible: false }); };
+            const handleAddTag = (tagData) => { 
+                if (tagModal.editData) {
+                     setElements(prev => prev.map(el => el.id === tagModal.editData.id ? { ...el, ...tagData } : el));
+                } else {
+                    setElements(prev => [...prev, { id: Date.now(), type: tagData.type || TOOLS.TEXT, x1: tagModal.x, y1: tagModal.y, text: tagData.text, color: tagData.color, fontSize: tagData.scale * GRID_SIZE, lineWidth: 1, layerId: activeLayer, tagMetadata: tagData.tagMetadata }]); 
+                }
+                setTagModal({ ...tagModal, visible: false, editData: null }); 
+            };
+            const addLayer = () => { const newId = `layer-${Date.now()}`; setLayers(p => [...p, { id: newId, name: `Capa ${p.length}`, visible: true }]); setActiveLayer(newId); };
+            const toggleLayerVisibility = (id) => setLayers(p => p.map(l => l.id === id ? { ...l, visible: !l.visible } : l));
+            const deleteLayer = (id) => { if (layers.length <= 1) return alert("Mínimo una capa."); if(!confirm("Se borrarán los elementos. ¿Seguro?")) return; setElements(p => p.filter(e => e.layerId !== id)); const rem = layers.filter(l => l.id !== id); setLayers(rem); if(activeLayer === id) setActiveLayer(rem[0].id); };
+            const changeSelectionColor = (newColor) => { setElements(prev => prev.map(el => selectedIds.includes(el.id) ? { ...el, color: newColor } : el)); };
+            const changeSelectionLayer = (newLayerId) => { setElements(prev => prev.map(el => selectedIds.includes(el.id) ? { ...el, layerId: newLayerId } : el)); };
+            const changeSelectionLineWidth = (newWidth) => { setElements(prev => prev.map(el => selectedIds.includes(el.id) ? { ...el, lineWidth: Number(newWidth) } : el)); };
+            const updateSelectedCoord = (prop, val) => { const num = parseFloat(val); if (isNaN(num)) return; setElements(prev => prev.map(el => selectedIds.includes(el.id) ? { ...el, [prop]: num } : el)); };
+            const updateSelectedText = (val) => { setElements(prev => prev.map(el => selectedIds.includes(el.id) ? { ...el, text: val } : el)); };
+            const deleteSelection = () => { setElements(prev => prev.filter(el => !selectedIds.includes(el.id))); setSelectedIds([]); };
+            const handleEditTramo = () => { const el = elements.find(e => e.id === selectedIds[0]); if (el && el.tagMetadata) { setTagModal({ visible: true, type: el.tagMetadata.type === 'Punto' ? TAG_TYPES.PUNTO : TAG_TYPES.TRAMO_COMPLETO, x: el.x1, y: el.y1, editData: el, initialData: el }); } };
+
+            return (
+                <div className="flex flex-col h-screen bg-gray-900 text-gray-200 overflow-hidden font-sans" onContextMenu={(e) => e.preventDefault()}>
+                    {/* Header */}
+                    <header className="h-14 bg-gray-800 border-b border-gray-700 flex items-center justify-between px-4 shadow-md z-10 shrink-0">
+                        <div className="flex items-center gap-2">
+                            <Icon path={ICONS.Settings2} className="text-blue-400" />
+                            <h1 className="text-xl font-bold tracking-wider text-white hidden md:block">INGENIERO<span className="text-blue-500">CAD</span></h1>
+                            <div className="flex items-center gap-1 ml-4 bg-gray-700 p-1 rounded-lg">
+                                {PALETTE.map(p => (<button key={p.color} onClick={() => setColor(p.color)} className={`w-5 h-5 rounded-full border border-gray-600 transition hover:scale-110 ${color === p.color ? 'ring-2 ring-white' : ''}`} style={{ backgroundColor: p.color }} title={p.name} />))}
+                                <div className="w-px h-5 bg-gray-600 mx-1"></div>
+                                <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer bg-transparent border-none" title="Color personalizado" />
+                            </div>
+                            {[TOOLS.VALVE, TOOLS.REGULATOR, TOOLS.REDUCER, TOOLS.TERMINAL, TOOLS.TEE].includes(tool) && (
+                                <div className="flex items-center gap-2 ml-4 bg-gray-700 px-2 py-1 rounded-lg border border-blue-500/30">
+                                    <span className="text-xs text-blue-300 font-bold uppercase">Acople:</span>
+                                    <select value={anchor} onChange={(e) => setAnchor(e.target.value)} className="bg-gray-800 text-xs border border-gray-600 rounded px-1 py-1 text-white outline-none">
+                                        {Object.values(ANCHORS).map(opt => (<option key={opt.id} value={opt.id}>{opt.label}</option>))}
+                                    </select>
+                                </div>
+                            )}
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <button onClick={() => setShowHelp(true)} className="p-2 hover:bg-gray-700 rounded-lg text-blue-400 hover:text-white transition" title="Manual de Uso"><Icon path={ICONS.HelpCircle} /></button>
+                            <button onClick={() => setShowLayers(!showLayers)} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition ${showLayers ? 'bg-blue-600 text-white' : 'bg-gray-700 hover:bg-gray-600'}`}><Icon path={ICONS.Layers} size={16} /> <span className="text-xs font-bold">Capas</span></button>
+                            <div className="flex bg-gray-700 rounded-lg p-0.5">{Object.keys(UNITS).map(k => (<button key={k} onClick={() => setUnit(k)} className={`px-2 py-1 text-[10px] font-bold rounded transition ${unit === k ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'}`}>{k}</button>))}</div>
+                            <select value={lineWidth} onChange={(e) => setLineWidth(Number(e.target.value))} className="bg-gray-700 text-xs border border-gray-600 rounded px-2 py-1.5 text-white outline-none">
+                                {LINE_WIDTHS.map(w => <option key={w} value={w}>{w}px</option>)}
+                            </select>
+                            <button onClick={undo} className="p-2 hover:bg-gray-700 rounded-lg transition"><Icon path={ICONS.Undo2} /></button>
+                            <button onClick={clearCanvas} className="p-2 hover:bg-red-900/50 text-red-400 rounded-lg transition"><Icon path={ICONS.Trash2} /></button>
+                            <div className="text-gray-400 text-xs mr-1">Limpiar</div>
+                            <button onClick={() => setDownloadModal({ visible: true, type: 'PDF' })} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg transition font-medium" title="Exportar PDF"><Icon path={ICONS.Download} size={16} /></button>
+                            <button onClick={() => setDownloadModal({ visible: true, type: 'Excel' })} className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg transition font-medium" title="Exportar Excel"><Icon path={ICONS.FileSpreadsheet} size={16} /></button>
+                        </div>
+                    </header>
+
+                    {/* ... (Resto del Layout, Sidebar, Canvas, Modales existentes) ... */}
+                    <div className="flex flex-1 overflow-hidden relative">
+                        <aside className="w-16 bg-gray-800 border-r border-gray-700 flex flex-col items-center py-4 gap-3 overflow-y-auto shrink-0 z-10">
+                            <ToolButton icon={ICONS.PlusSquare} active={showLibrary} onClick={() => setShowLibrary(true)} label="Acoplar" highlight />
+                            
+                            <div className="w-8 h-px bg-gray-700 my-1"></div>
+                            
+                            <ToolButton icon={ICONS.Tag} active={tool === TOOLS.TAG} onClick={() => setTool(TOOLS.TAG)} label="Etiqueta" />
+                            <ToolButton icon={ICONS.Ruler} active={tool === TOOLS.DIMENSION} onClick={() => setTool(TOOLS.DIMENSION)} label="Acotado" />
+                            
+                            <div className="w-8 h-px bg-gray-700 my-1"></div>
+
+                            <ToolButton icon={ICONS.MousePointer2} active={tool === TOOLS.SELECT} onClick={() => setTool(TOOLS.SELECT)} label="Seleccionar" />
+                            <ToolButton icon={ICONS.Move} active={tool === TOOLS.PAN} onClick={() => setTool(TOOLS.PAN)} label="Pan" />
+                            <ToolButton icon={ICONS.Minus} active={tool === TOOLS.LINE} onClick={() => setTool(TOOLS.LINE)} label="Línea" />
+                            <ToolButton icon={ICONS.Spline} active={tool === TOOLS.BEZIER} onClick={() => setTool(TOOLS.BEZIER)} label="Curva" />
+                            <ToolButton icon={ICONS.Square} active={tool === TOOLS.RECTANGLE} onClick={() => setTool(TOOLS.RECTANGLE)} label="Rectángulo" />
+                            <ToolButton icon={ICONS.Circle} active={tool === TOOLS.CIRCLE} onClick={() => setTool(TOOLS.CIRCLE)} label="Círculo" />
+                            <ToolButton icon={ICONS.Type} active={tool === TOOLS.TEXT} onClick={() => setTool(TOOLS.TEXT)} label="Texto" />
+                        </aside>
+
+                        <main ref={containerRef} className="flex-1 relative bg-[#1a1a1a] cursor-crosshair overflow-hidden">
+                            <canvas ref={canvasRef} onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onWheel={handleWheel} onContextMenu={handleContextMenu} className="block touch-none" style={{ backgroundColor: '#1e1e1e' }} />
+                            
+                            {/* Panel Propiedades de Selección */}
+                            {selectedIds.length > 0 && (
+                                <div className="absolute top-4 right-16 w-60 glass-panel rounded-xl p-4 shadow-2xl flex flex-col gap-3 fade-in z-20 overflow-y-auto max-h-[80vh]">
+                                    <div className="flex justify-between items-center border-b border-gray-600 pb-2">
+                                        <h3 className="text-sm font-bold text-white flex items-center gap-2"><Icon path={ICONS.Edit2} size={16}/> Propiedades ({selectedIds.length})</h3>
+                                        <button onClick={deleteSelection} className="p-1 bg-red-600 hover:bg-red-500 rounded text-white" title="Eliminar Selección"><Icon path={ICONS.Trash2} size={14}/></button>
+                                    </div>
+                                    
+                                    <div className="space-y-3 mt-2">
+                                        <div>
+                                            <label className="text-xs text-gray-400 mb-1 block">Color</label>
+                                            <div className="flex gap-1 flex-wrap">
+                                                {PALETTE.map(p => (<button key={p.color} onClick={() => changeSelectionColor(p.color)} className="w-4 h-4 rounded-full border border-gray-600 hover:scale-110 transition" style={{ backgroundColor: p.color }} title={p.name} />))}
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="text-xs text-gray-400 mb-1 block">Capa</label>
+                                            <select onChange={(e) => changeSelectionLayer(e.target.value)} className="prop-input">
+                                                <option value="">-- Mover a Capa --</option>
+                                                {layers.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+                                            </select>
+                                        </div>
+                                        
+                                        <div>
+                                            <label className="text-xs text-gray-400 mb-1 block">Grosor de Línea</label>
+                                            <select onChange={(e) => changeSelectionLineWidth(e.target.value)} className="prop-input" defaultValue={elements.find(el => el.id === selectedIds[0])?.lineWidth || 2}>
+                                                {LINE_WIDTHS.map(w => <option key={w} value={w}>{w}px</option>)}
+                                            </select>
+                                        </div>
+
+                                        {selectedIds.length === 1 && (() => {
+                                            const el = elements.find(e => e.id === selectedIds[0]);
+                                            return (
+                                                <div className="pt-2 border-t border-gray-600 space-y-2">
+                                                    {el.x1 !== undefined && (
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                            <div><span className="prop-label">X1</span><input type="number" className="prop-input" value={el.x1.toFixed(1)} onChange={(e) => updateSelectedCoord('x1', e.target.value)} /></div>
+                                                            <div><span className="prop-label">Y1</span><input type="number" className="prop-input" value={el.y1.toFixed(1)} onChange={(e) => updateSelectedCoord('y1', e.target.value)} /></div>
+                                                        </div>
+                                                    )}
+                                                    {el.x2 !== undefined && (
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                            <div><span className="prop-label">X2</span><input type="number" className="prop-input" value={el.x2.toFixed(1)} onChange={(e) => updateSelectedCoord('x2', e.target.value)} /></div>
+                                                            <div><span className="prop-label">Y2</span><input type="number" className="prop-input" value={el.y2.toFixed(1)} onChange={(e) => updateSelectedCoord('y2', e.target.value)} /></div>
+                                                        </div>
+                                                    )}
+                                                    {el.type === TOOLS.TEXT && (
+                                                        <div><span className="prop-label">Contenido Texto</span><input type="text" className="prop-input" value={el.text} onChange={(e) => updateSelectedText(e.target.value)} /></div>
+                                                    )}
+                                                    {(el.type === TOOLS.TRAMO_DATA || el.type === TOOLS.TEXT && el.tagMetadata) && (
+                                                        <button onClick={handleEditTramo} className="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white text-xs py-1 rounded">Editar Datos Técnicos</button>
+                                                    )}
+                                                </div>
+                                            );
+                                        })()}
+                                    </div>
+                                </div>
+                            )}
+
+                            {showLayers && (
+                                <div className="absolute top-4 right-4 w-64 glass-panel rounded-xl p-4 shadow-2xl flex flex-col gap-3 fade-in z-20">
+                                    <div className="flex justify-between items-center border-b border-gray-600 pb-2">
+                                        <h3 className="text-sm font-bold text-white flex items-center gap-2"><Icon path={ICONS.Layers} size={16}/> Capas</h3>
+                                        <button onClick={addLayer} className="p-1 bg-blue-600 hover:bg-blue-500 rounded text-white" title="Nueva Capa"><Icon path={ICONS.Plus} size={14}/></button>
+                                    </div>
+                                    <div className="flex flex-col gap-1 max-h-60 overflow-y-auto">
+                                        {layers.map(layer => (
+                                            <div key={layer.id} onClick={() => setActiveLayer(layer.id)} className={`flex items-center justify-between p-2 rounded cursor-pointer transition ${activeLayer === layer.id ? 'bg-blue-900/50 border border-blue-500/50' : 'hover:bg-gray-700/50 border border-transparent'}`}>
+                                                <span className={`text-xs ${activeLayer === layer.id ? 'text-white font-bold' : 'text-gray-400'}`}>{layer.name}</span>
+                                                <div className="flex gap-1">
+                                                    <button onClick={(e) => { e.stopPropagation(); toggleLayerVisibility(layer.id); }} className={`p-1 rounded ${layer.visible ? 'text-gray-300 hover:text-white' : 'text-gray-600'}`}><Icon path={layer.visible ? ICONS.Eye : ICONS.EyeOff} size={14} /></button>
+                                                    <button onClick={(e) => { e.stopPropagation(); deleteLayer(layer.id); }} className="p-1 text-gray-500 hover:text-red-400 rounded"><Icon path={ICONS.Trash2} size={14} /></button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                            <div className="absolute bottom-4 right-4 bg-gray-800/80 p-2 rounded text-xs text-gray-300 font-mono pointer-events-none border border-gray-600">
+                                {snapRotation !== 0 && <span className="text-yellow-400 font-bold mr-2">⚡ SNAP</span>}
+                                {Math.round(mouseWorldPos.x)},{Math.round(mouseWorldPos.y)}
+                            </div>
+                            {contextMenu.visible && (
+                                <div className="context-menu" style={{ top: contextMenu.y, left: contextMenu.x }}>
+                                    <div className="px-4 py-2 text-xs font-bold text-gray-500 border-b border-gray-700 mb-1">DATOS TÉCNICOS</div>
+                                    {Object.values(TAG_TYPES).map(type => (<div key={type} className="context-menu-item" onClick={() => openTagModal(type)}><Icon path={type === TAG_TYPES.PUNTO ? ICONS.MousePointer2 : ICONS.TableProperties} size={14} /> {type}</div>))}
+                                </div>
+                            )}
+                        </main>
+                    </div>
+
+                    <TagModal visible={tagModal.visible} type={tagModal.type} x={tagModal.x} y={tagModal.y} onClose={() => setTagModal({...tagModal, visible: false, editData: null})} onAdd={handleAddTag} initialData={tagModal.editData} />
+                    <DownloadModal visible={downloadModal.visible} type={downloadModal.type} onClose={() => setDownloadModal({ ...downloadModal, visible: false })} onConfirm={(data) => downloadModal.type === 'PDF' ? exportPDF(data) : exportExcel(data)} />
+                    {showLibrary && (
+                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-50 fade-in" onClick={() => setShowLibrary(false)}>
+                            <div className="bg-gray-800 p-6 rounded-xl shadow-2xl border border-gray-600 w-[500px] max-w-full m-4" onClick={e => e.stopPropagation()}>
+                                <div className="flex justify-between items-center mb-6">
+                                    <h3 className="text-xl font-bold text-white flex items-center gap-2"><Icon path={ICONS.PlusSquare} className="text-blue-500"/> Librería</h3>
+                                    <button onClick={() => setShowLibrary(false)} className="text-gray-400 hover:text-white">✕</button>
+                                </div>
+                                <div className="grid grid-cols-3 gap-4">
+                                    <LibItem label="Válvula" icon={ICONS.Valve} onClick={() => { setTool(TOOLS.VALVE); setShowLibrary(false); }} />
+                                    <LibItem label="Regulador" icon={ICONS.Regulator} onClick={() => { setTool(TOOLS.REGULATOR); setShowLibrary(false); }} />
+                                    <LibItem label="Reducción" icon={ICONS.ReducerIcon} onClick={() => { setTool(TOOLS.REDUCER); setShowLibrary(false); }} />
+                                    <LibItem label="Tee" icon={ICONS.TeeIcon} onClick={() => { setTool(TOOLS.TEE); setShowLibrary(false); }} />
+                                    <LibItem label="Terminal" icon={ICONS.TermIcon} onClick={() => { setTool(TOOLS.TERMINAL); setShowLibrary(false); }} />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    {showTextModal && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-50">
+                            <div className="bg-gray-800 p-6 rounded-lg shadow-xl border border-gray-600 w-80">
+                                <h3 className="text-lg font-bold mb-4 text-white">Texto</h3>
+                                <input autoFocus type="text" value={textInput} onChange={(e) => setTextInput(e.target.value)} className="w-full bg-gray-700 border border-gray-600 text-white rounded p-2 mb-4 outline-none focus:ring-2 focus:ring-blue-500" onKeyDown={(e) => e.key === 'Enter' && addText()} />
+                                <div className="flex justify-end gap-2">
+                                    <button onClick={() => setShowTextModal(false)} className="px-4 py-2 text-gray-400 hover:text-white">Cancelar</button>
+                                    <button onClick={addText} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">Aceptar</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    {showHelp && (
+                        <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-[200] fade-in" onClick={() => setShowHelp(false)}>
+                            <div className="bg-gray-800 w-[700px] h-[80vh] rounded-xl shadow-2xl border border-gray-600 flex flex-col" onClick={e => e.stopPropagation()}>
+                                <div className="flex justify-between items-center p-6 border-b border-gray-700 bg-gray-900/50 rounded-t-xl">
+                                    <h2 className="text-2xl font-bold text-white flex items-center gap-3"><Icon path={ICONS.HelpCircle} className="text-blue-500" size={32} /> Manual de Usuario</h2>
+                                    <button onClick={() => setShowHelp(false)} className="text-gray-400 hover:text-white hover:bg-gray-700 p-2 rounded-full transition">✕</button>
+                                </div>
+                                <div className="flex-1 overflow-y-auto p-8 space-y-8 text-gray-300">
+                                    <section>
+                                        <h3 className="text-lg font-bold text-blue-400 mb-4 flex items-center gap-2 pb-2 border-b border-gray-700">
+                                            <Icon path={ICONS.BookOpen} size={20}/> 1. Introducción
+                                        </h3>
+                                        <p className="text-sm mb-4">
+                                            Bienvenido a <strong>IngenieroCAD</strong>, una herramienta web especializada para el diseño rápido de diagramas de tuberías e instrumentación (P&ID) y planos isométricos básicos.
+                                        </p>
+                                    </section>
+                                    <section>
+                                        <h3 className="text-lg font-bold text-green-400 mb-4 flex items-center gap-2 pb-2 border-b border-gray-700">
+                                            <Icon path={ICONS.Ruler} size={20}/> 2. Dibujo y Precisión
+                                        </h3>
+                                        <div className="space-y-4 text-sm">
+                                            <div className="bg-gray-700/30 p-3 rounded border-l-4 border-yellow-500">
+                                                <strong>Entrada Dinámica de Longitud:</strong>
+                                                <br/>Al dibujar una línea, verás una etiqueta flotante junto al cursor mostrando la longitud actual. Para dibujar con precisión exacta, simplemente <strong>escribe el número con tu teclado</strong> (la etiqueta se pondrá verde) y presiona <strong>Enter</strong>.
+                                            </div>
+                                            <ul className="list-disc pl-5 text-gray-400 space-y-2">
+                                                <li><strong>Rastreo Polar:</strong> Guía verde punteada automática en ángulos estándar (0, 90, 30, 150...).</li>
+                                                <li><strong>Snap a Puntos Finales:</strong> El cursor se pega magnéticamente (cuadro verde) a los extremos de líneas existentes.</li>
+                                                <li><strong>Grosores de Línea:</strong> Selecciona en la barra superior grosores desde 0.1px hasta 6px.</li>
+                                            </ul>
+                                        </div>
+                                    </section>
+                                    <section>
+                                        <h3 className="text-lg font-bold text-yellow-400 mb-4 flex items-center gap-2 pb-2 border-b border-gray-700">
+                                            <Icon path={ICONS.Tag} size={20}/> 3. Datos y Etiquetas
+                                        </h3>
+                                        <p className="text-sm mb-4">
+                                            Usa el menú contextual (click derecho) o el botón de etiqueta para insertar <strong>Datos de Tramo</strong>. Esto agrupa ID, Longitud, Diámetro, Material y Carga en un solo bloque visual.
+                                        </p>
+                                    </section>
+                                    <section>
+                                        <h3 className="text-lg font-bold text-purple-400 mb-4 flex items-center gap-2 pb-2 border-b border-gray-700">
+                                            <Icon path={ICONS.FileSpreadsheet} size={20}/> 4. Exportación
+                                        </h3>
+                                        <div className="space-y-4 text-sm">
+                                            <p>
+                                                Al exportar a <strong>Excel</strong>, el sistema genera una tabla estructurada ideal para memorias de cálculo. Además, calcula automáticamente el <strong>Diámetro Real Interno</strong> en mm según el material seleccionado (Acero, Cobre, PEAD, etc.).
+                                            </p>
+                                        </div>
+                                    </section>
+                                </div>
+                                <div className="p-4 bg-gray-900/50 rounded-b-xl border-t border-gray-700 text-center"><button onClick={() => setShowHelp(false)} className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium">Entendido</button></div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const ToolButton = ({ icon, active, onClick, label, disabled, highlight }) => (
+            <button onClick={onClick} disabled={disabled} title={label} className={`p-3 rounded-xl transition-all duration-200 group relative flex items-center justify-center ${active ? 'bg-blue-600 text-white shadow-lg' : highlight ? 'bg-gray-700 text-blue-400 hover:bg-gray-600' : 'text-gray-400 hover:bg-gray-700 hover:text-white'} ${disabled ? 'opacity-30 cursor-not-allowed' : ''}`}>
+                <Icon path={icon} />
+                <span className="absolute left-14 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-50 border border-gray-700">{label}</span>
+            </button>
+        );
+
+        const LibItem = ({ label, icon, onClick }) => (
+            <button onClick={onClick} className="flex flex-col items-center justify-center p-4 bg-gray-700 hover:bg-gray-600 rounded-lg border border-gray-600 hover:border-blue-500 transition group">
+                <div className="text-gray-300 group-hover:text-blue-400 mb-2"><Icon path={icon} size={32} /></div>
+                <span className="text-sm text-gray-200 font-medium">{label}</span>
+            </button>
+        );
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
