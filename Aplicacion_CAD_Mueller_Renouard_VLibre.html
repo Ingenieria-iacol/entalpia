@@ -89,7 +89,8 @@
             Regulator: <React.Fragment><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="5" /></React.Fragment>,
             TeeIcon: <path d="M12 2v20M2 12h20" />, 
             ReducerIcon: <path d="M4 20l16-8L4 4z" />,
-            TermIcon: <circle cx="12" cy="12" r="8" />
+            TermIcon: <circle cx="12" cy="12" r="8" />,
+            RotateCw: <React.Fragment><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></React.Fragment>
         };
 
         const GRID_SIZE = 40; 
@@ -103,7 +104,7 @@
 
         const UNITS = { M: { label: 'Metros (m)', factor: 1 }, CM: { label: 'Centímetros (cm)', factor: 100 }, MM: { label: 'Milímetros (mm)', factor: 1000 } };
         const ANCHORS = { CENTER: { id: 'center', label: 'Centro' }, TOP: { id: 'top', label: 'Extremo Sup / Inicio' }, BOTTOM: { id: 'bottom', label: 'Extremo Inf / Fin' } };
-        const PALETTE = [ { color: '#ffffff', name: 'Blanco' }, { color: '#9ca3af', name: 'Gris' }, { color: '#ef4444', name: 'Rojo' }, { color: '#f97316', name: 'Naranja' }, { color: '#eab308', name: 'Amarillo' }, { color: '#22c55e', name: 'Verde' }, { color: '#3b82f6', name: 'Azul' }, { color: '#a855f7', name: 'Violeta' } ];
+        const PALETTE = [ { color: '#ffffff', name: 'Blanco (Base)' }, { color: '#9ca3af', name: 'Gris (Estructura)' }, { color: '#ef4444', name: 'Rojo (Incendio/Seguridad)' }, { color: '#f97316', name: 'Naranja (Tóxico)' }, { color: '#eab308', name: 'Amarillo (Gases/Inflamable)' }, { color: '#22c55e', name: 'Verde (Agua)' }, { color: '#3b82f6', name: 'Azul (Aire)' }, { color: '#a855f7', name: 'Violeta (Ácidos)' } ];
         const TAG_TYPES = { TRAMO_COMPLETO: 'Datos de Tramo', PUNTO: 'Punto / Nodo' };
         
         const MATERIALS = ['Ag', 'Ac', 'Cu Flex', 'Cu Rig', 'Multicapa', 'PEAD'];
@@ -119,11 +120,8 @@
         };
 
         const getRealDiameter = (nominal, material) => {
-            if (DIAMETER_DB[material] && DIAMETER_DB[material][nominal]) {
-                return DIAMETER_DB[material][nominal];
-            }
-            const numeric = parseFloat(nominal);
-            return isNaN(numeric) ? 0 : (numeric * 25.4).toFixed(2);
+            if (DIAMETER_DB[material] && DIAMETER_DB[material][nominal]) return DIAMETER_DB[material][nominal];
+            const numeric = parseFloat(nominal); return isNaN(numeric) ? 0 : (numeric * 25.4).toFixed(2);
         };
 
         const LOAD_UNITS = ['m³/h', 'BTU/h', 'kW', 'L/min'];
@@ -247,11 +245,9 @@
             const [drawingLength, setDrawingLength] = useState('');
             const [isDraggingSelected, setIsDraggingSelected] = useState(false);
             const [dragStartPos, setDragStartPos] = useState({ x: 0, y: 0 });
-            
-            // Rotation for current placement (Flip state) - Stepped by 30 degrees
             const [flipRotation, setFlipRotation] = useState(0);
+            const [branchOffsetIndex, setBranchOffsetIndex] = useState(0); // For Tee
 
-            // ESTADOS DE PROPIEDADES DE LÍNEA ACTUALES
             const [currentMaterial, setCurrentMaterial] = useState(MATERIALS[0]);
             const [currentDiameter, setCurrentDiameter] = useState(DIAMETERS[0]);
 
@@ -271,9 +267,12 @@
                         if (currentElement && tool === TOOLS.LINE && drawingLength.length > 0) { e.preventDefault(); setDrawingLength(prev => prev.slice(0, -1)); return; }
                         if (selectedIds.length > 0) { setElements(prev => prev.filter(el => !selectedIds.includes(el.id))); setSelectedIds([]); }
                     }
-                    if ((e.key === 'r' || e.key === 'R') && !currentElement && [TOOLS.VALVE, TOOLS.REGULATOR, TOOLS.REDUCER, TOOLS.TERMINAL, TOOLS.TEE].includes(tool)) {
-                        // Usar Math.PI / 6 (30 grados)
-                        setFlipRotation(prev => (prev + Math.PI / 6) % (2 * Math.PI));
+                    if ((e.key === 'r' || e.key === 'R') && !currentElement) {
+                        if (tool === TOOLS.TEE) {
+                            setBranchOffsetIndex(prev => (prev + 1) % 6);
+                        } else if ([TOOLS.VALVE, TOOLS.REGULATOR, TOOLS.REDUCER, TOOLS.TERMINAL].includes(tool)) {
+                            setFlipRotation(prev => (prev + Math.PI / 6) % (2 * Math.PI));
+                        }
                     }
                     if (currentElement && tool === TOOLS.LINE) {
                         if ((e.key >= '0' && e.key <= '9') || e.key === '.') { setDrawingLength(prev => prev + e.key); } 
@@ -291,7 +290,7 @@
                     }
                 };
                 window.addEventListener('keydown', handleKeyDown); return () => window.removeEventListener('keydown', handleKeyDown);
-            }, [selectedIds, currentElement, tool, drawingLength, mouseWorldPos, flipRotation]);
+            }, [selectedIds, currentElement, tool, drawingLength, mouseWorldPos, flipRotation, branchOffsetIndex]);
 
             useEffect(() => {
                 const canvas = canvasRef.current; const ctx = canvas.getContext('2d'); const { width, height } = canvasSize;
@@ -323,11 +322,11 @@
                 }
                 else if ([TOOLS.VALVE, TOOLS.REGULATOR, TOOLS.REDUCER, TOOLS.TERMINAL, TOOLS.TEE].includes(tool)) {
                     const combinedRot = snapRotation + flipRotation;
-                    drawElement(ctx, { type: tool, x1: mouseWorldPos.x, y1: mouseWorldPos.y, color: color + '80', lineWidth, rotation: combinedRot, anchor }, false);
+                    drawElement(ctx, { type: tool, x1: mouseWorldPos.x, y1: mouseWorldPos.y, color: color + '80', lineWidth, rotation: combinedRot, anchor, branchOffsetIndex }, false);
                     ctx.save(); ctx.fillStyle = '#9ca3af'; ctx.font = `${10/scale}px sans-serif`; ctx.fillText("[R] Rotar", mouseWorldPos.x + 20/scale, mouseWorldPos.y + 20/scale); ctx.restore();
                 }
                 ctx.restore();
-            }, [elements, currentElement, scale, offset, canvasSize, unit, mouseWorldPos, snapRotation, flipRotation, color, lineWidth, tool, anchor, layers, guideLine, snapPoint, selectedIds, drawingLength]);
+            }, [elements, currentElement, scale, offset, canvasSize, unit, mouseWorldPos, snapRotation, flipRotation, branchOffsetIndex, color, lineWidth, tool, anchor, layers, guideLine, snapPoint, selectedIds, drawingLength]);
 
             const screenToWorld = (screenX, screenY) => ({ x: (screenX - offset.x) / scale, y: (screenY - offset.y) / scale });
 
@@ -355,7 +354,7 @@
                 ctx.lineCap = 'round'; ctx.lineJoin = 'round';
                 if (isSelected) { ctx.shadowBlur = 10; ctx.shadowColor = "#06b6d4"; } 
 
-                const { type, x1, y1, x2, y2, rotation = 0, anchor = ANCHORS.CENTER.id } = element;
+                const { type, x1, y1, x2, y2, rotation = 0, anchor = ANCHORS.CENTER.id, branchOffsetIndex = 0 } = element;
                 const baseSize = GRID_SIZE * 0.6; 
                 const isSymbol = [TOOLS.VALVE, TOOLS.REGULATOR, TOOLS.REDUCER, TOOLS.TERMINAL, TOOLS.TEE].includes(type);
                 
@@ -367,13 +366,11 @@
                     else if (type === TOOLS.REDUCER) ox = halfWidth * 0.8;
                     else if (type === TOOLS.TEE) ox = 0; 
                     else if (type === TOOLS.TERMINAL) ox = baseSize * 0.4;
-
                     if (anchor === ANCHORS.TOP.id) ctx.translate(ox, 0); 
                     else if (anchor === ANCHORS.BOTTOM.id) ctx.translate(-ox, 0);
                 }
                 
-                // --- REALCE VISUAL DE SÍMBOLOS ---
-                if (isSymbol) {
+                if (isSymbol && type !== TOOLS.TEE) {
                     ctx.save();
                     ctx.fillStyle = isSelected ? 'rgba(6, 182, 212, 0.2)' : '#1f2937'; 
                     if (!isSelected) { ctx.shadowBlur = 5; ctx.shadowColor = element.color; }
@@ -394,33 +391,22 @@
                         ctx.fillStyle = isSelected ? '#06b6d4' : '#9ca3af'; ctx.fillText(`L:${meta.length}${meta.lengthUnit} | Q:${meta.load}${meta.loadUnit}`, x1, y1 + lh * 2);
                         ctx.strokeStyle = '#374151'; ctx.lineWidth = 1 / scale; ctx.fillStyle = 'rgba(31, 41, 55, 0.4)'; ctx.fillRect(x1 - 5, y1 - lh, 130, lh * 3.5); ctx.strokeRect(x1 - 5, y1 - lh, 130, lh * 3.5);
                         break;
-                    
-                    // SÍMBOLOS CON RELLENO
                     case TOOLS.VALVE: 
-                        const v = baseSize * 0.8; 
-                        ctx.moveTo(-v, -v/2); ctx.lineTo(-v, v/2); ctx.lineTo(0, 0); ctx.lineTo(v, v/2); ctx.lineTo(v, -v/2); ctx.lineTo(0, 0); ctx.closePath(); 
-                        ctx.fill(); ctx.stroke(); 
-                        break;
+                        const v = baseSize * 0.8; ctx.moveTo(-v, -v/2); ctx.lineTo(-v, v/2); ctx.lineTo(0, 0); ctx.lineTo(v, v/2); ctx.lineTo(v, -v/2); ctx.lineTo(0, 0); ctx.closePath(); ctx.fill(); ctx.stroke(); break;
                     case TOOLS.REGULATOR:
-                        const regR = baseSize * 0.8; 
-                        ctx.arc(0, 0, regR, 0, 2 * Math.PI); 
-                        ctx.fill(); ctx.stroke();
-                        ctx.beginPath(); ctx.arc(0, 0, regR * 0.5, 0, 2 * Math.PI); ctx.stroke(); 
-                        break;
+                        const regR = baseSize * 0.8; ctx.arc(0, 0, regR, 0, 2 * Math.PI); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.arc(0, 0, regR * 0.5, 0, 2 * Math.PI); ctx.stroke(); break;
                     case TOOLS.REDUCER:
-                        const redH = baseSize * 0.6; const redL = baseSize * 1.2;
-                        ctx.moveTo(-redL/2, -redH); ctx.lineTo(-redL/2, redH); ctx.lineTo(redL/2, redH/2); ctx.lineTo(redL/2, -redH/2); ctx.closePath(); 
-                        ctx.fill(); ctx.stroke(); 
-                        break;
+                        const redH = baseSize * 0.6; const redL = baseSize * 1.2; ctx.moveTo(-redL/2, -redH); ctx.lineTo(-redL/2, redH); ctx.lineTo(redL/2, redH/2); ctx.lineTo(redL/2, -redH/2); ctx.closePath(); ctx.fill(); ctx.stroke(); break;
                     case TOOLS.TERMINAL:
-                        const termR = baseSize * 0.4; ctx.arc(0, 0, termR, 0, Math.PI*2); 
-                        ctx.fill(); ctx.stroke(); 
-                        ctx.beginPath(); ctx.moveTo(-termR, -termR); ctx.lineTo(termR, termR); ctx.moveTo(-termR, termR); ctx.lineTo(termR, -termR); ctx.stroke(); break;
+                        const termR = baseSize * 0.4; ctx.arc(0, 0, termR, 0, Math.PI*2); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.moveTo(-termR, -termR); ctx.lineTo(termR, termR); ctx.moveTo(-termR, termR); ctx.lineTo(termR, -termR); ctx.stroke(); break;
                     case TOOLS.TEE:
                         const teeS = baseSize * 0.8;
-                        ctx.moveTo(-teeS, 0); ctx.lineTo(teeS, 0); 
-                        ctx.moveTo(0, 0); ctx.lineTo(0, teeS); 
-                        ctx.stroke(); break;
+                        ctx.moveTo(-teeS, 0); ctx.lineTo(teeS, 0);
+                        const offsets = [90, -90, 60, -60, 120, -120];
+                        const deg = offsets[branchOffsetIndex % offsets.length];
+                        const rad = deg * Math.PI / 180;
+                        ctx.moveTo(0, 0); ctx.lineTo(teeS * Math.cos(rad), teeS * Math.sin(rad)); ctx.stroke(); 
+                        break;
                     case TOOLS.DIMENSION:
                         const dx = x2 - x1, dy = y2 - y1; const distPx = Math.sqrt(dx**2 + dy**2); const angle = Math.atan2(dy, dx);
                         ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
@@ -434,37 +420,31 @@
                         ctx.fillText(text, midX + perpX, midY + perpY);
                         break;
                 }
-                if (isSymbol) ctx.restore(); 
+                if (isSymbol && type !== TOOLS.TEE) ctx.restore();
                 ctx.restore(); 
             };
 
-            // --- Puntos de Snap de SÍMBOLOS ---
             const getSymbolSnapPoints = (el) => {
                  const baseSize = GRID_SIZE * 0.6; 
                  const points = [];
                  const angle = el.rotation || 0;
                  const cos = Math.cos(angle);
                  const sin = Math.sin(angle);
-                 
-                 const trans = (lx, ly) => ({
-                     x: lx * cos - ly * sin + el.x1,
-                     y: lx * sin + ly * cos + el.y1
-                 });
+                 const trans = (lx, ly) => ({ x: lx * cos - ly * sin + el.x1, y: lx * sin + ly * cos + el.y1 });
 
                  if (el.type === TOOLS.TEE) {
                      const s = baseSize * 0.8;
-                     points.push(trans(-s, 0)); 
-                     points.push(trans(s, 0));  
-                     points.push(trans(0, s));  
+                     points.push(trans(-s, 0)); points.push(trans(s, 0)); 
+                     const idx = el.branchOffsetIndex || 0;
+                     const offsets = [90, -90, 60, -60, 120, -120];
+                     const deg = offsets[idx % offsets.length];
+                     const rad = deg * Math.PI / 180;
+                     points.push(trans(s * Math.cos(rad), s * Math.sin(rad)));
                      points.push({x: el.x1, y: el.y1}); 
                  } else if (el.type === TOOLS.VALVE || el.type === TOOLS.REGULATOR) {
-                     const s = baseSize * 0.8;
-                     points.push(trans(-s, 0)); 
-                     points.push(trans(s, 0));
+                     const s = baseSize * 0.8; points.push(trans(-s, 0)); points.push(trans(s, 0));
                  } else if (el.type === TOOLS.REDUCER) {
-                     const l = baseSize * 1.2;
-                     points.push(trans(-l/2, 0));
-                     points.push(trans(l/2, 0));
+                     const l = baseSize * 1.2; points.push(trans(-l/2, 0)); points.push(trans(l/2, 0));
                  } else if (el.type === TOOLS.TERMINAL) {
                      points.push({x: el.x1, y: el.y1});
                  }
@@ -475,7 +455,6 @@
                 let nearest = null; let minDist = 15 / scale; 
                 const visibleLayersIds = new Set(layers.filter(l => l.visible).map(l => l.id));
                 const visibleElements = elements.filter(el => !el.layerId || visibleLayersIds.has(el.layerId));
-                
                 visibleElements.forEach(el => {
                     if (el.x2 !== undefined) {
                         const d1 = Math.sqrt((pos.x - el.x1)**2 + (pos.y - el.y1)**2); if (d1 < minDist) { minDist = d1; nearest = { x: el.x1, y: el.y1 }; }
@@ -483,10 +462,7 @@
                     }
                     if ([TOOLS.TEE, TOOLS.VALVE, TOOLS.REGULATOR, TOOLS.REDUCER, TOOLS.TERMINAL].includes(el.type)) {
                         const snaps = getSymbolSnapPoints(el);
-                        snaps.forEach(pt => {
-                            const d = Math.sqrt((pos.x - pt.x)**2 + (pos.y - pt.y)**2);
-                            if (d < minDist) { minDist = d; nearest = pt; }
-                        });
+                        snaps.forEach(pt => { const d = Math.sqrt((pos.x - pt.x)**2 + (pos.y - pt.y)**2); if (d < minDist) { minDist = d; nearest = pt; } });
                     }
                 });
                 return nearest;
@@ -509,15 +485,11 @@
             const checkHit = (pos, el) => {
                 const tol = 10 / scale;
                 if (el.type === TOOLS.LINE || el.type === TOOLS.DIMENSION) {
-                    const {x1, y1, x2, y2} = el;
-                    const A = pos.x - x1; const B = pos.y - y1; const C = x2 - x1; const D = y2 - y1;
-                    const dot = A * C + B * D; const lenSq = C * C + D * D;
-                    let param = -1; if (lenSq !== 0) param = dot / lenSq;
-                    let xx, yy; if (param < 0) { xx = x1; yy = y1; } else if (param > 1) { xx = x2; yy = y2; } else { xx = x1 + param * C; yy = y1 + param * D; }
+                    const {x1, y1, x2, y2} = el; const A = pos.x - x1; const B = pos.y - y1; const C = x2 - x1; const D = y2 - y1; const dot = A * C + B * D; const lenSq = C * C + D * D;
+                    let param = -1; if (lenSq !== 0) param = dot / lenSq; let xx, yy; if (param < 0) { xx = x1; yy = y1; } else if (param > 1) { xx = x2; yy = y2; } else { xx = x1 + param * C; yy = y1 + param * D; }
                     return Math.sqrt((pos.x - xx)**2 + (pos.y - yy)**2) < tol;
                 } else if (el.type === TOOLS.RECTANGLE) {
-                    return (Math.abs(pos.x - el.x1) < tol || Math.abs(pos.x - el.x2) < tol) && (pos.y > Math.min(el.y1, el.y2) && pos.y < Math.max(el.y1, el.y2)) ||
-                           (Math.abs(pos.y - el.y1) < tol || Math.abs(pos.y - el.y2) < tol) && (pos.x > Math.min(el.x1, el.x2) && pos.x < Math.max(el.x1, el.x2));
+                    return (Math.abs(pos.x - el.x1) < tol || Math.abs(pos.x - el.x2) < tol) && (pos.y > Math.min(el.y1, el.y2) && pos.y < Math.max(el.y1, el.y2)) || (Math.abs(pos.y - el.y1) < tol || Math.abs(pos.y - el.y2) < tol) && (pos.x > Math.min(el.x1, el.x2) && pos.x < Math.max(el.x1, el.x2));
                 } else if (el.type === TOOLS.CIRCLE || [TOOLS.VALVE, TOOLS.REGULATOR, TOOLS.REDUCER, TOOLS.TERMINAL, TOOLS.TEE].includes(el.type)) {
                     const d = Math.sqrt((pos.x - el.x1)**2 + (pos.y - el.y1)**2); return d < (GRID_SIZE); 
                 } else if (el.type === TOOLS.TEXT || el.type === TOOLS.TRAMO_DATA) {
@@ -530,57 +502,26 @@
                 if (contextMenu.visible) return;
                 const screenPos = { x: e.clientX - canvasRef.current.getBoundingClientRect().left, y: e.clientY - canvasRef.current.getBoundingClientRect().top };
                 let worldPos = screenToWorld(screenPos.x, screenPos.y);
-
                 if (e.button === 1 || tool === TOOLS.PAN) { setIsPanning(true); setLastMousePos(screenPos); return; }
-                
                 if (tool === TOOLS.SELECT) {
-                    const clickedElement = elements.slice().reverse().find(el => {
-                        const layer = layers.find(l => l.id === el.layerId);
-                        if (layer && !layer.visible) return false;
-                        return checkHit(worldPos, el);
-                    });
+                    const clickedElement = elements.slice().reverse().find(el => { const layer = layers.find(l => l.id === el.layerId); if (layer && !layer.visible) return false; return checkHit(worldPos, el); });
                     if (clickedElement) {
-                        if (e.shiftKey) {
-                            if (selectedIds.includes(clickedElement.id)) {
-                                setSelectedIds(prev => prev.filter(id => id !== clickedElement.id));
-                            } else {
-                                setSelectedIds(prev => [...prev, clickedElement.id]);
-                            }
-                        } else {
-                            if (!selectedIds.includes(clickedElement.id)) {
-                                setSelectedIds([clickedElement.id]);
-                            }
-                            setIsDraggingSelected(true);
-                            setDragStartPos(worldPos);
-                        }
-                    } else {
-                        if (!e.shiftKey) setSelectedIds([]);
-                    }
+                        if (e.shiftKey) { if (selectedIds.includes(clickedElement.id)) { setSelectedIds(prev => prev.filter(id => id !== clickedElement.id)); } else { setSelectedIds(prev => [...prev, clickedElement.id]); } } 
+                        else { if (!selectedIds.includes(clickedElement.id)) { setSelectedIds([clickedElement.id]); } setIsDraggingSelected(true); setDragStartPos(worldPos); }
+                    } else { if (!e.shiftKey) setSelectedIds([]); }
                     return;
                 }
-
                 if (snapPoint) worldPos = snapPoint; 
-
                 if (tool === TOOLS.TAG) { setContextMenu({ visible: false }); setContextMenu({ visible: true, x: e.clientX, y: e.clientY, worldX: worldPos.x, worldY: worldPos.y }); return; }
-                if (tool === TOOLS.DIMENSION) {
-                    if (dimensionStep === 0) { setCurrentElement({ id: Date.now(), type: TOOLS.DIMENSION, x1: worldPos.x, y1: worldPos.y, x2: worldPos.x, y2: worldPos.y, color: '#fbbf24', lineWidth: 1, layerId: activeLayer }); setDimensionStep(1); }
-                    else { setElements(prev => [...prev, currentElement]); setCurrentElement(null); setDimensionStep(0); }
-                    return;
-                }
+                if (tool === TOOLS.DIMENSION) { if (dimensionStep === 0) { setCurrentElement({ id: Date.now(), type: TOOLS.DIMENSION, x1: worldPos.x, y1: worldPos.y, x2: worldPos.x, y2: worldPos.y, color: '#fbbf24', lineWidth: 1, layerId: activeLayer }); setDimensionStep(1); } else { setElements(prev => [...prev, currentElement]); setCurrentElement(null); setDimensionStep(0); } return; }
                 if (tool === TOOLS.TEXT) { setTextPos(worldPos); setShowTextModal(true); return; }
-                if (tool === TOOLS.BEZIER) {
-                    if (bezierStep === 0) { setCurrentElement({ id: Date.now(), type: TOOLS.BEZIER, x1: worldPos.x, y1: worldPos.y, x2: worldPos.x, y2: worldPos.y, cx: worldPos.x, cy: worldPos.y, color, lineWidth, layerId: activeLayer }); setBezierStep(1); }
-                    else { setElements(prev => [...prev, currentElement]); setCurrentElement(null); setBezierStep(0); }
-                    return;
-                }
+                if (tool === TOOLS.BEZIER) { if (bezierStep === 0) { setCurrentElement({ id: Date.now(), type: TOOLS.BEZIER, x1: worldPos.x, y1: worldPos.y, x2: worldPos.x, y2: worldPos.y, cx: worldPos.x, cy: worldPos.y, color, lineWidth, layerId: activeLayer }); setBezierStep(1); } else { setElements(prev => [...prev, currentElement]); setCurrentElement(null); setBezierStep(0); } return; }
                 if ([TOOLS.VALVE, TOOLS.REGULATOR, TOOLS.REDUCER, TOOLS.TERMINAL, TOOLS.TEE].includes(tool)) {
-                    // Reset flip when placing new
                     const combinedRot = snapRotation + flipRotation;
-                    setElements(prev => [...prev, { id: Date.now(), type: tool, x1: mouseWorldPos.x, y1: mouseWorldPos.y, x2: mouseWorldPos.x, y2: mouseWorldPos.y, color, lineWidth, rotation: combinedRot, anchor, layerId: activeLayer }]); 
+                    setElements(prev => [...prev, { id: Date.now(), type: tool, x1: mouseWorldPos.x, y1: mouseWorldPos.y, x2: mouseWorldPos.x, y2: mouseWorldPos.y, color, lineWidth, rotation: combinedRot, anchor, layerId: activeLayer, branchOffsetIndex }]); 
                     return;
                 }
-                // LINE / RECT / CIRCLE start
-                setCurrentElement({ id: Date.now(), type: tool, x1: worldPos.x, y1: worldPos.y, x2: worldPos.x, y2: worldPos.y, color, lineWidth, layerId: activeLayer });
+                setCurrentElement({ id: Date.now(), type: tool, x1: worldPos.x, y1: worldPos.y, x2: worldPos.x, y2: worldPos.y, color, lineWidth, layerId: activeLayer, material: currentMaterial, diameter: currentDiameter });
                 if (tool === TOOLS.LINE) setDrawingLength(''); 
             };
 
@@ -588,64 +529,28 @@
                 const screenPos = { x: e.clientX - canvasRef.current.getBoundingClientRect().left, y: e.clientY - canvasRef.current.getBoundingClientRect().top };
                 const worldPos = screenToWorld(screenPos.x, screenPos.y);
                 if (isPanning) { setOffset(prev => ({ x: prev.x + (screenPos.x - lastMousePos.x), y: prev.y + (screenPos.y - lastMousePos.y) })); setLastMousePos(screenPos); setMouseWorldPos(worldPos); return; }
-                
                 if (isDraggingSelected) {
                     const dx = worldPos.x - dragStartPos.x; const dy = worldPos.y - dragStartPos.y;
-                    setElements(prev => prev.map(el => {
-                        if (selectedIds.includes(el.id)) {
-                            let newEl = { ...el };
-                            if (newEl.x1 !== undefined) newEl.x1 += dx; if (newEl.y1 !== undefined) newEl.y1 += dy;
-                            if (newEl.x2 !== undefined) newEl.x2 += dx; if (newEl.y2 !== undefined) newEl.y2 += dy;
-                            if (newEl.cx !== undefined) newEl.cx += dx; if (newEl.cy !== undefined) newEl.cy += dy;
-                            return newEl;
-                        }
-                        return el;
-                    }));
+                    setElements(prev => prev.map(el => { if (selectedIds.includes(el.id)) { let newEl = { ...el }; if (newEl.x1 !== undefined) newEl.x1 += dx; if (newEl.y1 !== undefined) newEl.y1 += dy; if (newEl.x2 !== undefined) newEl.x2 += dx; if (newEl.y2 !== undefined) newEl.y2 += dy; if (newEl.cx !== undefined) newEl.cx += dx; if (newEl.cy !== undefined) newEl.cy += dy; return newEl; } return el; }));
                     setDragStartPos(worldPos); return;
                 }
-
-                let finalPos = { ...worldPos };
-                let foundSnap = null; let foundGuide = null;
-
-                if ([TOOLS.LINE, TOOLS.RECTANGLE, TOOLS.DIMENSION, TOOLS.BEZIER].includes(tool)) {
-                    const endpoint = getNearestEndpoint(worldPos);
-                    if (endpoint) { foundSnap = endpoint; finalPos = endpoint; }
-                }
-
+                let finalPos = { ...worldPos }; let foundSnap = null; let foundGuide = null;
+                if ([TOOLS.LINE, TOOLS.RECTANGLE, TOOLS.DIMENSION, TOOLS.BEZIER].includes(tool)) { const endpoint = getNearestEndpoint(worldPos); if (endpoint) { foundSnap = endpoint; finalPos = endpoint; } }
                 if (!foundSnap && tool === TOOLS.LINE && currentElement) {
-                    const startX = currentElement.x1; const startY = currentElement.y1;
-                    const dx = worldPos.x - startX; const dy = worldPos.y - startY;
-                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    const startX = currentElement.x1; const startY = currentElement.y1; const dx = worldPos.x - startX; const dy = worldPos.y - startY; const dist = Math.sqrt(dx*dx + dy*dy);
                     if (dist > 5) {
-                        const angle = Math.atan2(dy, dx);
-                        const snapAngles = [0, 30, 90, 150, 180, 210, 270, 330, -30, -90, -150, -210, -270, -330];
-                        for (let target of snapAngles) {
-                            const targetRad = target * (Math.PI / 180);
-                            let diff = Math.abs(angle - targetRad); if (diff > Math.PI) diff = 2 * Math.PI - diff;
-                            if (diff < 0.1) {
-                                const snapX = startX + dist * Math.cos(targetRad); const snapY = startY + dist * Math.sin(targetRad);
-                                finalPos = { x: snapX, y: snapY };
-                                foundGuide = { x1: startX, y1: startY, x2: startX + (dist + 10000) * Math.cos(targetRad), y2: startY + (dist + 10000) * Math.sin(targetRad) }; break;
-                            }
-                        }
+                        const angle = Math.atan2(dy, dx); const snapAngles = [0, 30, 90, 150, 180, 210, 270, 330, -30, -90, -150, -210, -270, -330];
+                        for (let target of snapAngles) { const targetRad = target * (Math.PI / 180); let diff = Math.abs(angle - targetRad); if (diff > Math.PI) diff = 2 * Math.PI - diff; if (diff < 0.1) { const snapX = startX + dist * Math.cos(targetRad); const snapY = startY + dist * Math.sin(targetRad); finalPos = { x: snapX, y: snapY }; foundGuide = { x1: startX, y1: startY, x2: startX + (dist + 10000) * Math.cos(targetRad), y2: startY + (dist + 10000) * Math.sin(targetRad) }; break; } }
                     }
                 }
                 setSnapPoint(foundSnap); setGuideLine(foundGuide); setMouseWorldPos(finalPos);
-
-                if ([TOOLS.VALVE, TOOLS.REGULATOR, TOOLS.REDUCER, TOOLS.TERMINAL, TOOLS.TEE].includes(tool)) {
-                    const snapInfo = getNearestLine(worldPos);
-                    if (snapInfo) { setMouseWorldPos({ x: snapInfo.x, y: snapInfo.y }); setSnapRotation(snapInfo.angle); } else { setMouseWorldPos(worldPos); setSnapRotation(0); }
-                } 
+                if ([TOOLS.VALVE, TOOLS.REGULATOR, TOOLS.REDUCER, TOOLS.TERMINAL, TOOLS.TEE].includes(tool)) { const snapInfo = getNearestLine(worldPos); if (snapInfo) { setMouseWorldPos({ x: snapInfo.x, y: snapInfo.y }); setSnapRotation(snapInfo.angle); } else { setMouseWorldPos(worldPos); setSnapRotation(0); } } 
                 if (tool === TOOLS.DIMENSION && currentElement && dimensionStep === 1) { setCurrentElement(prev => ({ ...prev, x2: finalPos.x, y2: finalPos.y })); }
                 if (tool === TOOLS.BEZIER && currentElement && bezierStep === 1) setCurrentElement(prev => ({ ...prev, x2: finalPos.x, y2: finalPos.y, cx: (prev.x1 + finalPos.x)/2, cy: (prev.y1 + finalPos.y)/2 }));
                 if (currentElement && [TOOLS.LINE, TOOLS.RECTANGLE, TOOLS.CIRCLE].includes(tool)) { setCurrentElement(prev => ({ ...prev, x2: finalPos.x, y2: finalPos.y })); }
             };
 
-            const handleMouseUp = () => { 
-                if (isPanning) setIsPanning(false); 
-                else if (isDraggingSelected) setIsDraggingSelected(false); 
-                else if (![TOOLS.BEZIER, TOOLS.DIMENSION].includes(tool) && currentElement) { setElements(prev => [...prev, currentElement]); setCurrentElement(null); setGuideLine(null); setSnapPoint(null); } 
-            };
+            const handleMouseUp = () => { if (isPanning) setIsPanning(false); else if (isDraggingSelected) setIsDraggingSelected(false); else if (![TOOLS.BEZIER, TOOLS.DIMENSION].includes(tool) && currentElement) { setElements(prev => [...prev, currentElement]); setCurrentElement(null); setGuideLine(null); setSnapPoint(null); } };
             const handleWheel = (e) => { e.preventDefault(); const f = 1 + (0.1 * (e.deltaY < 0 ? 1 : -1)); let ns = Math.max(0.1, Math.min(scale * f, 10)); const r = canvasRef.current.getBoundingClientRect(); const mx = e.clientX - r.left; const my = e.clientY - r.top; setOffset({ x: mx - (mx - offset.x) * (ns / scale), y: my - (my - offset.y) * (ns / scale) }); setScale(ns); };
             const handleContextMenu = (e) => { e.preventDefault(); const r = canvasRef.current.getBoundingClientRect(); setContextMenu({ visible: true, x: e.clientX, y: e.clientY, worldX: screenToWorld(e.clientX - r.left, e.clientY - r.top).x, worldY: screenToWorld(e.clientX - r.left, e.clientY - r.top).y }); };
             const addText = () => { if (!textInput.trim()) { setShowTextModal(false); return; } setElements(prev => [...prev, { id: Date.now(), type: TOOLS.TEXT, x1: textPos.x, y1: textPos.y, text: textInput, color, lineWidth, layerId: activeLayer }]); setTextInput(''); setShowTextModal(false); };
@@ -659,96 +564,94 @@
                     if (visibleElements.length === 0) return alert("No hay elementos visibles.");
                     
                     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-                    visibleElements.forEach(el => { 
-                        const r = GRID_SIZE; 
-                        [el.x1, el.x2].forEach(p => { if(p!=null) { minX = Math.min(minX, p-r); maxX = Math.max(maxX, p+r); }}); 
-                        [el.y1, el.y2].forEach(p => { if(p!=null) { minY = Math.min(minY, p-r); maxY = Math.max(maxY, p+r); }}); 
-                        if(el.cx!=null) { minX = Math.min(minX, el.cx-r); maxX = Math.max(maxX, el.cx+r); } 
-                        if(el.cy!=null) { minY = Math.min(minY, el.cy-r); maxY = Math.max(maxY, el.cy+r); }
-                    });
-                    
+                    visibleElements.forEach(el => { const r = GRID_SIZE; [el.x1, el.x2].forEach(p => { if(p!=null) { minX = Math.min(minX, p-r); maxX = Math.max(maxX, p+r); }}); [el.y1, el.y2].forEach(p => { if(p!=null) { minY = Math.min(minY, p-r); maxY = Math.max(maxY, p+r); }}); if(el.cx!=null) { minX = Math.min(minX, el.cx-r); maxX = Math.max(maxX, el.cx+r); } if(el.cy!=null) { minY = Math.min(minY, el.cy-r); maxY = Math.max(maxY, el.cy+r); }});
                     if (!isFinite(minX) || !isFinite(maxX)) { minX = 0; maxX = 800; minY = 0; maxY = 600; }
-                    const width = Math.max(100, maxX - minX + 100); 
-                    const height = Math.max(100, maxY - minY + 100);
-
-                    const tempCanvas = document.createElement('canvas');
-                    const MAX_DIM = 4000;
-                    const scaleFactor = Math.min(1, MAX_DIM / width, MAX_DIM / height);
-                    tempCanvas.width = width * scaleFactor;
-                    tempCanvas.height = height * scaleFactor;
-                    const ctx = tempCanvas.getContext('2d');
+                    const padding = 40; minX -= padding; minY -= padding; maxX += padding; maxY += padding;
+                    const width = Math.max(100, maxX - minX + 100); const height = Math.max(100, maxY - minY + 100);
+                    const tempCanvas = document.createElement('canvas'); const MAX_DIM = 4000; const scaleFactor = Math.min(1, MAX_DIM / width, MAX_DIM / height);
+                    tempCanvas.width = width * scaleFactor; tempCanvas.height = height * scaleFactor; const ctx = tempCanvas.getContext('2d');
+                    ctx.scale(scaleFactor, scaleFactor); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, width, height);
+                    ctx.save(); ctx.translate(-minX + 50, -minY + 50); visibleElements.forEach(el => drawElement(ctx, el, false)); ctx.restore();
                     
-                    ctx.scale(scaleFactor, scaleFactor);
-                    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, width, height);
-                    
-                    ctx.save();
-                    ctx.translate(-minX + 50, -minY + 50); 
-                    visibleElements.forEach(el => drawElement(ctx, el, false));
-                    ctx.restore();
-
                     const { jsPDF } = window.jspdf; 
-                    const doc = new jsPDF('l', 'mm', 'a4');
-                    const pageW = 297, pageH = 210, margin = 10, headerH = 35;
+                    const doc = new jsPDF('l', 'mm', 'a4'); const pageW = 297, pageH = 210, margin = 10, headerH = 35;
                     
-                    const imgData = tempCanvas.toDataURL('image/png');
-                    const availW = pageW - margin*2;
-                    const availH = pageH - margin*2 - headerH;
-                    const imgProps = doc.getImageProperties(imgData);
-                    const imgRatio = imgProps.width / imgProps.height;
-                    const pageRatio = availW / availH;
-                    let finalW, finalH;
-                    if (imgRatio > pageRatio) { finalW = availW; finalH = availW / imgRatio; } 
-                    else { finalH = availH; finalW = availH * imgRatio; }
-                    
-                    const ix = margin + (availW - finalW)/2;
-                    const iy = margin + (availH - finalH)/2;
+                    const imgData = tempCanvas.toDataURL('image/png'); const availW = pageW - margin*2; const availH = pageH - margin*2 - headerH;
+                    const imgProps = doc.getImageProperties(imgData); const imgRatio = imgProps.width / imgProps.height; const pageRatio = availW / availH;
+                    let finalW, finalH; if (imgRatio > pageRatio) { finalW = availW; finalH = availW / imgRatio; } else { finalH = availH; finalW = availH * imgRatio; }
+                    const ix = margin + (availW - finalW)/2; const iy = margin + (availH - finalH)/2;
                     doc.addImage(imgData, 'PNG', ix, iy, finalW, finalH);
 
-                    const hy = pageH - margin - headerH;
-                    doc.setLineWidth(0.5); doc.setDrawColor(0); doc.setFillColor(245, 245, 245); doc.rect(margin, hy, availW, headerH, 'FD');
-                    doc.line(margin + availW/2, hy, margin + availW/2, hy+headerH);
+                    const hy = pageH - margin - headerH; doc.setLineWidth(0.5); doc.setDrawColor(0); doc.setFillColor(245, 245, 245); doc.rect(margin, hy, availW, headerH, 'FD'); doc.line(margin + availW/2, hy, margin + availW/2, hy+headerH);
+                    doc.setFontSize(10); doc.setFont("helvetica", "bold"); doc.text("PROYECTO:", margin+5, hy+8); doc.setFont("helvetica", "normal"); doc.text(metadata.project || "-", margin+30, hy+8);
+                    doc.setFont("helvetica", "bold"); doc.text("CLIENTE:", margin+5, hy+12); doc.setFont("helvetica", "normal"); doc.text(metadata.client || "-", margin+30, hy+12);
+                    doc.setFont("helvetica", "bold"); doc.text("UBICACIÓN:", margin+5, hy+16); doc.setFont("helvetica", "normal"); doc.text(metadata.location || "-", margin+30, hy+16);
+                    const col2 = margin + availW/2 + 5; doc.setFont("helvetica", "bold"); doc.text("DIBUJANTE:", col2, hy+8); doc.setFont("helvetica", "normal"); doc.text(metadata.draftsman || "-", col2+25, hy+8);
+                    doc.setFont("helvetica", "bold"); doc.text("FECHA:", col2, hy+12); doc.setFont("helvetica", "normal"); doc.text(metadata.date || "-", col2+25, hy+12);
+                    doc.setFont("helvetica", "bold"); doc.text("ID:", col2, hy+16); doc.setFont("helvetica", "normal"); doc.text(metadata.id || "-", col2+25, hy+16);
 
-                    doc.setFontSize(10);
-                    doc.setFont("helvetica", "bold"); doc.text("PROYECTO:", margin+5, hy+8);
-                    doc.setFont("helvetica", "normal"); doc.text(metadata.project || "-", margin+30, hy+8);
+                    // BOM Calculation for PDF
+                    const pipeLines = visibleElements.filter(el => el.type === TOOLS.LINE);
+                    const pipeGroups = {};
+                    pipeLines.forEach(l => {
+                         const mat = l.material || 'Genérico';
+                         const dia = l.diameter || 'N/A';
+                         const key = `${mat}|${dia}`;
+                         if(!pipeGroups[key]) pipeGroups[key] = 0;
+                         const len = Math.sqrt((l.x2-l.x1)**2 + (l.y2-l.y1)**2) / GRID_SIZE;
+                         pipeGroups[key] += len;
+                    });
+                    const elbows = getElbowsCount(pipeLines);
+                    const valves = visibleElements.filter(el => el.type === TOOLS.VALVE).length;
+                    const tees = visibleElements.filter(el => el.type === TOOLS.TEE).length;
+                    const regulators = visibleElements.filter(el => el.type === TOOLS.REGULATOR).length;
+                    const reducers = visibleElements.filter(el => el.type === TOOLS.REDUCER).length;
 
-                    doc.setFont("helvetica", "bold"); doc.text("CLIENTE:", margin+5, hy+12);
-                    doc.setFont("helvetica", "normal"); doc.text(metadata.client || "-", margin+30, hy+12);
+                    // Page 2: BOM Table
+                    doc.addPage();
+                    doc.setFontSize(14); doc.setFont("helvetica", "bold"); doc.text("LISTA DE MATERIALES (DESPIECE)", margin, margin+10);
+                    let ty = margin + 20;
+                    
+                    const colsBOM = ["Elemento / Material", "Detalle / Diámetro", "Cantidad / Longitud"];
+                    const colW_BOM = [80, 60, 40];
+                    doc.setFontSize(10); doc.setFillColor(220);
+                    let tx = margin;
+                    colsBOM.forEach((c, i) => { doc.rect(tx, ty, colW_BOM[i], 8, 'FD'); doc.text(c, tx+2, ty+5); tx += colW_BOM[i]; });
+                    ty += 8;
 
-                    doc.setFont("helvetica", "bold"); doc.text("UBICACIÓN:", margin+5, hy+16);
-                    doc.setFont("helvetica", "normal"); doc.text(metadata.location || "-", margin+30, hy+16);
-
-                    const col2 = margin + availW/2 + 5;
-                    doc.setFont("helvetica", "bold"); doc.text("DIBUJANTE:", col2, hy+8);
-                    doc.setFont("helvetica", "normal"); doc.text(metadata.draftsman || "-", col2+25, hy+8);
-
-                    doc.setFont("helvetica", "bold"); doc.text("FECHA:", col2, hy+12);
-                    doc.setFont("helvetica", "normal"); doc.text(metadata.date || "-", col2+25, hy+12);
-
-                    doc.setFont("helvetica", "bold"); doc.text("ID:", col2, hy+16);
-                    doc.setFont("helvetica", "normal"); doc.text(metadata.id || "-", col2+25, hy+16);
-
-                    const tramos = visibleElements.filter(el => el.type === TOOLS.TRAMO_DATA && el.tagMetadata);
-                    if (tramos.length > 0) {
-                        doc.addPage();
-                        doc.setFontSize(14); doc.setFont("helvetica", "bold"); doc.text("TABLA DE TRAMOS", margin, margin+10);
-                        let ty = margin+20;
-                        const cols = ["ID", "Longitud", "Diámetro", "Real (mm)", "Material", "Carga", "Capa"];
-                        const colW = [20, 35, 30, 30, 40, 40, 40];
-                        doc.setFontSize(10); doc.setFillColor(220);
-                        let tx = margin;
-                        cols.forEach((c, i) => { doc.rect(tx, ty, colW[i], 8, 'FD'); doc.text(c, tx+2, ty+5); tx += c.w; });
+                    doc.setFont("helvetica", "normal");
+                    Object.keys(pipeGroups).forEach(key => {
+                        const [mat, dia] = key.split('|');
+                        const row = [`Tubería ${mat}`, dia, `${pipeGroups[key].toFixed(2)} m`];
+                        tx = margin;
+                        row.forEach((val, i) => { doc.rect(tx, ty, colW_BOM[i], 8); doc.text(String(val), tx+2, ty+5); tx += colW_BOM[i]; });
                         ty += 8;
-                        doc.setFont("helvetica", "normal");
-                        tramos.forEach(t => {
-                            const m = t.tagMetadata;
-                            const layer = layers.find(l => l.id === t.layerId);
-                            const real = getRealDiameter(m.diameter, m.material);
-                            const row = [m.id, `${m.length} ${m.lengthUnit}`, m.diameter, real, m.material, `${m.load} ${m.loadUnit}`, (layer ? layer.name : 'Def')];
+                    });
+                    const fittings = [
+                        ['Codos (90°/45°)', 'Estimado según trazo', elbows],
+                        ['Válvulas', '-', valves],
+                        ['Tees', '-', tees],
+                        ['Reguladores', '-', regulators],
+                        ['Reducciones', '-', reducers]
+                    ];
+                    fittings.forEach(row => {
+                        if (row[2] > 0) {
                             tx = margin;
-                            row.forEach((val, i) => { doc.rect(tx, ty, colW[i], 8); doc.text(String(val), tx+2, ty+5); tx += c.w; });
+                            row.forEach((val, i) => { doc.rect(tx, ty, colW_BOM[i], 8); doc.text(String(val), tx+2, ty+5); tx += colW_BOM[i]; });
                             ty += 8;
-                        });
+                        }
+                    });
+
+                    // Page 3 (optional): Tramos Table
+                    const tramos = visibleElements.filter(el => el.type === TOOLS.TRAMO_DATA && el.tagMetadata);
+                    if (tramos.length > 0) { 
+                        doc.addPage(); doc.setFontSize(14); doc.setFont("helvetica", "bold"); doc.text("TABLA DE TRAMOS", margin, margin+10); 
+                        ty = margin+20; 
+                        const cols = [{n:'ID',w:20}, {n:'Longitud',w:30}, {n:'Diámetro',w:30}, {n:'Real(mm)',w:30}, {n:'Material',w:40}, {n:'Carga',w:40}, {n:'Capa',w:40}]; 
+                        doc.setFontSize(10); doc.setFillColor(220); 
+                        tx = margin; cols.forEach(c => { doc.rect(tx, ty, c.w, 8, 'FD'); doc.text(c.n, tx+2, ty+5); tx += c.w; }); 
+                        ty += 8; doc.setFont("helvetica", "normal"); 
+                        tramos.forEach(t => { const m = t.tagMetadata; const layer = layers.find(l => l.id === t.layerId); const real = getRealDiameter(m.diameter, m.material); const row = [m.id, `${m.length} ${m.lengthUnit}`, m.diameter, real, m.material, `${m.load} ${m.loadUnit}`, (layer ? layer.name : 'Def')]; tx = margin; cols.forEach((c, i) => { doc.rect(tx, ty, c.w, 8); doc.text(String(row[i]), tx+2, ty+5); tx += c.w; }); ty += 8; }); 
                     }
 
                     doc.save(`Plano_${metadata.id}.pdf`);
@@ -759,26 +662,61 @@
                 setDownloadModal({ visible: false, type: null });
                 if (!window.XLSX || elements.length === 0) return alert("Nada que exportar.");
                 
-                const metaRows = [
-                    ['DATOS DEL PROYECTO'], ['Proyecto:', metadata.project], ['Cliente:', metadata.client], ['Ubicación:', metadata.location], ['Dibujante:', metadata.draftsman], ['Fecha:', metadata.date], ['ID Plano:', metadata.id], []
-                ];
-
-                const headers = ['ID Tramo', 'Longitud', 'Unidad Longitud', 'Diámetro Nominal', 'Diámetro Real (mm)', 'Material', 'Carga / Caudal', 'Unidad Carga', 'Capa'];
-                const data = [...metaRows, headers];
+                const visibleElements = elements;
+                const wb = XLSX.utils.book_new();
                 
+                // Sheet 1: BOM (Despiece)
+                const pipeLines = visibleElements.filter(el => el.type === TOOLS.LINE);
+                const pipeGroups = {};
+                pipeLines.forEach(l => {
+                     const mat = l.material || 'Genérico';
+                     const dia = l.diameter || 'N/A';
+                     const key = `${mat}|${dia}`;
+                     if(!pipeGroups[key]) pipeGroups[key] = 0;
+                     const len = Math.sqrt((l.x2-l.x1)**2 + (l.y2-l.y1)**2) / GRID_SIZE;
+                     pipeGroups[key] += len;
+                });
+                const elbows = getElbowsCount(pipeLines);
+                const valves = visibleElements.filter(el => el.type === TOOLS.VALVE).length;
+                const tees = visibleElements.filter(el => el.type === TOOLS.TEE).length;
+                const regulators = visibleElements.filter(el => el.type === TOOLS.REGULATOR).length;
+                const reducers = visibleElements.filter(el => el.type === TOOLS.REDUCER).length;
+
+                const bomHeader = ['Categoría', 'Material/Tipo', 'Diámetro/Detalle', 'Cantidad', 'Unidad'];
+                const bomData = [bomHeader];
+                Object.keys(pipeGroups).forEach(key => {
+                    const [mat, dia] = key.split('|');
+                    bomData.push(['Tubería', mat, dia, pipeGroups[key].toFixed(2), 'm']);
+                });
+                if (elbows > 0) bomData.push(['Accesorio', 'Codo', 'Según Trazado', elbows, 'unid']);
+                if (valves > 0) bomData.push(['Accesorio', 'Válvula', '-', valves, 'unid']);
+                if (tees > 0) bomData.push(['Accesorio', 'Tee', '-', tees, 'unid']);
+                if (regulators > 0) bomData.push(['Equipo', 'Regulador', '-', regulators, 'unid']);
+                if (reducers > 0) bomData.push(['Accesorio', 'Reducción', '-', reducers, 'unid']);
+
+                const metaRows = [['DATOS DEL PROYECTO'], ['Proyecto:', metadata.project], ['Cliente:', metadata.client], ['Ubicación:', metadata.location], ['Dibujante:', metadata.draftsman], ['Fecha:', metadata.date], ['ID Plano:', metadata.id], []];
+                const wsBOM = XLSX.utils.aoa_to_sheet([...metaRows, [], ...bomData]);
+                XLSX.utils.book_append_sheet(wb, wsBOM, "Despiece (BOM)");
+
+                // Sheet 2: Tramos
+                const tramosHeader = ['ID Tramo', 'Longitud', 'Unidad Longitud', 'Diámetro Nominal', 'Diámetro Real (mm)', 'Material', 'Carga / Caudal', 'Unidad Carga', 'Capa'];
+                const tramosData = [tramosHeader];
                 let tramoFound = false;
                 elements.forEach((el) => {
                     if (el.type === TOOLS.TRAMO_DATA && el.tagMetadata) {
-                        const layer = layers.find(l => l.id === el.layerId); if (layer && !layer.visible) return;
+                        const layer = layers.find(l => l.id === el.layerId);
                         const m = el.tagMetadata;
                         const realDia = getRealDiameter(m.diameter, m.material);
-                        data.push([m.id, m.length, m.lengthUnit, m.diameter, realDia, m.material, m.load, m.loadUnit, layer ? layer.name : 'Default']);
+                        tramosData.push([m.id, m.length, m.lengthUnit, m.diameter, realDia, m.material, m.load, m.loadUnit, layer ? layer.name : 'Default']);
                         tramoFound = true;
                     }
                 });
-                
-                if (!tramoFound) alert("Nota: El Excel solo contiene datos del proyecto (sin tramos).");
-                const ws = XLSX.utils.aoa_to_sheet(data); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Datos"); XLSX.writeFile(wb, `Datos_${metadata.id}.xlsx`);
+                if (tramoFound) {
+                    const wsTramos = XLSX.utils.aoa_to_sheet(tramosData);
+                    XLSX.utils.book_append_sheet(wb, wsTramos, "Tramos Hidráulicos");
+                }
+
+                XLSX.writeFile(wb, `Datos_${metadata.id}.xlsx`);
             };
             
             const undo = () => setElements(prev => prev.slice(0, -1));
@@ -891,6 +829,25 @@
                                             </select>
                                         </div>
 
+                                        {/* Propiedades para TUBERÍA (Material/Diámetro) */}
+                                        {selectedIds.length > 0 && elements.find(e => e.id === selectedIds[0]).type === TOOLS.LINE && (
+                                            <div className="pt-2 border-t border-gray-600 space-y-2">
+                                                <label className="text-xs font-bold text-blue-400 block">Datos de Tubería</label>
+                                                <div>
+                                                    <label className="text-xs text-gray-400 block">Material</label>
+                                                    <select className="prop-input" onChange={(e) => changeSelectionMaterial(e.target.value)} defaultValue={elements.find(el => el.id === selectedIds[0])?.material || MATERIALS[0]}>
+                                                        {MATERIALS.map(m => <option key={m} value={m}>{m}</option>)}
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label className="text-xs text-gray-400 block">Diámetro</label>
+                                                    <select className="prop-input" onChange={(e) => changeSelectionDiameter(e.target.value)} defaultValue={elements.find(el => el.id === selectedIds[0])?.diameter || DIAMETERS[0]}>
+                                                        {DIAMETERS.map(d => <option key={d} value={d}>{d}</option>)}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        )}
+
                                         {selectedIds.length === 1 && (() => {
                                             const el = elements.find(e => e.id === selectedIds[0]);
                                             return (
@@ -971,91 +928,9 @@
                             </div>
                         </div>
                     )}
-                    {showTextModal && (
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-50">
-                            <div className="bg-gray-800 p-6 rounded-lg shadow-xl border border-gray-600 w-80">
-                                <h3 className="text-lg font-bold mb-4 text-white">Texto</h3>
-                                <input autoFocus type="text" value={textInput} onChange={(e) => setTextInput(e.target.value)} className="w-full bg-gray-700 border border-gray-600 text-white rounded p-2 mb-4 outline-none focus:ring-2 focus:ring-blue-500" onKeyDown={(e) => e.key === 'Enter' && addText()} />
-                                <div className="flex justify-end gap-2">
-                                    <button onClick={() => setShowTextModal(false)} className="px-4 py-2 text-gray-400 hover:text-white">Cancelar</button>
-                                    <button onClick={addText} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">Aceptar</button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                    {showHelp && (
-                        <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-[200] fade-in" onClick={() => setShowHelp(false)}>
-                            <div className="bg-gray-800 w-[700px] h-[80vh] rounded-xl shadow-2xl border border-gray-600 flex flex-col" onClick={e => e.stopPropagation()}>
-                                <div className="flex justify-between items-center p-6 border-b border-gray-700 bg-gray-900/50 rounded-t-xl">
-                                    <h2 className="text-2xl font-bold text-white flex items-center gap-3"><Icon path={ICONS.HelpCircle} className="text-blue-500" size={32} /> Manual de Usuario</h2>
-                                    <button onClick={() => setShowHelp(false)} className="text-gray-400 hover:text-white hover:bg-gray-700 p-2 rounded-full transition">✕</button>
-                                </div>
-                                <div className="flex-1 overflow-y-auto p-8 space-y-8 text-gray-300">
-                                    {/* --- SECCIÓN 1: INTRODUCCIÓN --- */}
-                                    <section>
-                                        <h3 className="text-lg font-bold text-blue-400 mb-4 flex items-center gap-2 pb-2 border-b border-gray-700">
-                                            <Icon path={ICONS.BookOpen} size={20}/> 1. Introducción
-                                        </h3>
-                                        <p className="text-sm mb-4">
-                                            Bienvenido a <strong>IngenieroCAD</strong>, una herramienta web especializada para el diseño rápido de diagramas de tuberías e instrumentación (P&ID) y planos isométricos básicos.
-                                        </p>
-                                    </section>
-                                    {/* --- SECCIÓN 2: INTERFAZ Y NAVEGACIÓN --- */}
-                                    <section>
-                                        <h3 className="text-lg font-bold text-blue-400 mb-4 flex items-center gap-2 pb-2 border-b border-gray-700">
-                                            <Icon path={ICONS.Move} size={20}/> 2. Interfaz y Navegación
-                                        </h3>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="bg-gray-700/30 p-4 rounded-lg border border-gray-600">
-                                                <h4 className="font-bold text-white mb-2 flex items-center gap-2"><Icon path={ICONS.Mouse} /> Zoom</h4>
-                                                <p className="text-sm">Usa la <strong className="text-blue-300">Rueda del Ratón</strong> para acercar o alejar el plano. El zoom es inteligente y se centra en la posición del cursor.</p>
-                                            </div>
-                                            <div className="bg-gray-700/30 p-4 rounded-lg border border-gray-600">
-                                                <h4 className="font-bold text-white mb-2 flex items-center gap-2"><Icon path={ICONS.Move} /> Paneo (Mover)</h4>
-                                                <p className="text-sm">Para moverte por el lienzo infinito, mantén presionada la <strong className="text-blue-300">Rueda del Ratón (Click Central)</strong> o selecciona la herramienta <span className="manual-icon"><Icon path={ICONS.Move} size={14}/></span> y arrastra.</p>
-                                            </div>
-                                        </div>
-                                    </section>
-                                    {/* --- SECCIÓN 3: DIBUJO Y PRECISIÓN --- */}
-                                    <section>
-                                        <h3 className="text-lg font-bold text-green-400 mb-4 flex items-center gap-2 pb-2 border-b border-gray-700">
-                                            <Icon path={ICONS.Ruler} size={20}/> 3. Dibujo y Precisión
-                                        </h3>
-                                        <div className="space-y-4 text-sm">
-                                            <div className="bg-gray-700/30 p-3 rounded border-l-4 border-yellow-500">
-                                                <strong>Entrada Dinámica de Longitud:</strong>
-                                                <br/>Al dibujar una línea, verás una etiqueta flotante junto al cursor mostrando la longitud actual. Para dibujar con precisión exacta, simplemente <strong>escribe el número con tu teclado</strong> (la etiqueta se pondrá verde) y presiona <strong>Enter</strong>.
-                                            </div>
-                                            <ul className="list-disc pl-5 text-gray-400 space-y-2">
-                                                <li><strong>Rastreo Polar:</strong> Guía verde punteada automática en ángulos estándar (0, 90, 30, 150...).</li>
-                                                <li><strong>Snap a Puntos Finales:</strong> El cursor se pega magnéticamente (cuadro verde) a los extremos de líneas existentes.</li>
-                                                <li><strong>Grosores de Línea:</strong> Selecciona en la barra superior grosores desde 0.1px hasta 6px.</li>
-                                            </ul>
-                                        </div>
-                                    </section>
-                                    <section>
-                                        <h3 className="text-lg font-bold text-yellow-400 mb-4 flex items-center gap-2 pb-2 border-b border-gray-700">
-                                            <Icon path={ICONS.Tag} size={20}/> 3. Datos y Etiquetas
-                                        </h3>
-                                        <p className="text-sm mb-4">
-                                            Usa el menú contextual (click derecho) o el botón de etiqueta para insertar <strong>Datos de Tramo</strong>. Esto agrupa ID, Longitud, Diámetro, Material y Carga en un solo bloque visual.
-                                        </p>
-                                    </section>
-                                    <section>
-                                        <h3 className="text-lg font-bold text-purple-400 mb-4 flex items-center gap-2 pb-2 border-b border-gray-700">
-                                            <Icon path={ICONS.FileSpreadsheet} size={20}/> 4. Exportación
-                                        </h3>
-                                        <div className="space-y-4 text-sm">
-                                            <p>
-                                                Al exportar a <strong>Excel</strong>, el sistema genera una tabla estructurada ideal para memorias de cálculo. Además, calcula automáticamente el <strong>Diámetro Real Interno</strong> en mm según el material seleccionado (Acero, Cobre, PEAD, etc.).
-                                            </p>
-                                        </div>
-                                    </section>
-                                </div>
-                                <div className="p-4 bg-gray-900/50 rounded-b-xl border-t border-gray-700 text-center"><button onClick={() => setShowHelp(false)} className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium">Entendido</button></div>
-                            </div>
-                        </div>
-                    )}
+                    {/* ... (Rest of text and help modals) ... */}
+                    {showTextModal && (<div className="absolute inset-0 bg-black/50 flex items-center justify-center z-50"><div className="bg-gray-800 p-6 rounded-lg shadow-xl border border-gray-600 w-80"><h3 className="text-lg font-bold mb-4 text-white">Texto</h3><input autoFocus type="text" value={textInput} onChange={(e) => setTextInput(e.target.value)} className="w-full bg-gray-700 border border-gray-600 text-white rounded p-2 mb-4 outline-none focus:ring-2 focus:ring-blue-500" onKeyDown={(e) => e.key === 'Enter' && addText()} /><div className="flex justify-end gap-2"><button onClick={() => setShowTextModal(false)} className="px-4 py-2 text-gray-400 hover:text-white">Cancelar</button><button onClick={addText} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">Aceptar</button></div></div></div>)}
+                    {showHelp && (<div className="absolute inset-0 bg-black/70 flex items-center justify-center z-[200] fade-in" onClick={() => setShowHelp(false)}><div className="bg-gray-800 w-[700px] h-[80vh] rounded-xl shadow-2xl border border-gray-600 flex flex-col" onClick={e => e.stopPropagation()}><div className="flex justify-between items-center p-6 border-b border-gray-700 bg-gray-900/50 rounded-t-xl"><h2 className="text-2xl font-bold text-white flex items-center gap-3"><Icon path={ICONS.HelpCircle} className="text-blue-500" size={32} /> Manual de Usuario</h2><button onClick={() => setShowHelp(false)} className="text-gray-400 hover:text-white hover:bg-gray-700 p-2 rounded-full transition">✕</button></div><div className="flex-1 overflow-y-auto p-8 space-y-8 text-gray-300"><section><h3 className="text-lg font-bold text-blue-400 mb-4">Bienvenido a IngenieroCAD</h3><p className="text-sm">Herramienta web para diseño P&ID y planos isométricos.</p></section><section><h3 className="text-lg font-bold text-green-400 mb-4">Novedades (v2.1)</h3><ul className="text-sm list-disc pl-5 space-y-2"><li><strong>Detección de Codos:</strong> El sistema cuenta automáticamente las esquinas (90° o ángulos isométricos) entre tuberías del mismo material/diámetro.</li><li><strong>Despiece Automático:</strong> El Excel generado incluye una hoja "Despiece" con sumatorias de tubería y conteo de accesorios.</li><li><strong>Propiedades de Línea:</strong> Selecciona Material y Diámetro antes de dibujar o edítalo después en el panel de propiedades.</li></ul></section></div><div className="p-4 bg-gray-900/50 rounded-b-xl border-t border-gray-700 text-center"><button onClick={() => setShowHelp(false)} className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium">Entendido</button></div></div></div>)}
                 </div>
             );
         };
