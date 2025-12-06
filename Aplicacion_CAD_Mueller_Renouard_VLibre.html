@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IngenieroCAD - P&ID Web (Autosave & Scale)</title>
+    <title>IngenieroCAD - P&ID Web (Datos Técnicos)</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -34,6 +34,7 @@
         .context-menu-item:hover { background-color: #374151; color: white; }
         .prop-input { background-color: #374151; border: 1px solid #4b5563; color: white; font-size: 0.75rem; padding: 2px 4px; border-radius: 4px; width: 100%; }
         .prop-label { font-size: 0.7rem; color: #9ca3af; margin-bottom: 2px; display: block; }
+        .section-title { font-size: 0.75rem; font-weight: bold; color: #60a5fa; margin-top: 8px; margin-bottom: 4px; text-transform: uppercase; border-bottom: 1px solid #374151; padding-bottom: 2px; }
     </style>
 </head>
 <body>
@@ -106,6 +107,8 @@
         
         const MATERIALS = ['Ag', 'Ac', 'Cu Flex', 'Cu Rig', 'Multicapa', 'PEAD'];
         const DIAMETERS = ['1/4"', '3/8"', '1/2"', '3/4"', '1"', '1 1/4"', '1 1/2"', '2"', '2 1/2"', '3"', '4"', '6"', '8"'];
+        const REDUCER_TYPES = ['Copa Reducción', 'Bushing'];
+        const TERMINAL_TYPES = ['Macho', 'Hembra'];
         
         const DIAMETER_DB = {
             'Ag': { '1/2"': 21.34, '3/4"': 26.67, '1"': 33.40, '1 1/4"': 42.16, '1 1/2"': 48.26, '2"': 60.33, '3"': 88.90, '4"': 114.30, '6"': 168.30, '8"': 219.10 },
@@ -255,7 +258,6 @@
             const [autosaveMsg, setAutosaveMsg] = useState(null);
 
             // --- AUTOSAVE LOGIC ---
-            // Cargar
             useEffect(() => {
                 const saved = localStorage.getItem('ing-cad-autosave-v2');
                 if (saved) {
@@ -270,7 +272,6 @@
                 }
             }, []);
 
-            // Guardar
             useEffect(() => {
                 const timer = setTimeout(() => {
                     if (elements.length > 0) {
@@ -278,7 +279,7 @@
                         setAutosaveMsg("Guardado autom.");
                         setTimeout(() => setAutosaveMsg(null), 2000);
                     }
-                }, 2000); // Guardar 2 segs después del último cambio
+                }, 2000);
                 return () => clearTimeout(timer);
             }, [elements, layers]);
 
@@ -383,7 +384,7 @@
 
                 const { type, x1, y1, x2, y2, rotation = 0, anchor = ANCHORS.CENTER.id, extraData } = element;
                 
-                // --- SCALE LOGIC ADDED ---
+                // --- SCALE LOGIC ---
                 const localScale = element.elementScale || 1; 
                 const baseSize = GRID_SIZE * 0.6 * localScale; 
                 
@@ -598,8 +599,18 @@
                 if (tool === TOOLS.DIMENSION) { if (dimensionStep === 0) { setCurrentElement({ id: Date.now(), type: TOOLS.DIMENSION, x1: worldPos.x, y1: worldPos.y, x2: worldPos.x, y2: worldPos.y, color: '#fbbf24', lineWidth: 1, layerId: activeLayer }); setDimensionStep(1); } else { setElements(prev => [...prev, currentElement]); setCurrentElement(null); setDimensionStep(0); } return; }
                 if (tool === TOOLS.TEXT) { setTextPos(worldPos); setShowTextModal(true); return; }
                 if (tool === TOOLS.BEZIER) { if (bezierStep === 0) { setCurrentElement({ id: Date.now(), type: TOOLS.BEZIER, x1: worldPos.x, y1: worldPos.y, x2: worldPos.x, y2: worldPos.y, cx: worldPos.x, cy: worldPos.y, color, lineWidth, layerId: activeLayer }); setBezierStep(1); } else { setElements(prev => [...prev, currentElement]); setCurrentElement(null); setBezierStep(0); } return; }
-                // Insert Symbol with default scale 1
-                if ([TOOLS.VALVE, TOOLS.REGULATOR, TOOLS.REDUCER, TOOLS.TERMINAL, TOOLS.TEE].includes(tool)) { setElements(prev => [...prev, { id: Date.now(), type: tool, x1: mouseWorldPos.x, y1: mouseWorldPos.y, x2: mouseWorldPos.x, y2: mouseWorldPos.y, color, lineWidth, rotation: snapRotation, extraData: { flipIndex: flipRotation }, anchor, layerId: activeLayer, elementScale: 1 }]); return; }
+                
+                // Insert Symbol with Technical Defaults
+                if ([TOOLS.VALVE, TOOLS.REGULATOR, TOOLS.REDUCER, TOOLS.TERMINAL, TOOLS.TEE].includes(tool)) { 
+                    const defaultCustomData = {};
+                    if (tool === TOOLS.REGULATOR) { defaultCustomData.pIn = '2'; defaultCustomData.pOut = '1'; defaultCustomData.flow = '5'; defaultCustomData.length = '0.2'; }
+                    if (tool === TOOLS.REDUCER) { defaultCustomData.reductionType = 'Copa Reducción'; defaultCustomData.diaMajor = DIAMETERS[4]; defaultCustomData.diaMinor = DIAMETERS[2]; }
+                    if (tool === TOOLS.TERMINAL) { defaultCustomData.terminalType = 'Macho'; defaultCustomData.dimension = DIAMETERS[2]; }
+                    
+                    setElements(prev => [...prev, { id: Date.now(), type: tool, x1: mouseWorldPos.x, y1: mouseWorldPos.y, x2: mouseWorldPos.x, y2: mouseWorldPos.y, color, lineWidth, rotation: snapRotation, extraData: { flipIndex: flipRotation }, customData: defaultCustomData, anchor, layerId: activeLayer, elementScale: 1 }]); 
+                    return; 
+                }
+                
                 setCurrentElement({ id: Date.now(), type: tool, x1: worldPos.x, y1: worldPos.y, x2: worldPos.x, y2: worldPos.y, color, lineWidth, layerId: activeLayer });
                 if (tool === TOOLS.LINE) setDrawingLength(''); 
             };
@@ -729,6 +740,59 @@
             const deleteSelection = () => { setElements(prev => prev.filter(el => !selectedIds.includes(el.id))); setSelectedIds([]); };
             const handleEditTramo = () => { const el = elements.find(e => e.id === selectedIds[0]); if (el && el.tagMetadata) { setTagModal({ visible: true, type: el.tagMetadata.type === 'Punto' ? TAG_TYPES.PUNTO : TAG_TYPES.TRAMO_COMPLETO, x: el.x1, y: el.y1, editData: el, initialData: el }); } };
 
+            // --- ADVANCED GEOMETRY UPDATES ---
+            const updateSelectedLength = (val) => {
+                const num = parseFloat(val); if (isNaN(num) || num < 0) return;
+                setElements(prev => prev.map(el => {
+                    if (selectedIds.includes(el.id) && el.type === TOOLS.LINE) {
+                        const angle = Math.atan2(el.y2 - el.y1, el.x2 - el.x1);
+                        return { ...el, x2: el.x1 + num * Math.cos(angle), y2: el.y1 + num * Math.sin(angle) };
+                    } return el;
+                }));
+            };
+            const updateSelectedAngle = (val) => {
+                const deg = parseFloat(val); if (isNaN(deg)) return;
+                const rad = deg * Math.PI / 180;
+                setElements(prev => prev.map(el => {
+                    if (selectedIds.includes(el.id) && el.type === TOOLS.LINE) {
+                        const len = Math.sqrt((el.x2 - el.x1)**2 + (el.y2 - el.y1)**2);
+                        return { ...el, x2: el.x1 + len * Math.cos(rad), y2: el.y1 + len * Math.sin(rad) };
+                    } return el;
+                }));
+            };
+            const updateSelectedRadius = (val) => {
+                const num = parseFloat(val); if (isNaN(num) || num < 0) return;
+                setElements(prev => prev.map(el => {
+                    if (selectedIds.includes(el.id) && el.type === TOOLS.CIRCLE) {
+                        return { ...el, x2: el.x1 + num, y2: el.y1 }; // Simplest update: extend x2
+                    } return el;
+                }));
+            };
+            const updateSelectedRectDim = (prop, val) => {
+                const num = parseFloat(val); if (isNaN(num)) return;
+                setElements(prev => prev.map(el => {
+                    if (selectedIds.includes(el.id) && el.type === TOOLS.RECTANGLE) {
+                        return { ...el, [prop === 'w' ? 'x2' : 'y2']: el[prop === 'w' ? 'x1' : 'y1'] + num };
+                    } return el;
+                }));
+            };
+            const updateSelectedRotationDeg = (val) => {
+                const deg = parseFloat(val); if (isNaN(deg)) return;
+                setElements(prev => prev.map(el => selectedIds.includes(el.id) ? { ...el, rotation: deg * Math.PI / 180 } : el));
+            };
+            const updateSelectedFontSize = (val) => {
+                const num = parseFloat(val); if (isNaN(num) || num <= 0) return;
+                setElements(prev => prev.map(el => selectedIds.includes(el.id) ? { ...el, fontSize: num } : el));
+            };
+            
+            // --- NEW: TECHNICAL DATA UPDATES ---
+            const updateTramoMeta = (prop, val) => {
+                setElements(prev => prev.map(el => selectedIds.includes(el.id) && el.tagMetadata ? { ...el, tagMetadata: { ...el.tagMetadata, [prop]: val } } : el));
+            };
+            const updateCustomData = (prop, val) => {
+                setElements(prev => prev.map(el => selectedIds.includes(el.id) ? { ...el, customData: { ...(el.customData || {}), [prop]: val } } : el));
+            };
+
             return (
                 <div className="flex flex-col h-screen bg-gray-900 text-gray-200 overflow-hidden font-sans" onContextMenu={(e) => e.preventDefault()}>
                     {/* Header */}
@@ -770,14 +834,10 @@
                     <div className="flex flex-1 overflow-hidden relative">
                         <aside className="w-16 bg-gray-800 border-r border-gray-700 flex flex-col items-center py-4 gap-3 overflow-y-auto shrink-0 z-10">
                             <ToolButton icon={ICONS.PlusSquare} active={showLibrary} onClick={() => setShowLibrary(true)} label="Acoplar" highlight />
-                            
                             <div className="w-8 h-px bg-gray-700 my-1"></div>
-                            
                             <ToolButton icon={ICONS.Tag} active={tool === TOOLS.TAG} onClick={() => setTool(TOOLS.TAG)} label="Etiqueta" />
                             <ToolButton icon={ICONS.Ruler} active={tool === TOOLS.DIMENSION} onClick={() => setTool(TOOLS.DIMENSION)} label="Acotado" />
-                            
                             <div className="w-8 h-px bg-gray-700 my-1"></div>
-
                             <ToolButton icon={ICONS.MousePointer2} active={tool === TOOLS.SELECT} onClick={() => setTool(TOOLS.SELECT)} label="Seleccionar" />
                             <ToolButton icon={ICONS.Move} active={tool === TOOLS.PAN} onClick={() => setTool(TOOLS.PAN)} label="Pan" />
                             <ToolButton icon={ICONS.Minus} active={tool === TOOLS.LINE} onClick={() => setTool(TOOLS.LINE)} label="Línea" />
@@ -792,13 +852,14 @@
                             
                             {/* Panel Propiedades de Selección */}
                             {selectedIds.length > 0 && (
-                                <div className="absolute top-4 right-16 w-60 glass-panel rounded-xl p-4 shadow-2xl flex flex-col gap-3 fade-in z-20 overflow-y-auto max-h-[80vh]">
+                                <div className="absolute top-4 right-16 w-64 glass-panel rounded-xl p-4 shadow-2xl flex flex-col gap-3 fade-in z-20 overflow-y-auto max-h-[80vh]">
                                     <div className="flex justify-between items-center border-b border-gray-600 pb-2">
                                         <h3 className="text-sm font-bold text-white flex items-center gap-2"><Icon path={ICONS.Edit2} size={16}/> Propiedades ({selectedIds.length})</h3>
                                         <button onClick={deleteSelection} className="p-1 bg-red-600 hover:bg-red-500 rounded text-white" title="Eliminar Selección"><Icon path={ICONS.Trash2} size={14}/></button>
                                     </div>
                                     
                                     <div className="space-y-3 mt-2">
+                                        <div className="section-title">General</div>
                                         <div>
                                             <label className="text-xs text-gray-400 mb-1 block">Color</label>
                                             <div className="flex gap-1 flex-wrap">
@@ -823,11 +884,97 @@
 
                                         {selectedIds.length === 1 && (() => {
                                             const el = elements.find(e => e.id === selectedIds[0]);
+                                            const isSymbol = [TOOLS.VALVE, TOOLS.REGULATOR, TOOLS.REDUCER, TOOLS.TERMINAL, TOOLS.TEE].includes(el.type);
+                                            const custom = el.customData || {};
+                                            const meta = el.tagMetadata || {};
+
                                             return (
                                                 <div className="pt-2 border-t border-gray-600 space-y-2">
-                                                    {[TOOLS.VALVE, TOOLS.REGULATOR, TOOLS.REDUCER, TOOLS.TERMINAL, TOOLS.TEE].includes(el.type) && (
-                                                        <div><span className="prop-label font-bold text-blue-300">Escala del Objeto</span><input type="number" step="0.1" className="prop-input" value={el.elementScale || 1} onChange={(e) => updateSelectedScale(e.target.value)} /></div>
+                                                    
+                                                    {/* --- SECCIÓN DATOS TÉCNICOS ESPECÍFICOS --- */}
+                                                    {el.type === TOOLS.TRAMO_DATA && (
+                                                        <React.Fragment>
+                                                            <div className="section-title text-green-400">Datos de Tubería</div>
+                                                            <div><span className="prop-label">ID Tramo</span><input type="text" className="prop-input" value={meta.id} onChange={(e) => updateTramoMeta('id', e.target.value)} /></div>
+                                                            <div className="grid grid-cols-2 gap-2">
+                                                                <div><span className="prop-label">Longitud</span><input type="number" className="prop-input" value={meta.length} onChange={(e) => updateTramoMeta('length', e.target.value)} /></div>
+                                                                <div><span className="prop-label">Unidad</span><select className="prop-input" value={meta.lengthUnit} onChange={(e) => updateTramoMeta('lengthUnit', e.target.value)}>{LENGTH_UNITS.map(u => <option key={u} value={u}>{u}</option>)}</select></div>
+                                                            </div>
+                                                            <div><span className="prop-label">Diámetro</span><select className="prop-input" value={meta.diameter} onChange={(e) => updateTramoMeta('diameter', e.target.value)}>{DIAMETERS.map(d => <option key={d} value={d}>{d}</option>)}</select></div>
+                                                            <div><span className="prop-label">Material</span><select className="prop-input" value={meta.material} onChange={(e) => updateTramoMeta('material', e.target.value)}>{MATERIALS.map(m => <option key={m} value={m}>{m}</option>)}</select></div>
+                                                            <div className="grid grid-cols-2 gap-2">
+                                                                <div><span className="prop-label">Carga</span><input type="number" className="prop-input" value={meta.load} onChange={(e) => updateTramoMeta('load', e.target.value)} /></div>
+                                                                <div><span className="prop-label">Unidad</span><select className="prop-input" value={meta.loadUnit} onChange={(e) => updateTramoMeta('loadUnit', e.target.value)}>{LOAD_UNITS.map(u => <option key={u} value={u}>{u}</option>)}</select></div>
+                                                            </div>
+                                                        </React.Fragment>
                                                     )}
+
+                                                    {el.type === TOOLS.REGULATOR && (
+                                                        <React.Fragment>
+                                                            <div className="section-title text-green-400">Datos Regulador</div>
+                                                            <div className="grid grid-cols-2 gap-2">
+                                                                <div><span className="prop-label">P. Entrada</span><input type="text" className="prop-input" value={custom.pIn || ''} onChange={(e) => updateCustomData('pIn', e.target.value)} /></div>
+                                                                <div><span className="prop-label">P. Salida</span><input type="text" className="prop-input" value={custom.pOut || ''} onChange={(e) => updateCustomData('pOut', e.target.value)} /></div>
+                                                            </div>
+                                                            <div><span className="prop-label">Caudal (m³/h)</span><input type="text" className="prop-input" value={custom.flow || ''} onChange={(e) => updateCustomData('flow', e.target.value)} /></div>
+                                                            <div><span className="prop-label">Longitud (m)</span><input type="number" className="prop-input" value={custom.length || ''} onChange={(e) => updateCustomData('length', e.target.value)} /></div>
+                                                        </React.Fragment>
+                                                    )}
+
+                                                    {el.type === TOOLS.REDUCER && (
+                                                        <React.Fragment>
+                                                            <div className="section-title text-green-400">Datos Reducción</div>
+                                                            <div><span className="prop-label">Tipo</span><select className="prop-input" value={custom.reductionType || ''} onChange={(e) => updateCustomData('reductionType', e.target.value)}>{REDUCER_TYPES.map(t => <option key={t} value={t}>{t}</option>)}</select></div>
+                                                            <div><span className="prop-label">Diámetro Mayor</span><select className="prop-input" value={custom.diaMajor || ''} onChange={(e) => updateCustomData('diaMajor', e.target.value)}>{DIAMETERS.map(d => <option key={d} value={d}>{d}</option>)}</select></div>
+                                                            <div><span className="prop-label">Diámetro Menor</span><select className="prop-input" value={custom.diaMinor || ''} onChange={(e) => updateCustomData('diaMinor', e.target.value)}>{DIAMETERS.map(d => <option key={d} value={d}>{d}</option>)}</select></div>
+                                                        </React.Fragment>
+                                                    )}
+
+                                                    {el.type === TOOLS.TERMINAL && (
+                                                        <React.Fragment>
+                                                            <div className="section-title text-green-400">Datos Terminal</div>
+                                                            <div><span className="prop-label">Tipo</span><select className="prop-input" value={custom.terminalType || ''} onChange={(e) => updateCustomData('terminalType', e.target.value)}>{TERMINAL_TYPES.map(t => <option key={t} value={t}>{t}</option>)}</select></div>
+                                                            <div><span className="prop-label">Dimensión</span><select className="prop-input" value={custom.dimension || ''} onChange={(e) => updateCustomData('dimension', e.target.value)}>{DIAMETERS.map(d => <option key={d} value={d}>{d}</option>)}</select></div>
+                                                        </React.Fragment>
+                                                    )}
+
+                                                    <div className="section-title">Geometría</div>
+                                                    
+                                                    {/* PROPIEDADES ESPECÍFICAS SEGÚN TIPO */}
+                                                    {el.type === TOOLS.LINE && (
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                            <div><span className="prop-label">Longitud</span><input type="number" className="prop-input" value={Math.sqrt((el.x2-el.x1)**2 + (el.y2-el.y1)**2).toFixed(1)} onChange={(e) => updateSelectedLength(e.target.value)} /></div>
+                                                            <div><span className="prop-label">Ángulo (°)</span><input type="number" className="prop-input" value={Math.round((Math.atan2(el.y2-el.y1, el.x2-el.x1) * 180 / Math.PI))} onChange={(e) => updateSelectedAngle(e.target.value)} /></div>
+                                                        </div>
+                                                    )}
+
+                                                    {el.type === TOOLS.CIRCLE && (
+                                                         <div><span className="prop-label">Radio</span><input type="number" className="prop-input" value={Math.sqrt((el.x2-el.x1)**2 + (el.y2-el.y1)**2).toFixed(1)} onChange={(e) => updateSelectedRadius(e.target.value)} /></div>
+                                                    )}
+
+                                                    {el.type === TOOLS.RECTANGLE && (
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                            <div><span className="prop-label">Ancho</span><input type="number" className="prop-input" value={Math.abs(el.x2-el.x1).toFixed(1)} onChange={(e) => updateSelectedRectDim('w', e.target.value)} /></div>
+                                                            <div><span className="prop-label">Alto</span><input type="number" className="prop-input" value={Math.abs(el.y2-el.y1).toFixed(1)} onChange={(e) => updateSelectedRectDim('h', e.target.value)} /></div>
+                                                        </div>
+                                                    )}
+
+                                                    {isSymbol && (
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                            <div><span className="prop-label">Escala</span><input type="number" step="0.1" className="prop-input" value={el.elementScale || 1} onChange={(e) => updateSelectedScale(e.target.value)} /></div>
+                                                            <div><span className="prop-label">Rotación (°)</span><input type="number" className="prop-input" value={Math.round((el.rotation || 0) * 180 / Math.PI)} onChange={(e) => updateSelectedRotationDeg(e.target.value)} /></div>
+                                                        </div>
+                                                    )}
+
+                                                    {el.type === TOOLS.TEXT && (
+                                                        <div className="space-y-2">
+                                                            <div><span className="prop-label">Contenido</span><input type="text" className="prop-input" value={el.text} onChange={(e) => updateSelectedText(e.target.value)} /></div>
+                                                            <div><span className="prop-label">Tamaño Fuente</span><input type="number" className="prop-input" value={el.fontSize || (GRID_SIZE * 0.35)} onChange={(e) => updateSelectedFontSize(e.target.value)} /></div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* COORDENADAS RAW */}
+                                                    <div className="section-title mt-4">Coordenadas</div>
                                                     {el.x1 !== undefined && (
                                                         <div className="grid grid-cols-2 gap-2">
                                                             <div><span className="prop-label">X1</span><input type="number" className="prop-input" value={el.x1.toFixed(1)} onChange={(e) => updateSelectedCoord('x1', e.target.value)} /></div>
@@ -839,12 +986,6 @@
                                                             <div><span className="prop-label">X2</span><input type="number" className="prop-input" value={el.x2.toFixed(1)} onChange={(e) => updateSelectedCoord('x2', e.target.value)} /></div>
                                                             <div><span className="prop-label">Y2</span><input type="number" className="prop-input" value={el.y2.toFixed(1)} onChange={(e) => updateSelectedCoord('y2', e.target.value)} /></div>
                                                         </div>
-                                                    )}
-                                                    {el.type === TOOLS.TEXT && (
-                                                        <div><span className="prop-label">Contenido Texto</span><input type="text" className="prop-input" value={el.text} onChange={(e) => updateSelectedText(e.target.value)} /></div>
-                                                    )}
-                                                    {(el.type === TOOLS.TRAMO_DATA || el.type === TOOLS.TEXT && el.tagMetadata) && (
-                                                        <button onClick={handleEditTramo} className="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white text-xs py-1 rounded">Editar Datos Técnicos</button>
                                                     )}
                                                 </div>
                                             );
