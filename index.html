@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SofI.A. | Git de Ingeniería</title>
+    <title>SofI.A. | Ingeniería</title>
     <!-- Iconos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Fuente Roboto -->
@@ -206,7 +206,7 @@
     <!-- 1. LOGIN PRINCIPAL -->
     <div id="login-screen">
         <div class="login-box-static">
-            <h1 class="login-title">Git De Ingeniería</h1>
+            <h1 class="login-title">Ingeniería</h1>
             <div class="login-subtitle">Credenciales De Acceso</div>
             <form onsubmit="intentarLogin(event, 'General')">
                 <input type="text" id="user-static" class="login-input" placeholder="Usuario" required>
@@ -231,7 +231,7 @@
     <div id="main-interface" class="hidden">
         <nav id="navbar" class="navbar">
             <div style="display:flex; align-items:center; gap:40px;">
-                <div class="nav-logo" onclick="location.reload()">Git De Ingenieria</div>
+                <div class="nav-logo" onclick="location.reload()">Ingenieria</div>
                 <div class="nav-links">
                     <a href="interfazDeOpcionInicio.html" class="nav-item">Inicio</a>
                     <a href="#" class="nav-item active" onclick="location.reload()">Herramientas</a>
@@ -277,7 +277,7 @@
 
     <!-- 3. PROFILE GATE -->
     <div id="profile-gate">
-        <h1 class="gate-title">¿Quién está viendo ahora?</h1>
+        <h1 class="gate-title">¿Quién está navegando ahora?</h1>
         <div class="gate-profiles">
             <div class="profile-card" onclick="validarCambioPerfil('General')">
                 <div class="profile-avatar av-gen"><i class="fas fa-tools"></i></div><span class="profile-name">General</span>
@@ -289,7 +289,7 @@
                 <div class="profile-avatar av-edu"><i class="fas fa-graduation-cap"></i></div><span class="profile-name">Académico</span>
             </div>
         </div>
-        <button class="btn gate-close" onclick="cerrarGate()">VOLVER AL GIT</button>
+        <button class="btn gate-close" onclick="cerrarGate()">VOLVER AL MENU</button>
     </div>
 
     <!-- 4. MODAL LOGIN SECUNDARIO -->
@@ -538,7 +538,7 @@
                 id: 15,
                 nombre: "Isoplanos basicos", 
                 url: "Aplicacion_CAD_Mueller_Renouard.html",
-                imagen: "ImgCADMuellerRenouard_Vlibre", 
+                imagen: "ImgCADMuellerRenouard_Vlibre.png", 
                 descripcion: "Dibuja un isoplano, agrega componentes y descarga un archivo plano para modeladores y memorias de calculo", 
                 categoria: "Diseño y Modelado",
                 subtitulo: "Planimetrias"
@@ -885,6 +885,7 @@
     </script>
 </body>
 </html>
+
 
 
 
