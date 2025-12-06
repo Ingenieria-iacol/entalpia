@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IngenieroCAD - P&ID Web (BOM Avanzado)</title>
+    <title>IngenieroCAD - P&ID Web (Reportes Legibles)</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -888,59 +888,6 @@
             const updateSelectedText = (val) => { setElements(prev => prev.map(el => selectedIds.includes(el.id) ? { ...el, text: val } : el)); };
             const deleteSelection = () => { setElements(prev => prev.filter(el => !selectedIds.includes(el.id))); setSelectedIds([]); };
             const handleEditTramo = () => { const el = elements.find(e => e.id === selectedIds[0]); if (el && el.tagMetadata) { setTagModal({ visible: true, type: el.tagMetadata.type === 'Punto' ? TAG_TYPES.PUNTO : TAG_TYPES.TRAMO_COMPLETO, x: el.x1, y: el.y1, editData: el, initialData: el }); } };
-
-            // --- ADVANCED GEOMETRY UPDATES ---
-            const updateSelectedLength = (val) => {
-                const num = parseFloat(val); if (isNaN(num) || num < 0) return;
-                setElements(prev => prev.map(el => {
-                    if (selectedIds.includes(el.id) && el.type === TOOLS.LINE) {
-                        const angle = Math.atan2(el.y2 - el.y1, el.x2 - el.x1);
-                        return { ...el, x2: el.x1 + num * Math.cos(angle), y2: el.y1 + num * Math.sin(angle) };
-                    } return el;
-                }));
-            };
-            const updateSelectedAngle = (val) => {
-                const deg = parseFloat(val); if (isNaN(deg)) return;
-                const rad = deg * Math.PI / 180;
-                setElements(prev => prev.map(el => {
-                    if (selectedIds.includes(el.id) && el.type === TOOLS.LINE) {
-                        const len = Math.sqrt((el.x2 - el.x1)**2 + (el.y2 - el.y1)**2);
-                        return { ...el, x2: el.x1 + len * Math.cos(rad), y2: el.y1 + len * Math.sin(rad) };
-                    } return el;
-                }));
-            };
-            const updateSelectedRadius = (val) => {
-                const num = parseFloat(val); if (isNaN(num) || num < 0) return;
-                setElements(prev => prev.map(el => {
-                    if (selectedIds.includes(el.id) && el.type === TOOLS.CIRCLE) {
-                        return { ...el, x2: el.x1 + num, y2: el.y1 }; // Simplest update: extend x2
-                    } return el;
-                }));
-            };
-            const updateSelectedRectDim = (prop, val) => {
-                const num = parseFloat(val); if (isNaN(num)) return;
-                setElements(prev => prev.map(el => {
-                    if (selectedIds.includes(el.id) && el.type === TOOLS.RECTANGLE) {
-                        return { ...el, [prop === 'w' ? 'x2' : 'y2']: el[prop === 'w' ? 'x1' : 'y1'] + num };
-                    } return el;
-                }));
-            };
-            const updateSelectedRotationDeg = (val) => {
-                const deg = parseFloat(val); if (isNaN(deg)) return;
-                setElements(prev => prev.map(el => selectedIds.includes(el.id) ? { ...el, rotation: deg * Math.PI / 180 } : el));
-            };
-            const updateSelectedFontSize = (val) => {
-                const num = parseFloat(val); if (isNaN(num) || num <= 0) return;
-                setElements(prev => prev.map(el => selectedIds.includes(el.id) ? { ...el, fontSize: num } : el));
-            };
-            
-            // --- NEW: TECHNICAL DATA UPDATES ---
-            const updateTramoMeta = (prop, val) => {
-                setElements(prev => prev.map(el => selectedIds.includes(el.id) && el.tagMetadata ? { ...el, tagMetadata: { ...el.tagMetadata, [prop]: val } } : el));
-            };
-            const updateCustomData = (prop, val) => {
-                setElements(prev => prev.map(el => selectedIds.includes(el.id) ? { ...el, customData: { ...(el.customData || {}), [prop]: val } } : el));
-            };
 
             return (
                 <div className="flex flex-col h-screen bg-gray-900 text-gray-200 overflow-hidden font-sans" onContextMenu={(e) => e.preventDefault()}>
