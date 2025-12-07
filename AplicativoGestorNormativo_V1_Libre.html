@@ -14,6 +14,9 @@
     
     <!-- Babel para procesar JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- PapaParse para procesar CSV robustamente -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
     <style>
         ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -58,44 +61,21 @@
             ChevronRight: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
         };
 
-        // --- BASE DE DATOS REAL (30 Documentos Indexados) ---
-        const initialDocuments = [
-            { id: 'ING-001', code: 'PR-CENTELSA', title: '1. Análisis Previo Diseño Nave industrial CENTELSA (Oficial)', category: 'Ingeniería', date: '2025-10-04', status: 'VIGENTE', url: 'https://drive.google.com/open?id=179WzfriLS1X6LMEufc6gMtoNEgyM-WaPrx8_Mox5t6Q' },
-            { id: 'INF-001', code: 'INT-19/11', title: 'Informe De Interventoria 2025 (19/11)', category: 'Informes', date: '2025-11-19', status: 'VIGENTE', url: 'https://drive.google.com/open?id=1z66JM66P8yvUc5oMZVWz7ppw_re_FJEeBhC3fmO6MQw' },
-            { id: 'INF-002', code: 'INT-13/11', title: 'Informe De Interventoria 2025 (13/11)', category: 'Informes', date: '2025-11-13', status: 'ARCHIVADO', url: 'https://drive.google.com/open?id=1cWE2w4lwAEzKaC2fYagZ1Dgw8CKnN7cb3dIvTnD3uQc' },
-            { id: 'ING-002', code: 'DIM-TRONCAL', title: 'Dimensionamiento Hidráulico Red Troncal GLP', category: 'Ingeniería', date: '2025-11-09', status: 'BORRADOR', url: 'https://drive.google.com/open?id=1Xh2qKrJRSBBp0WU5HBjLPmXBdC9TLGyA2Qs_93FIws0' },
-            { id: 'INF-003', code: 'INT-29/10', title: 'Informe De Interventoria 2025 (29/10)', category: 'Informes', date: '2025-10-29', status: 'ARCHIVADO', url: 'https://drive.google.com/open?id=10DhDBOlx2lcdjg7O9v0SkJdmsLBiGrwpLpHOmqSRyaE' },
-            { id: 'INF-004', code: 'INT-05/11', title: 'Informe De Interventoria 2025 (5/11)', category: 'Informes', date: '2025-11-05', status: 'ARCHIVADO', url: 'https://drive.google.com/open?id=1NRsJQx9fIVNAFbFiEtLlCxM952HJuil_lty6G9Fvc50' },
-            { id: 'INF-005', code: 'INT-25/10', title: 'Informe De Interventoria 2025 (25/10)', category: 'Informes', date: '2025-10-25', status: 'ARCHIVADO', url: 'https://drive.google.com/open?id=1qjVl4UwqxJgJK7LgSmu2aJlsXLCi6rt_SCiZaCNzbv8' },
-            { id: 'ING-003', code: 'PR-ALUCOL', title: 'Análisis Propuesta Proyecto GLP Alucol', category: 'Ingeniería', date: '2025-01-01', status: 'REVISIÓN', url: 'https://drive.google.com/open?id=1-t7XdC945XOzgLyByAijQgb-k0vji_tlzRJ9EakedWw' },
-            { id: 'ING-004', code: 'DIS-ERP-TOCOTA', title: 'Fundamento del diseño ERP Estacion Tocota', category: 'Ingeniería', date: '2025-01-01', status: 'VIGENTE', url: 'https://drive.google.com/open?id=1ODkRPBlwQSPBfZU5YTi0cmMlVn2o4ubMCp66fKDz1MQ' },
-            { id: 'MANT-001', code: 'REP-ANGELITA', title: 'REPARACIÓN Y ADECUACIÓN DE HALLAZGOS RTR EN LA INDUSTRIA ANGELITA', category: 'Mantenimiento', date: '2025-07-08', status: 'CRÍTICO', url: 'https://drive.google.com/open?id=1rdpTzPJwHxiV6qKuo2xUwqX9TmfkPEiRvTZ6T2TMQ4E' },
-            { id: 'INF-006', code: 'INT-15/10', title: 'Informe De Interventoria 2025 (15/10)', category: 'Informes', date: '2025-10-15', status: 'ARCHIVADO', url: 'https://drive.google.com/open?id=10iLVE3IiWVAcFtG6NkLb1E6CGh1goMuXjero3OedgU8' },
-            { id: 'COM-001', code: 'PRE-SOCROAL-1', title: '3. Socroal: Lista y presupuesto linea individual (AC) Propuesta 1', category: 'Comercial', date: '2025-07-13', status: 'VIGENTE', url: 'https://drive.google.com/open?id=18DIRYI64VeWV-UEGS5TVhjQyicj3kBp0iFTyPLtKh9o' },
-            { id: 'ADM-001', code: 'RESP-CENTELSA', title: 'Responde el requerimiento del documento "DISCRIMINACIÓN COSTOS"', category: 'Administrativo', date: '2025-10-04', status: 'VIGENTE', url: 'https://drive.google.com/open?id=1hn0QYbygF1czxWzeHSj_7dZwYTyM54WjyGYzhz_dJbQ' },
-            { id: 'ING-005', code: 'CALC-SOCROAL-2', title: '2. Sucroal: Pérdida de Presión (Linea individual) 4"', category: 'Ingeniería', date: '2025-07-12', status: 'VIGENTE', url: 'https://drive.google.com/open?id=1atw7r1yEB-MAzjTa83iaBjtmhBZb6XTWlRr3G0Vik-g' },
-            { id: 'MEC-001', code: 'MON-VAP-ALUVAL', title: 'MONTAJE: Vaporizadores GLP Paralelos - Aluval', category: 'Mecánica', date: '2025-09-29', status: 'VIGENTE', url: 'https://drive.google.com/open?id=1iU9Ofa6AqcAWJOZZYDc1nZwBcAHpPcopToNqrmMe9FA' },
-            { id: 'ING-006', code: 'DIS-DESCARGA-GLP', title: '12. Socroal: Diseño del Sistema de Descarga de GLP', category: 'Ingeniería', date: '2025-01-01', status: 'VIGENTE', url: 'https://drive.google.com/open?id=1i7BcAJM7EhZspIrgQvqW_JWJDIomTfv-UolomxZC_kM' },
-            { id: 'NOR-001', code: 'NTC-3728', title: 'Memoria de IA NTC 3728 Gasoductos', category: 'Normativa', date: '2001-11-28', status: 'VIGENTE', url: 'https://drive.google.com/open?id=1BXMPtQCAS8dno_UQAP46KrB64cv5bn_A2A4UE81RZrE' },
-            { id: 'ING-007', code: 'EST-REG-SOCROAL', title: '11. Socroal: Estación de Regulación de Presión', category: 'Ingeniería', date: '2025-01-01', status: 'VIGENTE', url: 'https://drive.google.com/open?id=11HMIGPexW6O79Qj9RbSg3OQ5c3do5aikvJ-0YULzXRs' },
-            { id: 'COM-002', code: 'COT-GLP-AC', title: 'Cotización Línea GLP Acero Carbono', category: 'Comercial', date: '2025-09-29', status: 'VIGENTE', url: 'https://drive.google.com/open?id=1OsKbeEm7hTSVVBMMlfL7JKiaSCRCFyrnoqqVnIK2B5k' },
-            { id: 'CAP-001', code: 'IND-INTERVENTOR', title: 'Inducción interventor redes gas LP', category: 'Capacitación', date: '2025-09-15', status: 'VIGENTE', url: 'https://drive.google.com/open?id=1INea8Qv1i48420PzcU8oB9wqRkQDh7CdqvlC8H8M6Z8' },
-            { id: 'ING-008', code: 'DIS-MANIFOLD', title: '5. Socroal: Diseño Manifold GLP Soldado', category: 'Ingeniería', date: '2025-07-13', status: 'VIGENTE', url: 'https://drive.google.com/open?id=1JsLpwu1GN0EAv2QdPRCGGK0lCc4ZgahVIkvgJM_p75g' },
-            { id: 'NOR-002', code: 'NTC-3838', title: 'Norma Técnica Colombiana NTC 3838', category: 'Normativa', date: '2014-02-19', status: 'VIGENTE', url: 'https://drive.google.com/open?id=1iO8o639sskkoK9UITkdL8qkLtFLOYzXR' },
-            { id: 'ING-009', code: 'CALC-LIQ-VAP', title: '6. Socroal: Dimensionamiento y perdida de carga linea de liquido hacia vaporizadores', category: 'Ingeniería', date: '2025-07-16', status: 'VIGENTE', url: 'https://drive.google.com/open?id=1amwC7txTF4ievq6M6SkU0mvlbrHhk7H5SFtLWgcvwe0' },
-            { id: 'GEN-001', code: 'MEMORIAS-IA', title: 'Memorias del Chat (Libro Unico)', category: 'General', date: '2025-09-01', status: 'VIGENTE', url: 'https://drive.google.com/open?id=1j5qmXVvxccv1tT8qywRSXpnokw7opYBmukT52_OFKD8' },
-            { id: 'NOR-003', code: 'NTC-4282', title: 'Memoria IA NTC 4282', category: 'Normativa', date: '2003-12-19', status: 'VIGENTE', url: 'https://drive.google.com/open?id=1uNTdnj8HK269Yr06zkx4aCHpgU0BUaFBEMvsY9RU690' },
-            { id: 'CAP-002', code: 'PRES-IA-DIS', title: 'Para presentacion I.A. Basico diseño', category: 'Capacitación', date: '2025-01-01', status: 'VIGENTE', url: 'https://drive.google.com/open?id=1HVcG9G8UGm2NRrkFpcbrvk1o1LcrN2SJldDWdVZqxyI' },
-            { id: 'ING-010', code: 'CALC-GLP-SUCROAL', title: '2.1.b. Sucroal Cálculo Pérdida Presión GLP SUCROAL', category: 'Ingeniería', date: '2025-07-16', status: 'VIGENTE', url: 'https://drive.google.com/open?id=1eATWrkEuMBOzUytOm8eaKfbgQ8QrpwZVl6mAicE74Nc' },
-            { id: 'MEC-002', code: 'MONT-LINEA-AC', title: 'MONTAJE: Línea GLP Acero Carbono', category: 'Mecánica', date: '2025-09-29', status: 'VIGENTE', url: 'https://drive.google.com/open?id=1qn4IkaFnF7HXQJR0MNbLDRR95pN4yfMla9E7sDQPg3I' },
-            { id: 'COM-003', code: 'PROP-ANGELITA', title: 'Propuesta Comercial - Adecuacion equipos Angelita', category: 'Comercial', date: '2025-07-08', status: 'VIGENTE', url: 'https://drive.google.com/open?id=1bOswgC90PDEtr4oFN5ibvlNIBbFQqRQI_0WsAowXA3w' },
-            { id: 'COM-004', code: 'PROP-SOCROAL-2', title: '4. Socroal: Construcción linea individual (PE) Propuesta 2', category: 'Comercial', date: '2025-07-13', status: 'VIGENTE', url: 'https://drive.google.com/open?id=1gze_OJtgOudCTZ6G_xn8c9n4P-zTrX1l-RpiUTrZZd8' }
-        ];
-
-        const categories = ['Todos', 'Ingeniería', 'Normativa', 'Informes', 'Mecánica', 'Comercial', 'Mantenimiento', 'Administrativo', 'Capacitación', 'General'];
+        // --- DATOS CSV INCORPORADOS ---
+        // Aquí puedes pegar el contenido de tu CSV completo si cambia.
+        const csvData = `Nombre del Archivo,Enlace (URL),Carpeta Actual,Ruta Completa,Tipo,Tamaño (MB),Fecha Creación
+Relacion de documentos Libreria,https://docs.google.com/spreadsheets/d/17lbkxFmbawCzX-F180wZusa4EHqWd4HitqT6bLU3-54/edit?usp=drivesdk,2. Libreria,2. Libreria,application/vnd.google-apps.spreadsheet,0.00,2025-12-06
+Resolucion 1857 del 2024.pdf,https://drive.google.com/file/d/1OnNuu7OSaEvrBuwFi2AwtccwsjDTxAfE/view?usp=drivesdk,5. Resoluciones,2. Libreria / 5. Resoluciones,application/pdf,4.89,2024-11-07
+Anexo General del RETIE Resolucion 90708_2013.pdf,https://drive.google.com/file/d/1-UtQ37H97BUH7vlzwKcskRu9gbP60Q6t/view?usp=drivesdk,5. Resoluciones,2. Libreria / 5. Resoluciones,application/pdf,4.13,2021-10-22
+RESOLUCION_CREG_NACION_0067_1995.pdf,https://drive.google.com/file/d/1-ac-BrBzRFEpms9EImY6V-sBPjmS9E4oF/view?usp=drivesdk,5. Resoluciones,2. Libreria / 5. Resoluciones,application/pdf,2.07,2021-10-22
+Copia de CO2BC0~1.PDF,https://drive.google.com/file/d/1WX2B14cdgQKAIvPpb-Mr4RzCNB70cOhK/view?usp=drivesdk,1. Certificado de materiales,2. Libreria / 1. Certificado de materiales,application/pdf,1.57,2021-08-18
+Copia de CO52C6~1.PDF,https://drive.google.com/file/d/1XnKHUVBiynibLNwh9eu1ziFgGp2l4xev/view?usp=drivesdk,1. Certificado de materiales,2. Libreria / 1. Certificado de materiales,application/pdf,0.69,2021-08-18
+Copia de COA983~1.PDF,https://drive.google.com/file/d/1cg0N_6XKDf3dBjw0NhUWYYUlYAxn2Rgt/view?usp=drivesdk,1. Certificado de materiales,2. Libreria / 1. Certificado de materiales,application/pdf,1.55,2021-08-18
+Copia de CO66AB~1.PDF,https://drive.google.com/file/d/1io-zdVMWYdkJwTQz7EQI6_IyrWJ3xF6K/view?usp=drivesdk,1. Certificado de materiales,2. Libreria / 1. Certificado de materiales,application/pdf,1.52,2021-08-18`;
 
         function GestorNormativo() {
-          const [documents, setDocuments] = useState(initialDocuments);
+          const [documents, setDocuments] = useState([]);
+          const [categories, setCategories] = useState(['Todos']);
           const [activeCategory, setActiveCategory] = useState('Todos');
           const [searchTerm, setSearchTerm] = useState('');
           const [currentTime, setCurrentTime] = useState(new Date());
@@ -106,6 +86,43 @@
 
           useEffect(() => {
             const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+            
+            // --- PARSEO CSV ---
+            Papa.parse(csvData, {
+                header: true,
+                skipEmptyLines: true,
+                complete: (results) => {
+                    const parsedDocs = results.data.map((row, index) => {
+                        // Limpieza de Categoría (e.g., "5. Resoluciones" -> "Resoluciones")
+                        const rawCat = row['Carpeta Actual'] || 'General';
+                        const cleanCat = rawCat.replace(/^\d+\.\s*/, '').trim(); 
+                        
+                        // ID Generado
+                        let prefix = cleanCat.substring(0,3).toUpperCase();
+                        if (prefix === 'CER') prefix = 'MAT'; // Alias para certificados
+                        const id = `${prefix}-${String(index + 1).padStart(3, '0')}`;
+
+                        return {
+                            id: id,
+                            code: row['Nombre del Archivo'] || 'SIN NOMBRE',
+                            title: row['Nombre del Archivo']?.replace(/\.pdf$/i, '') || 'Documento sin título',
+                            category: cleanCat,
+                            originalCategory: rawCat,
+                            date: row['Fecha Creación'] || 'N/A',
+                            status: 'DISPONIBLE', // Por defecto ya que son de librería
+                            url: row['Enlace (URL)'] || '#',
+                            type: row['Tipo'] || 'Unknown'
+                        };
+                    }).filter(doc => doc.url && doc.url !== '#'); // Filtrar líneas vacías o inválidas
+
+                    setDocuments(parsedDocs);
+
+                    // Extraer categorías únicas
+                    const uniqueCats = ['Todos', ...new Set(parsedDocs.map(d => d.category))].sort();
+                    setCategories(uniqueCats);
+                }
+            });
+
             return () => clearInterval(timer);
           }, []);
 
@@ -129,26 +146,20 @@
 
           const getStatusColor = (status) => {
             switch (status) {
-              case 'VIGENTE': return 'text-emerald-400 border-emerald-400 bg-emerald-400/10';
-              case 'ARCHIVADO': return 'text-slate-500 border-slate-600 bg-slate-800/50';
-              case 'REVISIÓN': return 'text-amber-400 border-amber-400 bg-amber-400/10';
-              case 'CRÍTICO': return 'text-red-400 border-red-400 bg-red-400/10';
-              case 'BORRADOR': return 'text-slate-400 border-slate-400 bg-slate-400/10';
-              default: return 'text-cyan-400 border-cyan-400';
+              case 'DISPONIBLE': return 'text-emerald-400 border-emerald-400 bg-emerald-400/10';
+              case 'VIGENTE': return 'text-cyan-400 border-cyan-400 bg-cyan-400/10';
+              default: return 'text-slate-400 border-slate-400';
             }
           };
 
           const getCategoryIcon = (cat) => {
-             switch(cat) {
-                 case 'Ingeniería': return <Icons.Cpu size={12} className="text-cyan-500" />;
-                 case 'Normativa': return <Icons.BookOpen size={12} className="text-purple-500" />;
-                 case 'Informes': return <Icons.FileText size={12} className="text-blue-400" />;
-                 case 'Mecánica': return <Icons.Wrench size={12} className="text-orange-500" />;
-                 case 'Comercial': return <Icons.Briefcase size={12} className="text-green-500" />;
-                 case 'Mantenimiento': return <Icons.Shield size={12} className="text-red-500" />;
-                 case 'Capacitación': return <Icons.HardHat size={12} className="text-yellow-400" />;
-                 default: return <Icons.Database size={12} className="text-slate-400" />;
-             }
+             // Mapeo dinámico simple basado en palabras clave
+             const lowerCat = cat.toLowerCase();
+             if (lowerCat.includes('res')) return <Icons.BookOpen size={12} className="text-purple-500" />;
+             if (lowerCat.includes('cert')) return <Icons.Shield size={12} className="text-emerald-500" />;
+             if (lowerCat.includes('lib')) return <Icons.Database size={12} className="text-blue-500" />;
+             if (lowerCat.includes('ing')) return <Icons.Cpu size={12} className="text-cyan-500" />;
+             return <Icons.FileText size={12} className="text-slate-400" />;
           };
 
           return (
@@ -164,7 +175,7 @@
                     <Icons.Database className="text-cyan-500" size={24} />
                     <div>
                       <h1 className="text-lg font-bold tracking-wider text-cyan-50 uppercase">Gestor Normativo</h1>
-                      <div className="text-[10px] text-cyan-600 leading-none tracking-[0.2em]">SISTEMA DE INGENIERÍA V.2.6 - DATA CENTER</div>
+                      <div className="text-[10px] text-cyan-600 leading-none tracking-[0.2em]">LIBRERÍA CENTRAL V.3.0 - CSV LINKED</div>
                     </div>
                   </div>
                 </div>
@@ -193,7 +204,7 @@
                     <div>
                       <h3 className="text-xs font-bold text-slate-500 mb-3 px-2 flex items-center gap-2">
                         <Icons.Filter size={12} />
-                        FILTRAR POR DISCIPLINA
+                        CARPETAS / CATEGORÍAS
                       </h3>
                       <nav className="space-y-1">
                         {categories.map(cat => (
@@ -226,7 +237,7 @@
                          <div className="h-1 w-full bg-slate-800 rounded-full overflow-hidden mt-2">
                            <div className="h-full bg-cyan-600 w-3/4"></div>
                          </div>
-                         <p className="text-slate-600 text-center pt-1">INDEXANDO...</p>
+                         <p className="text-slate-600 text-center pt-1">BASE DE DATOS: CSV</p>
                        </div>
                     </div>
                   </div>
@@ -244,7 +255,7 @@
                       </div>
                       <input
                         type="text"
-                        placeholder="BUSCAR CÓDIGO, TÍTULO O FECHA..."
+                        placeholder="BUSCAR DOCUMENTO..."
                         className="block w-full pl-10 pr-3 py-3 border border-slate-700 bg-slate-950/50 text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm uppercase tracking-wider rounded-sm shadow-inner"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -294,7 +305,7 @@
                                 </span>
                                 </div>
 
-                                <h4 className="text-xs text-cyan-100 font-bold mb-1 leading-tight group-hover:text-cyan-400 transition-colors uppercase truncate">
+                                <h4 className="text-xs text-cyan-100 font-bold mb-1 leading-tight group-hover:text-cyan-400 transition-colors uppercase truncate" title={doc.code}>
                                 {doc.code}
                                 </h4>
                                 <p className="text-[11px] text-slate-400 mb-2 flex-grow line-clamp-3 leading-relaxed border-t border-slate-900 pt-2">
@@ -327,10 +338,9 @@
                                 <thead className="bg-slate-900 text-slate-400 border-b border-slate-800">
                                     <tr>
                                         <th className="p-3 uppercase tracking-wider font-medium">ID</th>
-                                        <th className="p-3 uppercase tracking-wider font-medium">Código</th>
-                                        <th className="p-3 uppercase tracking-wider font-medium">Título</th>
-                                        <th className="p-3 uppercase tracking-wider font-medium">Disciplina</th>
-                                        <th className="p-3 uppercase tracking-wider font-medium">Estado</th>
+                                        <th className="p-3 uppercase tracking-wider font-medium">Nombre</th>
+                                        <th className="p-3 uppercase tracking-wider font-medium">Carpeta</th>
+                                        <th className="p-3 uppercase tracking-wider font-medium">Fecha</th>
                                         <th className="p-3 uppercase tracking-wider font-medium text-right">Acción</th>
                                     </tr>
                                 </thead>
@@ -338,14 +348,9 @@
                                     {currentDocs.map(doc => (
                                         <tr key={doc.id} className="hover:bg-slate-900/50 transition-colors group">
                                             <td className="p-3 font-mono text-slate-500">{doc.id}</td>
-                                            <td className="p-3 font-bold text-cyan-100 group-hover:text-cyan-400">{doc.code}</td>
-                                            <td className="p-3 text-slate-400 truncate max-w-xs">{doc.title}</td>
+                                            <td className="p-3 font-bold text-cyan-100 group-hover:text-cyan-400">{doc.title}</td>
                                             <td className="p-3 text-slate-500">{doc.category}</td>
-                                            <td className="p-3">
-                                                <span className={`px-2 py-0.5 border rounded-sm text-[9px] font-bold ${getStatusColor(doc.status)}`}>
-                                                    {doc.status}
-                                                </span>
-                                            </td>
+                                            <td className="p-3 text-slate-500">{doc.date}</td>
                                             <td className="p-3 text-right">
                                                 <a href={doc.url} target="_blank" className="text-cyan-600 hover:text-cyan-400">
                                                     <Icons.ExternalLink size={14} />
@@ -362,7 +367,7 @@
                       <div className="h-full flex flex-col items-center justify-center text-slate-600 opacity-50 py-12">
                         <Icons.Terminal size={48} className="mb-4" />
                         <p className="text-lg uppercase tracking-widest">No se encontraron registros</p>
-                        <p className="text-xs">Verifique los parámetros de búsqueda</p>
+                        <p className="text-xs">Cargando base de datos o sin resultados...</p>
                       </div>
                     )}
                   </div>
@@ -370,7 +375,7 @@
                   {/* FOOTER / PAGINATION */}
                   <footer className="h-12 bg-slate-950 border-t border-slate-800 flex items-center justify-between px-4 text-[10px] text-slate-500 z-10">
                     <div className="flex items-center gap-4">
-                        <span>PÁGINA {currentPage} DE {totalPages}</span>
+                        <span>PÁGINA {currentPage} DE {totalPages || 1}</span>
                         <span className="hidden md:inline text-slate-600">|</span>
                         <span className="hidden md:inline">REGISTROS: {filteredDocs.length}</span>
                     </div>
@@ -384,7 +389,7 @@
                             <Icons.ChevronLeft size={14} />
                         </button>
                         <button 
-                            disabled={currentPage === totalPages}
+                            disabled={currentPage === totalPages || totalPages === 0}
                             onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                             className="p-1.5 border border-slate-700 rounded hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                         >
