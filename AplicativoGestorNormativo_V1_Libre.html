@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestor Normativo - Sistema de Ingeniería</title>
+    <title>Gestor Normativo - Librería Técnica</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -15,7 +15,7 @@
     <!-- Babel para procesar JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-    <!-- PapaParse para procesar CSV robustamente -->
+    <!-- PapaParse -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
     <style>
@@ -43,35 +43,316 @@
             Search: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
             Database: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s 9-1.34 9-3V5"/></svg>,
             Shield: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
-            Zap: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
-            BookOpen: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>,
-            Filter: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>,
-            ExternalLink: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>,
             Cpu: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>,
-            Terminal: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>,
             Clock: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
             Menu: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>,
             X: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
-            Wrench: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>,
-            Briefcase: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>,
-            HardHat: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 18a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v2z"/><path d="M10 10V5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5"/><path d="M4 15v-3a6 6 0 0 1 6-6h0"/><path d="M14 6h0a6 6 0 0 1 6 6v3"/></svg>,
+            Filter: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>,
+            ExternalLink: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>,
             List: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>,
             Grid: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>,
             ChevronLeft: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>,
-            ChevronRight: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            ChevronRight: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>,
+            BookOpen: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
         };
 
-        // --- DATOS CSV INCORPORADOS ---
-        // Aquí puedes pegar el contenido de tu CSV completo si cambia.
-        const csvData = `Nombre del Archivo,Enlace (URL),Carpeta Actual,Ruta Completa,Tipo,Tamaño (MB),Fecha Creación
-Relacion de documentos Libreria,https://docs.google.com/spreadsheets/d/17lbkxFmbawCzX-F180wZusa4EHqWd4HitqT6bLU3-54/edit?usp=drivesdk,2. Libreria,2. Libreria,application/vnd.google-apps.spreadsheet,0.00,2025-12-06
-Resolucion 1857 del 2024.pdf,https://drive.google.com/file/d/1OnNuu7OSaEvrBuwFi2AwtccwsjDTxAfE/view?usp=drivesdk,5. Resoluciones,2. Libreria / 5. Resoluciones,application/pdf,4.89,2024-11-07
-Anexo General del RETIE Resolucion 90708_2013.pdf,https://drive.google.com/file/d/1-UtQ37H97BUH7vlzwKcskRu9gbP60Q6t/view?usp=drivesdk,5. Resoluciones,2. Libreria / 5. Resoluciones,application/pdf,4.13,2021-10-22
-RESOLUCION_CREG_NACION_0067_1995.pdf,https://drive.google.com/file/d/1-ac-BrBzRFEpms9EImY6V-sBPjmS9E4oF/view?usp=drivesdk,5. Resoluciones,2. Libreria / 5. Resoluciones,application/pdf,2.07,2021-10-22
-Copia de CO2BC0~1.PDF,https://drive.google.com/file/d/1WX2B14cdgQKAIvPpb-Mr4RzCNB70cOhK/view?usp=drivesdk,1. Certificado de materiales,2. Libreria / 1. Certificado de materiales,application/pdf,1.57,2021-08-18
-Copia de CO52C6~1.PDF,https://drive.google.com/file/d/1XnKHUVBiynibLNwh9eu1ziFgGp2l4xev/view?usp=drivesdk,1. Certificado de materiales,2. Libreria / 1. Certificado de materiales,application/pdf,0.69,2021-08-18
-Copia de COA983~1.PDF,https://drive.google.com/file/d/1cg0N_6XKDf3dBjw0NhUWYYUlYAxn2Rgt/view?usp=drivesdk,1. Certificado de materiales,2. Libreria / 1. Certificado de materiales,application/pdf,1.55,2021-08-18
-Copia de CO66AB~1.PDF,https://drive.google.com/file/d/1io-zdVMWYdkJwTQz7EQI6_IyrWJ3xF6K/view?usp=drivesdk,1. Certificado de materiales,2. Libreria / 1. Certificado de materiales,application/pdf,1.52,2021-08-18`;
+        // --- DATOS EMBEBIDOS (NO EDITAR) ---
+        const csvData = `Nombre del Archivo;Enlace (URL);Carpeta Actual;Ruta Completa;Tipo;Tamaño (MB);Fecha Creación
+Relacion de documentos Libreria;https://docs.google.com/spreadsheets/d/17lbkxFmbawCzX-F180wZusa4EHqWd4HitqT6bLU3-54/edit?usp=drivesdk;2. Libreria;2. Libreria;application/vnd.google-apps.spreadsheet;0.00;6/12/2025
+Resolucion 1857 del 2024.pdf;https://drive.google.com/file/d/1OnNuu7OSaEvrBuwFi2AwtccwsjDTxAfE/view?usp=drivesdk;5. Resoluciones;2. Libreria / 5. Resoluciones;application/pdf;4.89;7/11/2024
+Anexo General del RETIE Resolucion 90708_2013.pdf;https://drive.google.com/file/d/1-UtQ37H97BUH7vlzwKcskRu9gbP60Q6t/view?usp=drivesdk;5. Resoluciones;2. Libreria / 5. Resoluciones;application/pdf;4.13;22/10/2021
+RESOLUCION_CREG_NACION_0067_1995.pdf;https://drive.google.com/file/d/1-ac-BrBzRFEpms9EImY6V-sBPjmS-SgD/view?usp=drivesdk;5. Resoluciones;2. Libreria / 5. Resoluciones;application/pdf;0.07;11/11/2020
+RESOLUCIÓN 41385.pdf;https://drive.google.com/file/d/1-i0N82kAb2ELrP8HndNOydZP6kYRYb_X/view?usp=drivesdk;5. Resoluciones;2. Libreria / 5. Resoluciones;application/pdf;1.33;11/11/2020
+Creg137-2013.pdf;https://drive.google.com/file/d/1-xiKsaGptq9g7xtIZVXh2AkOJMDSEz9V/view?usp=drivesdk;5. Resoluciones;2. Libreria / 5. Resoluciones;application/pdf;0.34;3/09/2023
+RESOLUCION 1509.pdf;https://drive.google.com/file/d/14rDM_MOjoYNAGeSizuvW2wyC9_Lsihp6/view?usp=drivesdk;5. Resoluciones;2. Libreria / 5. Resoluciones;application/pdf;0.26;11/11/2020
+RESOLUCIÓN 40120_2016.pdf;https://drive.google.com/file/d/19bgPZ0TaUokFUJm11fVsGSR7QtNuFV-r/view?usp=drivesdk;5. Resoluciones;2. Libreria / 5. Resoluciones;application/pdf;01.04;11/11/2020
+Creg502 019 Mercado Relevante.pdf;https://drive.google.com/file/d/19chX6KmKPA145YuXCII46YyFEtu739JU/view?usp=drivesdk;5. Resoluciones;2. Libreria / 5. Resoluciones;application/pdf;0.28;3/09/2023
+RESOLUCION 14471.pdf;https://drive.google.com/file/d/1DdQxUvnJGbd8Dk2ZjSZVK-XDjAODpEao/view?usp=drivesdk;5. Resoluciones;2. Libreria / 5. Resoluciones;application/pdf;0.31;11/11/2020
+RESOLUCIÓN 0680_2015.pdf;https://drive.google.com/file/d/1DsnEQ2tYjnLdfkyenri4I3n07yaum--g/view?usp=drivesdk;5. Resoluciones;2. Libreria / 5. Resoluciones;application/pdf;0.65;11/11/2020
+RESOLUCION 936.pdf;https://drive.google.com/file/d/1H51gHvmMcs5ngOP6aTKCXWQfvyFRM0Bu/view?usp=drivesdk;5. Resoluciones;2. Libreria / 5. Resoluciones;application/pdf;0.56;11/11/2020
+RESOLUCIÓN 0680_2015.docx;https://docs.google.com/document/d/1KpNZA9dMd8WILxy-3KzseZeTr1LFTIyJ/edit?usp=drivesdk&ouid=116214496369763337560&rtpof=true&sd=true;5. Resoluciones;2. Libreria / 5. Resoluciones;application/vnd.openxmlformats-officedocument.wordprocessingml.document;0.06;11/11/2020
+RESOLUCION 1606.pdf;https://drive.google.com/file/d/1SqLfh0IFbjdUxP_eXb-Fj0m_pErpN9Yj/view?usp=drivesdk;5. Resoluciones;2. Libreria / 5. Resoluciones;application/pdf;0.64;11/11/2020
+RESOLUCION 1814 DE 2016.pdf;https://drive.google.com/file/d/1jbLoncGP8DKK3pfOb7BiFqkh1g7vmYAe/view?usp=drivesdk;5. Resoluciones;2. Libreria / 5. Resoluciones;application/pdf;0.57;21/02/2022
+RESOLUCIÓN 40246 2016.pdf;https://drive.google.com/file/d/1vW959OS4-Swlj1HgwwMtQOBVga_3uXPe/view?usp=drivesdk;5. Resoluciones;2. Libreria / 5. Resoluciones;application/pdf;0.21;7/07/2020
+RESOLUCION 1023 de 2004.pdf;https://drive.google.com/file/d/1x6UUP07bCtpui-c5zgm66k-APdAsTFPK/view?usp=drivesdk;5. Resoluciones;2. Libreria / 5. Resoluciones;application/pdf;0.28;11/11/2020
+RESOLUCION CREG - 059 DE 2012.pdf;https://drive.google.com/file/d/1y55OhB703mpW1aV5eKBPKRJtIQw5YCKD/view?usp=drivesdk;5. Resoluciones;2. Libreria / 5. Resoluciones;application/pdf;0.53;11/11/2020
+NTC 3838.pdf;https://drive.google.com/file/d/1jhQ5tkmRfxslC0ATLjCLVj-B2so2MouN/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.03;20/06/2020
+NTC 3765.pdf;https://drive.google.com/file/d/1koTQKnuBF1nENdk2JiEkU-K9qFGgCJDi/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.05;20/06/2020
+NTC 2832-2.pdf;https://drive.google.com/file/d/1nWi0ULjes3ybxwtHI2BvZFfg8w1DtJSI/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.04;20/06/2020
+NTC 5281.pdf;https://drive.google.com/file/d/1q7HbFHpwukEci_IKlhUm7Pg7hXABKxMi/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.27;20/06/2020
+NTC 2518.pdf;https://drive.google.com/file/d/1rDpj_Fc75nEVHR2xJtMVlWWIZQh_dMB3/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.08;20/06/2020
+NTC 522-1.pdf;https://drive.google.com/file/d/1rp1LX5ehm9CD2KtiNjEQmB6A_R3PxbsX/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.59;20/06/2020
+NTC 1092.pdf;https://drive.google.com/file/d/1sD9H6a4Ode9vAp3F1M5dvFVHkMyFZLuE/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.04;20/06/2020
+NTC-ISO-IEC17050-2.pdf;https://drive.google.com/file/d/1sV9hugzcqYY7J8ScDcVih6Oa_1ffgsaB/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.03;20/06/2020
+NTC 5042.pdf;https://drive.google.com/file/d/1sbsvC8FAluEFdiayaMM-Yh7g478W4dpO/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.66;20/06/2020
+NTC 5730.pdf;https://drive.google.com/file/d/1sczBPdwQK5gwUiCkGeiEm-wWeyOt9_sf/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.04;20/06/2020
+NTC 4820 (2).pdf;https://drive.google.com/file/d/1srvc5SI02rwgPbvIVlF2Tl4viMFjIL5B/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.14;20/06/2020
+NTC 3631.2a.pdf;https://drive.google.com/file/d/1tUlneULOuP04b4zcFUb3hQKiB9H7hnaa/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;2.65;20/06/2020
+NTC 1575.pdf;https://drive.google.com/file/d/1u09IIMBDXSewujBJQeCONhsjNeDcSTH2/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.04;20/06/2020
+NTC 3384.pdf;https://drive.google.com/file/d/1u6AsAczm-wAdq7PoaBbiL3rpfGc-PQ42/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.38;20/06/2020
+NTC 4830-4.PDF;https://drive.google.com/file/d/1vVFc3X2esXK5DmTY9D--Vpsgf6YTbNmm/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.05;20/06/2020
+NTC 3649.pdf;https://drive.google.com/file/d/1wJY7DRu1pPccuZe0he5tFAstJRq_4HhS/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.22;20/06/2020
+NTC 4534.pdf;https://drive.google.com/file/d/1wRvgU7FMfi1TrOLBEXBrOq0RoF7VSo8K/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.07;20/06/2020
+NTC 3873.pdf;https://drive.google.com/file/d/1yllcKR8GQ2xBBNeNdQ6m1q_mgshgne7e/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.06;20/06/2020
+NTC 3847.pdf;https://drive.google.com/file/d/1zWS-EOzlDR5oe4BV_pCu8LQ8VXgqTkh9/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.18;20/06/2020
+NTC 4830-5.PDF;https://drive.google.com/file/d/1jcD_WIUhwygnR_TO5Y0zbPbdJhL_sm3H/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.05;20/06/2020
+NTC 2728.pdf;https://drive.google.com/file/d/1l4C70H5nYPM8ym7c_8ySqzDYul0rVgez/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.10;20/06/2020
+NTC 3527-2A.pdf;https://drive.google.com/file/d/1mceHyrXNFfUTEZSIplY6lby_JT6AlRuR/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.08;20/06/2020
+NTC 3631.pdf;https://drive.google.com/file/d/1mjBK_t8wnKqBsP9375_1KfA5Pb0tUr2J/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.11;20/06/2020
+NTC ISO IEC 17020:2012.pdf;https://drive.google.com/file/d/1qOgyqYgPlBkRhq654BJNyLuB90tI4pqf/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;3.42;7/07/2020
+NTC-ISO-IEC17050-1.pdf;https://drive.google.com/file/d/1qiKVSDgx1vpPMDIpGg6d7M8Dl2KS7RJL/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.04;20/06/2020
+NTC 1091.pdf;https://drive.google.com/file/d/1ugEesdK2ucjCDO_tOejghqeXhy1A2f5V/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.35;20/06/2020
+NTC 4282.pdf;https://drive.google.com/file/d/10DY3zRRnI0HoSw3Vw5PR_6TPa_eDe1te/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.20;20/06/2020
+NTC 2144.pdf;https://drive.google.com/file/d/13pAImnFY3TNCUeREB3z6WPLeq8i8zIh4/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.12;20/06/2020
+NTC 4282 IND.pdf;https://drive.google.com/file/d/13sT8LWw_cj4I9OC8lkfdLklYcg9TxHT6/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.31;20/06/2020
+NTC 4300.pdf;https://drive.google.com/file/d/14YEvRRhfK1ZI6DfKqM1hPNArSdU7fUfL/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.11;20/06/2020
+NTC 3410.pdf;https://drive.google.com/file/d/14npHUn_pG2K3hEE1-0f4jFidTaTdCcJx/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.06;20/06/2020
+NTC 3741.pdf;https://drive.google.com/file/d/16bpRTBQbJlKCPUa3ja5_khEnmkcTyTfk/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.21;20/06/2020
+NTC 3727.pdf;https://drive.google.com/file/d/1AOwJBk1LpHJcdo7a3tibZ4FTHzCWUYss/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.33;20/06/2020
+NTC 3771.pdf;https://drive.google.com/file/d/1D1-nkAuCsAyTDdP6q9dw_cxfDDv81ooF/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.05;20/06/2020
+NTC 1746.pdf;https://drive.google.com/file/d/1Dfd46YdmfScl5dYOqknLwHE7dJz-LPGk/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.23;20/06/2020
+NTC 2587.pdf;https://drive.google.com/file/d/1FJfRdncievOqFztxSPmCeMez9-TmJZ_0/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.26;20/06/2020
+NTC 3728.pdf;https://drive.google.com/file/d/1JWdG6mycj9R3_qN7Tr4xDLvY6Uq45d4s/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.34;20/06/2020
+NTC 4830-19.pdf;https://drive.google.com/file/d/1KV8U-gLKX3rjH-LNbxy0N-EMLpHQwfrz/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.04;20/06/2020
+NTC 4136.pdf;https://drive.google.com/file/d/1Kll4keHqcUGBeZH7q6mXzmLwdZqh4du-/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.18;20/06/2020
+NTC 4820 GNV.pdf;https://drive.google.com/file/d/1LWcM5xMLVS7od2DATeoNW8ySA8Zin6_z/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.09;20/06/2020
+NTC 4827.pdf;https://drive.google.com/file/d/1LtVnwdc5X298YExcTKlDy-pWzdKS941I/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.10;20/06/2020
+NTC 3770.pdf;https://drive.google.com/file/d/1NCt4I9rKdl3deIcMMmzX8AQH5UzARHg2/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.04;20/06/2020
+NTC ISO 9001 2008.pdf;https://drive.google.com/file/d/1OCUHwrTpENw6-tzID60g8bZV4P8u4LA6/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.48;7/07/2020
+NTC 3768.pdf;https://drive.google.com/file/d/1OdkVfcfm2AKndzzkUNuZE--CDDyUoK00/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.04;20/06/2020
+NTC 5335.pdf;https://drive.google.com/file/d/1OnnWOhljquuV7Kd7LXKrrhQeeEq4jLog/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.04;20/06/2020
+NTC 3264.pdf;https://drive.google.com/file/d/1PO5KngLbk0i6ItKSNV1LsSjnz_pTYbyQ/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.03;20/06/2020
+NTC 5256.pdf;https://drive.google.com/file/d/1QE9zYUHbNuzO7DEDb6cK2g-1pOsHBGAt/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;1.12;20/06/2020
+NTC 3944.pdf;https://drive.google.com/file/d/1QjUcymcnDcHEKFkou2uEv5keZ-QNJtrg/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.05;20/06/2020
+NTC3712.pdf;https://drive.google.com/file/d/1RFrbk4bI828sfUXSbNU-lkIAfRLL3Lqy/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.10;20/06/2020
+NTC 3742.pdf;https://drive.google.com/file/d/1RZ2VH5I7qCU-je33yjWe1Auyj9NOf7CT/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.14;20/06/2020
+NTC 5360.pdf;https://drive.google.com/file/d/1RdkPMmfmR6hVQJ0oBMcCQ2isKsRzHPX5/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.18;20/06/2020
+NTC 1908.pdf;https://drive.google.com/file/d/1TNISUuSu4s7dKvuH3W0oMeVhpuOQDiaa/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.44;20/06/2020
+NTC 3950.pdf;https://drive.google.com/file/d/1UZ4n3-36JA4ywCYKkUrPUhtNMyLShIsA/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.15;20/06/2020
+NTC 4082.pdf;https://drive.google.com/file/d/1UjaMx6JqGpC_gXTYFauo0779SEy5FVVS/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.21;20/06/2020
+NTC 1692.pdf;https://drive.google.com/file/d/1Wx9a2iWu9B2EbCRWK-hP3C2rQG4Ok9fB/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.13;20/06/2020
+NTC 4830-3.pdf;https://drive.google.com/file/d/1XcP8fECnQ2J8jdqZaqzdlF9cgeBZKRwG/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.04;20/06/2020
+NTC 2635.pdf;https://drive.google.com/file/d/1ZQ1m62QHQLSUaS0zapJLtP2qqwAkbJol/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.08;20/06/2020
+NTC 3740.pdf;https://drive.google.com/file/d/1ZX_X44GtGnPbmbe-lRC0YT-vhE34VQJA/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.09;20/06/2020
+NTC 332.pdf;https://drive.google.com/file/d/1_zLri7sTzhvFxd7p0IXHAWYc5J6Z1T1n/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.35;20/06/2020
+NTC 2249.pdf;https://drive.google.com/file/d/1aJu01gf7rUkRFS4R64UNILr7hQTcV1St/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.05;20/06/2020
+NTC 4829.pdf;https://drive.google.com/file/d/1aPioX3lN6uUx5OPGWaSPpltKFzF-m0Bc/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.04;20/06/2020
+NTC 4824.pdf;https://drive.google.com/file/d/1bSVpCdHeluHOkjdIoME5JldBoCrd5Zvv/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;1.76;20/06/2020
+NTC 4128.pdf;https://drive.google.com/file/d/1bu98havKyCKQBq6gUgq28Amy0kRZzUES/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.05;20/06/2020
+NTC 4830-17.PDF;https://drive.google.com/file/d/1erXzoO_aaD4d2VuEA_fpxYBw5-ewM63N/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.05;20/06/2020
+NTC 2832-1.pdf;https://drive.google.com/file/d/1iAjxrKXi1OYJVvGY11ABtMUHBSSO6mfC/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.97;20/06/2020
+NTC 3260.pdf;https://drive.google.com/file/d/1KNuwuE14TazjLgV9iMLvxof6dRjjwtA5/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.42;20/06/2020
+NTC 4825.pdf;https://drive.google.com/file/d/1Mui1fOpfuSfw4UZbfwZlQu6DxLst0SlZ/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.26;20/06/2020
+NTC 3424.pdf;https://drive.google.com/file/d/1Smh4G8wq6zCnh9Md2a7C9EAuAtZl4W_L/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.98;20/06/2020
+NTC 4830-1.PDF;https://drive.google.com/file/d/1ZVJnRkzTni1_qn5RUBYaCrQa_VKyj-8H/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.05;20/06/2020
+NTC 4820.pdf;https://drive.google.com/file/d/1jRQkH9IH6rF79MBnnXWGgaNYP3F6kPZ2/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.14;20/06/2020
+NTC 4554.pdf;https://drive.google.com/file/d/178jx7fPzaA5slHpagopryIJEe6dpJhmO/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.43;20/06/2020
+NTC3853.pdf;https://drive.google.com/file/d/18vUcLIeLFTuOGu-DQIwefDmhm8G7o6um/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.35;20/06/2020
+NTC 3561.pdf;https://drive.google.com/file/d/1A_tFK9iOcGhF-NDw1f3ozUpe6CpfTsyV/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.77;20/06/2020
+NTC 1145.pdf;https://drive.google.com/file/d/1MP536EgzpiI7RohBMpVT6IFg9bpDq_Kk/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.47;20/06/2020
+NTC 2263.pdf;https://drive.google.com/file/d/1Rw-KSCVvLAhRddJr8aPe50p6ac7YIoJL/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.04;20/06/2020
+NTC 4282 mod 29-07-2014.pdf;https://drive.google.com/file/d/1anFF-hE8cmm8eX36lBvGZCLBZwhsmRvW/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.20;20/06/2020
+NTC 2576.pdf;https://drive.google.com/file/d/1djdWfJsLgTBZNInqjUjPGh4uJ7CHbYT_/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.06;20/06/2020
+NTC 4354.pdf;https://drive.google.com/file/d/1esVBUTGuXoRGO0MNwroSwzSkq41KneeU/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.11;20/06/2020
+NTC 4137.pdf;https://drive.google.com/file/d/114JPplJ3ZO_wYTAf9cgk9t8E3RWma-qc/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.38;20/06/2020
+NTC 2515.pdf;https://drive.google.com/file/d/13JHoLuCcM6CdN5T9uGQq5Tceb4HIFYtj/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.06;20/06/2020
+NTC 3409-1A.pdf;https://drive.google.com/file/d/15iUn0tr0aepWjfPY9PKZ0GRfXTw6I--K/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.05;20/06/2020
+NTC 3567.pdf;https://drive.google.com/file/d/17d9Dvxr3ZVMVHUS7O3v_HBxPFKe8Jk5-/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.30;20/06/2020
+NTC 4830-6.PDF;https://drive.google.com/file/d/17m782qt_6vPGn20t5IJEMuPS1cz40oy3/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.05;20/06/2020
+NTC 3293.pdf;https://drive.google.com/file/d/19rrYwt_X342KkR-6BEkGjXFTWOy-tWjR/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.45;20/06/2020
+NTC 3833.pdf;https://drive.google.com/file/d/1GNJ1jnK9FXCn-n2fsbdUMIHzvmSP6BzW/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.56;20/06/2020
+NTC 522-2.pdf;https://drive.google.com/file/d/1In86UD1aHdTrn5kx5khRe9w9ZLEbgIXW/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.28;20/06/2020
+NTC 5071.pdf;https://drive.google.com/file/d/1JXABdfZDN8--MJypB6pR0ri091iXBkHV/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.04;20/06/2020
+NTC 4579.pdf;https://drive.google.com/file/d/1KrArKYAj8r1c-16tE4UuuRh4ce65lWP3/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.29;20/06/2020
+NTC 3624.pdf;https://drive.google.com/file/d/1PvN5KMr8sgMjdtBs2xzY-nWkkc4sLPQ4/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.03;20/06/2020
+NTC 3853.pdf;https://drive.google.com/file/d/1VGk1DQ491KEV6mVVAiceADLqUAVMxMAk/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.35;20/06/2020
+NTC 3527-1A.pdf;https://drive.google.com/file/d/1X5ULWX-jTYDf0TH5bgBIoseqVeLHT8FK/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.06;20/06/2020
+NTC 5336.pdf;https://drive.google.com/file/d/1YCXwT0tK22ld6F8EVybeyCbm4bHMLMQk/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.36;20/06/2020
+NTC 4821.pdf;https://drive.google.com/file/d/1YXDTq_iSBKRxUE7uvC3OjR6uInlIq_iS/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.06;20/06/2020
+NTC 4823.pdf;https://drive.google.com/file/d/1YiRlGX0Mn69sXFeA3m6XLlwxjSv4gjYg/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.50;20/06/2020
+NTC 4830-2.pdf;https://drive.google.com/file/d/1_8ppDKSKCyZYon0LZfCbSf-V1NTkkCWz/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.06;20/06/2020
+NTC 3531.pdf;https://drive.google.com/file/d/1bQnEDZPNfbagV7DD0mo9M9APNzeoMUKs/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;1.90;20/06/2020
+NTC 4830-9.PDF;https://drive.google.com/file/d/1fg8TTvX_-DJclqCH3tzQVDw_PoJOk7GO/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.05;20/06/2020
+NTC 4830-8.pdf;https://drive.google.com/file/d/1g-BMdfQF4WHU9TLWX8o-N8tL51PyHMJm/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.04;20/06/2020
+NTC 4830-18.PDF;https://drive.google.com/file/d/1gr0xFgHCKfbQofWP96s9kEO_ArPeHbX8/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.04;20/06/2020
+NTC 3538.pdf;https://drive.google.com/file/d/1jQX-vVCMVZpfPssqkwmHRXBbvZlhyGR2/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.05;20/06/2020
+NTC 2462.pdf;https://drive.google.com/file/d/1-eJjWGJ_5zVkyGhNeZyJzpM8JR4pZ7GX/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;1.00;20/06/2020
+NTC 3409-2A.pdf;https://drive.google.com/file/d/12PmpvHFjDjlljBUpmmDb3APQd1Im-fEE/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.08;20/06/2020
+NTC 5304.pdf;https://drive.google.com/file/d/15dMy8f9stxvsbc7XzBG99oeicIzaZthT/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.06;20/06/2020
+NTC 2699.pdf;https://drive.google.com/file/d/18anjVsNgLp9f5NB8wbGoxrXxumiGIako/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;1.50;20/06/2020
+NTC 888.pdf;https://drive.google.com/file/d/19iCKZRHQhem7yNKLYehcjNxziHzM-48r/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.03;20/06/2020
+NTC 3632.pdf;https://drive.google.com/file/d/19w56xPdz0WXhtRM73as-pPSS7dOUSQ8u/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.20;20/06/2020
+NTC 3769.pdf;https://drive.google.com/file/d/1AT4vuAIS_2BeCPKJqS6MZ4OJrtjHNvFc/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.18;20/06/2020
+NTC 3643.pdf;https://drive.google.com/file/d/1CUkSw-DMhi-qu1Tj7rC-1SvvS1AI6aW6/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.05;20/06/2020
+NTC 4138.pdf;https://drive.google.com/file/d/1DP9b_dha8_wnpt1GUa1ymnmTzgoL3ylF/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.37;20/06/2020
+NTC 4826.pdf;https://drive.google.com/file/d/1EaErQyB3npDazk5HFALCeA8RuVJKeiOS/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.19;20/06/2020
+NTC 3853-1.pdf;https://drive.google.com/file/d/1FCec4XaeDQC6rjD4LWHsAnupyKw6K7YV/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.29;20/06/2020
+NTC 4830-10.PDF;https://drive.google.com/file/d/1KkeerxAq2NScb-mmtgsYM4PsMYadA1u9/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.04;20/06/2020
+NTC 2143.pdf;https://drive.google.com/file/d/1LjlcDVuF_JoEZV1H-5fW-4KpX7qulKDq/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.07;20/06/2020
+NTC 5356.pdf;https://drive.google.com/file/d/1OaWPjCXyabfP3PQr_y1BLU3kK39syMbM/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.04;20/06/2020
+NTC 2826.pdf;https://drive.google.com/file/d/1RdJLkUsO5A-g1ZTjdb1fiyoAw055rT4n/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.10;20/06/2020
+NTC 2505-4A.pdf;https://drive.google.com/file/d/1SL8rnlxs9BbXZ3bEv_jrsOBycuyenmU7/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.34;20/06/2020
+NTC 5469.pdf;https://drive.google.com/file/d/1TLRnohI3EPJjjxqrejK0QorV4AIS-cne/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.03;20/06/2020
+NTC 3470.pdf;https://drive.google.com/file/d/1UCinj93UwRP-AuIe1-537BmM1TbB40CS/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.29;20/06/2020
+NTC 3458.pdf;https://drive.google.com/file/d/1Uk6AMiJTl27tTRiBzB04Y32FUnXMbFXP/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.17;20/06/2020
+NTC 3949.pdf;https://drive.google.com/file/d/1YmMwLOywzrVWfOsramqj0PYyrudsaITU/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.07;20/06/2020
+NTC 4822.pdf;https://drive.google.com/file/d/1_sqUsWq7jw80IRSbZhJG0oHE9MzxDrV0/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.03;20/06/2020
+NTC 2104.pdf;https://drive.google.com/file/d/1a9_7u6WLSJoSZ-3rPaybGuRqZGcmctyy/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.19;20/06/2020
+NTC 3712.pdf;https://drive.google.com/file/d/1areX8Z4wnJJZ14aT_j8-T7nn1dfIY0OK/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.07;20/06/2020
+NTC 2303.pdf;https://drive.google.com/file/d/1cNLz7Kk9uKIBMYNgNLzdE4-7906QgjlS/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.04;20/06/2020
+NTC 4828.pdf;https://drive.google.com/file/d/1fjhE4RNCKPOB8rg_Wdx9UUUKyfS5I_vQ/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.70;20/06/2020
+NTC 2505-2A.pdf;https://drive.google.com/file/d/1hcr9TUwjf3RbrsZtJ2riFiwD6BvX-xF8/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.87;20/06/2020
+NORMA_TECNICA_NTC_ISO_IEC_COLOMBIANA_170.pdf;https://drive.google.com/file/d/1h7PzqPgwqqdTEXRtwyPxYmz2OCdlKUa9/view?usp=drivesdk;4. Normas Tecnicas Colombianas;2. Libreria / 4. Normas Tecnicas Colombianas;application/pdf;0.07;17/09/2023
+END0019.pdf;https://drive.google.com/file/d/17Av9fB8OpL4RWLJ0VkkuGkE1rh-GharI/view?usp=drivesdk;3. Especificaciones normativas disponibles;2. Libreria / 3. Especificaciones normativas disponibles;application/pdf;0.04;20/06/2020
+END0022.pdf;https://drive.google.com/file/d/1GBwc3LZAO8sPLha7Imh_5opM2AK4ICVt/view?usp=drivesdk;3. Especificaciones normativas disponibles;2. Libreria / 3. Especificaciones normativas disponibles;application/pdf;0.04;20/06/2020
+END0025.pdf;https://drive.google.com/file/d/1LpH3CJxOjEUq9OxPan64p_t35Gqbx__w/view?usp=drivesdk;3. Especificaciones normativas disponibles;2. Libreria / 3. Especificaciones normativas disponibles;application/pdf;0.21;20/06/2020
+END008.pdf;https://drive.google.com/file/d/1aQzEYZcicmaYG9iNPTjdh-14wU2IA69L/view?usp=drivesdk;3. Especificaciones normativas disponibles;2. Libreria / 3. Especificaciones normativas disponibles;application/pdf;0.25;20/06/2020
+END0018.pdf;https://drive.google.com/file/d/1ahtBrX4BIFfCPI2l-mSGGo4fTezm72hF/view?usp=drivesdk;3. Especificaciones normativas disponibles;2. Libreria / 3. Especificaciones normativas disponibles;application/pdf;0.04;20/06/2020
+END0017.pdf;https://drive.google.com/file/d/1fwQ3UXDr4YDdwnY_GWnY767XFAddJnEZ/view?usp=drivesdk;3. Especificaciones normativas disponibles;2. Libreria / 3. Especificaciones normativas disponibles;application/pdf;0.06;20/06/2020
+END0024.pdf;https://drive.google.com/file/d/1qQOaIImnSp6ibJJOtonYSTVsXCfh_tjQ/view?usp=drivesdk;3. Especificaciones normativas disponibles;2. Libreria / 3. Especificaciones normativas disponibles;application/pdf;0.17;20/06/2020
+END0027.pdf;https://drive.google.com/file/d/1wr6SCG8Bzusdl1_7u4v7bb-DHba0L7i6/view?usp=drivesdk;3. Especificaciones normativas disponibles;2. Libreria / 3. Especificaciones normativas disponibles;application/pdf;0.26;20/06/2020
+decreto_1595_de_2015.pdf;https://drive.google.com/file/d/19qOdb0BOwukq-pcCvhmQPAiQurz5uSjK/view?usp=drivesdk;2. Decretos;2. Libreria / 2. Decretos;application/pdf;1.65;20/06/2020
+articles-9103_recurso_1.pdf;https://drive.google.com/file/d/1CPT10yr44y632g31B3wmJMLEBcXkOyyY/view?usp=drivesdk;2. Decretos;2. Libreria / 2. Decretos;application/pdf;2.74;20/06/2020
+DECRETO 2269 DE 1993.pdf;https://drive.google.com/file/d/1Cm1j0bz8MNWm0hL18B_34UNrrqIHZXWU/view?usp=drivesdk;2. Decretos;2. Libreria / 2. Decretos;application/pdf;0.09;20/06/2020
+ley1266_31_12_2008(1).pdf;https://drive.google.com/file/d/1Y5oo--h8y3F5UkZy8_IC0_pSrPyrClwb/view?usp=drivesdk;2. Decretos;2. Libreria / 2. Decretos;application/pdf;1.30;20/06/2020
+Decreto 1471 del 5 de Agosto de 2014.pdf;https://drive.google.com/file/d/1dVFTTLQvMs6WdQ79TlVPYuCehUnlGwt2/view?usp=drivesdk;2. Decretos;2. Libreria / 2. Decretos;application/pdf;3.41;20/06/2020
+Dec 1166 DEL 19-07-2016_D.D.P. Verval.pdf;https://drive.google.com/file/d/1jf4TqsvLzwwTixbMcenMrY4YJJqufSAA/view?usp=drivesdk;2. Decretos;2. Libreria / 2. Decretos;application/pdf;1.89;20/06/2020
+Colmena- 4856 ccTubosAceroSoldadosSinCosturaNegros.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PM0doajVVT2JoSUU/view?usp=drivesdk&resourcekey=0-4qAJ1wDLeVuUCWkylbJnPw;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.31;16/10/2017
+Copy of Extrucol S.A.S exp 02-09-2017_1.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PMEVRNXpOU2pjd0E/view?usp=drivesdk&resourcekey=0-limQlyLDZrbTZ_fDGKz_xQ;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;01.03;2/08/2016
+Certificado Tuberia Cobre Nacobre - Mayun (3).pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PN3ZmWnpUS0VYdms/view?usp=drivesdk&resourcekey=0-f_62kq7wxXySoetNAPF6fg;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.78;16/10/2017
+Extrucol CER 294097 (1).pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PN3pLcGlsQjBFYjg/view?usp=drivesdk&resourcekey=0-hRov80iIXtujfUkyGYxaGQ;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;1.44;16/10/2017
+Extrucol  CER 294099.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PNmtOeVo0LXBFY0U/view?usp=drivesdk&resourcekey=0-a5RXYGjMlaRdBj-veQpsnA;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.63;16/10/2017
+Copy of Mayun 5273 IV.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0POEhFMFdMT0RBZlk/view?usp=drivesdk&resourcekey=0-YYBmFLljJ0bo2FHIQufeQw;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.88;16/10/2017
+CERTIFICADODE POLIETILENO GAS 2016 (1).pdf;https://drive.google.com/file/d/0BwUWDhaiLV0POHJ0SkRTREpZUFE/view?usp=drivesdk&resourcekey=0-y6BLxTKpS8uM2ZLncKKukA;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;1.38;16/10/2017
+Copy of Cobre y Bronce S.A.S exp 25-05-2018.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PQ0dnb1lIMkZIbkU/view?usp=drivesdk&resourcekey=0-KxVR_sYIgQ6GgXA4kHunwQ;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;1.57;16/10/2017
+Copy of Sedal-13465.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PQ1FKbHZPc0QwdGM/view?usp=drivesdk&resourcekey=0-fMecjlXc4j14w9KW_HBdtQ;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;1.81;2/08/2016
+Certificado Tuberia Cobre Nacobre - Mayun (3) - copia.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PQjFSQk0tdlR6dFU/view?usp=drivesdk&resourcekey=0-oHmieVmlCadOW99QB7JAqQ;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.78;16/10/2017
+Certificado 3740 iv.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PQjZYd0ZLcHVicFU/view?usp=drivesdk&resourcekey=0-v8fm-4WGmZUsZ7UJAorJ5w;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.48;16/10/2017
+Certificado 4176.8 2010 iv - 2018.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PQmNwY2NqUzdGOWc/view?usp=drivesdk&resourcekey=0-MxuCDqo1H2Bhzh9sOhIwdQ;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.29;16/10/2017
+CP 5256-2015.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PRGFvX3QzbWtaUEU/view?usp=drivesdk&resourcekey=0-VhjhxCf6eBLYlaJ_uyyadA;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;1.56;16/10/2017
+Regulador metrex.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PRXpYb2l6YjZZMms/view?usp=drivesdk&resourcekey=0--EJeLSn0s3ZNEYGUameN9g;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.62;16/10/2017
+desktop.ini;https://drive.google.com/file/d/0BwUWDhaiLV0PSW5KRTBubS14UlE/view?usp=drivesdk&resourcekey=0-dJMzvCVqQzxzOdwS5QJIYQ;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/octet-stream;0.00;16/10/2017
+Copy of Extrucol S.A.S exp 02-09-2017_1.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PT3M0Ym1mYk1feFk/view?usp=drivesdk&resourcekey=0-puEPZtLUlLnOOpoeFneefw;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;01.03;16/10/2017
+Copy of Extrucol  CER294099.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PTTg3Y0g3MC1PY0k/view?usp=drivesdk&resourcekey=0-sKd6yRGgvi-UrE0iXTsVvg;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.63;2/08/2016
+Copy of Caja medidor.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PTkNta091M3pvbzQ/view?usp=drivesdk&resourcekey=0-nUV7NQBcATamD6I7GmngOg;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.53;16/10/2017
+CP 5238 • 2015.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PU2cyd0dNb2xNSlE/view?usp=drivesdk&resourcekey=0-koCcOkqWY4t7FxHEAxK55w;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;1.41;16/10/2017
+Copy of Colmena- 4856 ccTubosAceroSoldadosSinCosturaNegros.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PUm00UGhEcmpvd0U/view?usp=drivesdk&resourcekey=0-luUWiHbSvh39L0KT5ei8Zg;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.31;16/10/2017
+Copy of Extrucol CER294097.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PVWdmZTFFTHpLODA/view?usp=drivesdk&resourcekey=0-R14ftcULSQ28lj6ft8pNEw;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;1.44;16/10/2017
+Copy of Mayun acero 5319-2015.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PVmJ0VWtRR3E3bUE/view?usp=drivesdk&resourcekey=0-JKpiV14tODbw7kNf9zMMEQ;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.82;2/08/2016
+Mayun 5273 IV.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PWTg3UmlObFpXVUE/view?usp=drivesdk&resourcekey=0-RS31MBFig-ac_Le_SMLPkw;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.88;16/10/2017
+CERTIFICADO ACCESORIOS DE COBRE.PDF;https://drive.google.com/file/d/0BwUWDhaiLV0PWXhQOVlOajVvSG8/view?usp=drivesdk&resourcekey=0-kuPGKrDryPj0BDsUnKvx1g;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.69;16/10/2017
+estufas.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PY2ItSGdqVjFWdDQ/view?usp=drivesdk&resourcekey=0-IcQLv8HAy88iATl5fbPW3Q;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.61;16/10/2017
+Extrucol S.A.S exp 02-09-2017_1.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PYTEzUWtTRE16bVU/view?usp=drivesdk&resourcekey=0-lrcFlPDr3ry-zLXOSDrjAw;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;01.03;16/10/2017
+CP 5273 • 2015.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PYTNWSk1QcVpKS28/view?usp=drivesdk&resourcekey=0-QQftp0tPnx92UVbQajR-Kw;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.29;16/10/2017
+Copy of Extrucol Polietileno 94098.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PYURIakx6d0oyTnM/view?usp=drivesdk&resourcekey=0-iZlyJXkSFui0dt0d-3-X5Q;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.87;16/10/2017
+Copy of Certificado 3740 iv.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PYmpqcmFiajdDVFE/view?usp=drivesdk&resourcekey=0-6_rAPV2vGV4BzRWcyUqsog;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.48;16/10/2017
+Maygas-368614.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PZ2h4aHpNa2MtVHc/view?usp=drivesdk&resourcekey=0-XV83oq9MijbPzlRQJxb89Q;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;02.08;16/10/2017
+Extrucol  CER 294099 (1).pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PZDRQeXhsZFBiaG8/view?usp=drivesdk&resourcekey=0-cOBBhC24mfbW7DqrmZBEwg;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.63;16/10/2017
+Copy of Regulador Humcar.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PZGt2dFJTa2xMNGs/view?usp=drivesdk&resourcekey=0-imOmt11aQxZKrNoAjhAR_g;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.62;2/08/2016
+desktop.ini;https://drive.google.com/file/d/0BwUWDhaiLV0PZTVzbXBHLVl2VDQ/view?usp=drivesdk&resourcekey=0-V9-DuWYQ4q3pR7XrYn52Kw;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/octet-stream;0.00;16/10/2017
+Certificado tubería Nacobre-Mayun.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PaHVGY1hlRW5pT3c/view?usp=drivesdk&resourcekey=0-zNeLqYVDD9_b44_VsAR_5A;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.73;16/10/2017
+Copy of Mayun SGS 8345.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PaTB0ejZnLXR6N2c/view?usp=drivesdk&resourcekey=0-3sKRJtCAo3KM04zbYk3t7Q;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.58;2/08/2016
+Medidor metrex.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PaldCbXZGb3hGWFU/view?usp=drivesdk&resourcekey=0-fwoDPymZPaIGkX-UDVa1Fw;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.65;16/10/2017
+Copy of Mayun 9684.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0Pb01YMEtaUFZBRDA/view?usp=drivesdk&resourcekey=0-P2kCWbx4BLW8_UwWq4JDaA;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.89;2/08/2016
+Copy of Mayun 9684.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PbGFySHljQ3NORlk/view?usp=drivesdk&resourcekey=0-Vpt6h213MiX7FrroWjeW7g;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.89;16/10/2017
+Copy of Extrucol Polietileno 94098.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PbUNLTDNIS0w4Vk0/view?usp=drivesdk&resourcekey=0-mzVCafgpyVQzKVkvGBqSsQ;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.87;2/08/2016
+Copy of HUMCAR S.A.S exp 25-10-2017_1.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PcGNKTFdyc3pSbWc/view?usp=drivesdk&resourcekey=0-blBpOGxdCaH0HyAHNIe-xw;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.73;16/10/2017
+Copy of Extrucol CER294097.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PcGh2Ny1TbTI3ODA/view?usp=drivesdk&resourcekey=0-bTa22cezAmMwZYgH6ATabw;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;1.44;2/08/2016
+Copy of Extrucol  CER294099.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PdE5UcDVPQ05LRWM/view?usp=drivesdk&resourcekey=0-xKYzoyT5l1ULvsem4XenUQ;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.63;16/10/2017
+Cobr y Bronc 5256-2015.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PdGlmdjFHS2xodVU/view?usp=drivesdk&resourcekey=0-KkvhNoqgT2P0mxJq0SQnKQ;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;1.56;16/10/2017
+Copy of CERTIFICADO ACCESORIOS DE COBRE.PDF;https://drive.google.com/file/d/0BwUWDhaiLV0PdWFpUjc0a2NXOTg/view?usp=drivesdk&resourcekey=0-5lflbaQK3E8dTQD0m63pcQ;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.69;2/08/2016
+Copy of Medidor metrex.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PdmhaVUhReERfTlE/view?usp=drivesdk&resourcekey=0-kymbErfeHYp1SYA7H5Xthw;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.65;16/10/2017
+Regulador Humcar.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PeFRhT0xUQ0xBUHM/view?usp=drivesdk&resourcekey=0-4AXj8hIaEIG3xblbFmsD3Q;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.62;16/10/2017
+Copy of Regulador metrex.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PLVhaNHdRUlBhMUU/view?usp=drivesdk&resourcekey=0-M0--ogKH5vDZlJRHBRStZw;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.62;16/10/2017
+CP-SC 063.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PMVBIM3hMaS14Q2s/view?usp=drivesdk&resourcekey=0-0SulYitpaL5QOOqg9RTZ_w;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;03.05;16/10/2017
+Copy of Certificado tubería Nacobre-Mayun 2427.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PMkdmNThjN1AwYWc/view?usp=drivesdk&resourcekey=0-934bVE-13u0vwTPYQadXCg;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.73;2/08/2016
+Flexco S.A exp 19-12-2016_1.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PN3NiSHlkQWxtSms/view?usp=drivesdk&resourcekey=0-Wl7Qbk3sFj1NB_4B6sV22w;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.69;16/10/2017
+Copy of OKA s.a.s 52368.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PNFE1cG1pczY3R2c/view?usp=drivesdk&resourcekey=0-BmFBG0bUWNgJvZPT5_3LMQ;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;1.41;2/08/2016
+Copy of Colmena- 4856 ccTubosAceroSoldadosSinCosturaNegros.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PNXo2UTUwODlPdTA/view?usp=drivesdk&resourcekey=0-2eHIbK30PMi-Z-dY2n8RUQ;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.31;2/08/2016
+Extrucol polietil 0041-1.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PNlRIQ3E5OUFkSGs/view?usp=drivesdk&resourcekey=0-jqVK5u1Gwdk1Yg65xQIJWw;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.61;16/10/2017
+Copy of estufas.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PNnd6YUl4UkZWTUk/view?usp=drivesdk&resourcekey=0-q3v-d7FYkj3TFvPc5SveRQ;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.61;16/10/2017
+Copy of Mayun acero 5319-2015.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PNzZ5NjdjNVZJazA/view?usp=drivesdk&resourcekey=0-4Cv8QeblWXLezOsV6sIePA;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.82;16/10/2017
+Mayun SGS 8345.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PODBVNXJPMWxQUzg/view?usp=drivesdk&resourcekey=0-CZIIomJIRIvWk21uBBBvyQ;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.58;16/10/2017
+Extrucol Polietileno 94098.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0POF9QdEtFblBhY3M/view?usp=drivesdk&resourcekey=0-1kbDgF2nH1BRFc7GLeCAEA;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.87;16/10/2017
+Copy of Flexco Gas 063.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0POHBHdGU4eVFMWG8/view?usp=drivesdk&resourcekey=0-oiSOSebBk5dXbgZzgkAYkg;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;03.05;16/10/2017
+Caja medidor.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0POTI1NlU4NUR0OUk/view?usp=drivesdk&resourcekey=0-pBOyOsQeGVo4g9a6g9ccOg;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.53;16/10/2017
+Copy of Sedal-13465.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0POXVkX3UydkVudTg/view?usp=drivesdk&resourcekey=0-okxRMqxTGFQVt055A-cjJQ;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;1.81;16/10/2017
+Copy of estufas.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PQXRDMlRxdEx1TU0/view?usp=drivesdk&resourcekey=0--hdB0X0ePVxLZ-lxDO3kPQ;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.61;2/08/2016
+Copy of Sellante.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PQkx2QXBvUFJ0SUU/view?usp=drivesdk&resourcekey=0-QA_cL0Sx_PntYVbAxTVxFg;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.64;2/08/2016
+Copy of Cobr y Bronc 5256-2015.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PQl9kbDRmenpvZEE/view?usp=drivesdk&resourcekey=0-TYR2I6Hzp7zGz75RWKQ0BQ;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;1.56;2/08/2016
+Copy of MAYUN S.A.S exp 12-04-2018.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PRXlIemFPR2VZSGM/view?usp=drivesdk&resourcekey=0-pabLHIMtpvHPv1umzxPU_w;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;1.55;16/10/2017
+Copy of MAYUN S.A.S exp 12-04-2018.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PRlVOaVE2WTlUcEE/view?usp=drivesdk&resourcekey=0-WKADSuNyoK9B36_-x767eQ;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;1.55;2/08/2016
+Flexco Gas 063.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PRmFXVVBFV0J0MjA/view?usp=drivesdk&resourcekey=0-E_qUKfsxi5El2CgL_Cx3ZA;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;03.05;16/10/2017
+CER 8345 Mayun.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PS3JJM2RqSzFWTEE/view?usp=drivesdk&resourcekey=0-LMAWafjfXou_pmYND5B6dA;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.20;16/10/2017
+Copy of Maygas-368614.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PSlpqWjJQVkFpc0U/view?usp=drivesdk&resourcekey=0-pkoZRi8EpQxOJ_puM7DfbA;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;02.08;2/08/2016
+OKA s.a.s 52368.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PT3I5a29rVW1EUEE/view?usp=drivesdk&resourcekey=0-jNlXQ1H9MU9FTVyvsRTyDA;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;1.41;16/10/2017
+Copy of Certificado 4176.8 2010 iv - 2018.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PTVVsczBLWjh6V3c/view?usp=drivesdk&resourcekey=0-jL0SYysKduUqoKfbeLSKMQ;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.29;16/10/2017
+Copy of Caja medidor.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PU0lxMXQySU5oTXc/view?usp=drivesdk&resourcekey=0-eybcIyLDF8mzgnPjo1Djxw;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.53;2/08/2016
+Mayun 9684.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PUGNQUjBYS0JlUUU/view?usp=drivesdk&resourcekey=0-Hw_Sz9u56CyJh-9JtinyDQ;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.89;16/10/2017
+Copy of Flexco Gas 063.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PUWNKU2NBSS16SVU/view?usp=drivesdk&resourcekey=0-XQUQxrafQIjzRMwYotAkqw;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;03.05;2/08/2016
+8345 IMarca IV.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PV0hIQTl6dEpkZ1E/view?usp=drivesdk&resourcekey=0-oDILS1MIcIsCMNttodiyug;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.48;16/10/2017
+Extrucol CER 294097.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PV1hVeTNuQ2k5bGs/view?usp=drivesdk&resourcekey=0-76ON2-mb40rnn1uU5KmzvQ;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;1.44;16/10/2017
+Copy of Regulador metrex.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PVVowYU9ZRzkzYVU/view?usp=drivesdk&resourcekey=0-j7ZXIzFJLJsyy5HJ6A1hYQ;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.62;2/08/2016
+Certificado tubería Nacobre-Mayun 2427.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PVXlMTEhSRFR4SGs/view?usp=drivesdk&resourcekey=0-jNrQtKw21ilGzjS5rbV17w;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.73;16/10/2017
+Copy of Certificado 4176.8 2010 iv - 2018.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PVXlfdVZQTE1PVTA/view?usp=drivesdk&resourcekey=0-R9oYLgw1AHFjB7Bt8qiKQA;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.29;2/08/2016
+Copy of Cobre y Bronce S.A.S exp 25-05-2018.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PX0liVmFJNko0Ujg/view?usp=drivesdk&resourcekey=0-7lVMxS-QqVPKpmSeB6Y4hw;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;1.57;2/08/2016
+Copy of Maygas-368614.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PX1otMUFQemxwUjg/view?usp=drivesdk&resourcekey=0-Lhu5FkNSl5HSi_MJThsSBg;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;02.08;16/10/2017
+Copy of Mayun SGS 8345.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PX3hxcjhBRG1FWU0/view?usp=drivesdk&resourcekey=0-BI0G7UburyyaHLy_2-k3_g;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.58;16/10/2017
+Nº CP  5319  2015 PIPEX.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PY0ZlejJiVkEzMk0/view?usp=drivesdk&resourcekey=0-x1MxVPL2KH9y1g8m4a5MMQ;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;01.03;16/10/2017
+Copy of Medidor metrex.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PYVBSak1kQUFwSHM/view?usp=drivesdk&resourcekey=0-hC_InRz4hJDQs18GR2N33w;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.65;2/08/2016
+Mayun acero 5319-2015.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PYkJjd0s4SDJLaE0/view?usp=drivesdk&resourcekey=0-mgZ1HCnbh0G-tNFjyRyzaA;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.82;16/10/2017
+Copy of Extrucol polietil 0041-1.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PZFRzQjFDT0ZGSjQ/view?usp=drivesdk&resourcekey=0-06cRJIRwKg590FdFzlTOrw;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.61;16/10/2017
+Copy of Certificado 3740 iv.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PZGhpSVdoT0taTzA/view?usp=drivesdk&resourcekey=0-0EeStE32YEUSSaMjnFv7VQ;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.48;2/08/2016
+Copy of Mayun 5273 IV.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PZTZ5bjBpTTUwWDg/view?usp=drivesdk&resourcekey=0-Kw8IVkhNQ1Ifsrc9XqVlrQ;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.88;2/08/2016
+Copy of HUMCAR S.A.S exp 25-10-2017_1.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0Pa0ZGMGdfU3BWSm8/view?usp=drivesdk&resourcekey=0-dBPqxmvmyp9TqMmmBBxBWg;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.73;2/08/2016
+CERTIFICADO FLEXCO.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0Pa3dMQzZFMkJUcDQ/view?usp=drivesdk&resourcekey=0-gN4EUTv2sBAVT48uG2T_Qg;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.56;16/10/2017
+Sellante.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PaHVYRHFqMFVpWDA/view?usp=drivesdk&resourcekey=0-Bouyoi5WK33OtDgbeojiPA;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.64;16/10/2017
+Copy of OKA s.a.s 52368.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0Pal9ZMkdVUUdKekk/view?usp=drivesdk&resourcekey=0-NLzXARE8sO2kFaH2doZhcg;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;1.41;16/10/2017
+Copy of Regulador Humcar.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0Panh5SHhOek05VDQ/view?usp=drivesdk&resourcekey=0-HdOx5bI2Qs_NyS1klN1neg;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.62;16/10/2017
+Copy of Cobr y Bronc 5256-2015.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0Pb0VJREtpUUJuS1E/view?usp=drivesdk&resourcekey=0-E9nl0EyZb0i-h087vfQxHA;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;1.56;16/10/2017
+Copy of Certificado tubería Nacobre-Mayun 2427.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PbGFCa0dLdGgxOUk/view?usp=drivesdk&resourcekey=0-ErzR5_OsbfVbqjot3pFGgQ;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.73;16/10/2017
+Copy of Extrucol polietil 0041-1.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PbGZXc0pPa1h2Y0E/view?usp=drivesdk&resourcekey=0-lejH7ybAssOPzuzBI37iOA;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.61;2/08/2016
+Copy of Flexco S.A exp 19-12-2016_1.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PbWV1M0FuRXQySDQ/view?usp=drivesdk&resourcekey=0-bvGsa9yZZP9YSvjQ-ctgpA;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.69;2/08/2016
+Cobre y Bronce S.A.S exp 25-05-2018.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0PbzlQOFlqUUhyWlk/view?usp=drivesdk&resourcekey=0-lhOVfG73LUI1X0CE31zg0w;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;1.57;16/10/2017
+Copy of CERTIFICADO ACCESORIOS DE COBRE.PDF;https://drive.google.com/file/d/0BwUWDhaiLV0Pc1Nzc2g2dzM5azg/view?usp=drivesdk&resourcekey=0-5fELC8GGiFcdqoML4IggVQ;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.69;16/10/2017
+Copy of Sellante.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0Pcmx6a3FNaFEzUEU/view?usp=drivesdk&resourcekey=0-VUvk1dBJO7aDgZUlUn54AQ;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.64;16/10/2017
+Sedal-13465.pdf;https://drive.google.com/file/d/0BwUWDhaiLV0Pd0k5eVc2emZ6UmM/view?usp=drivesdk&resourcekey=0-VHeTJtIxhFslBY5bc8ZAXg;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;1.81;16/10/2017
+5273 de 2015  MAYUN S.A.pdf.S_;https://drive.google.com/file/d/0BwUWDhaiLV0PVDA3VjRqMFNqakk/view?usp=drivesdk&resourcekey=0-HK8HeoY9dsGHL4HvMxCC6g;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;1.55;16/10/2017
+4197.PDF;https://drive.google.com/file/d/0BwUWDhaiLV0PMHNYX1FUbERYR3c/view?usp=drivesdk&resourcekey=0-jLkCi8KmPdBI9tcGuO_DEg;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.69;16/10/2017
+Formato-lista-de-chequeo-para-herramientas-y-equipos.xlsx;https://docs.google.com/spreadsheets/d/1LDE2gunv0cMIEZA5AdHQRKnMUR6pWtLN/edit?usp=drivesdk&ouid=116214496369763337560&rtpof=true&sd=true;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;0.09;11/03/2023
+Hoja de datos SofI.A.;https://docs.google.com/spreadsheets/d/1t1KGNRMSZ18HkOUBB1PqgYn0ojKI7ArmmADrwInLxkU/edit?usp=drivesdk;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/vnd.google-apps.spreadsheet;0.00;27/08/2024
+Copia de Copy of Sellante.pdf;https://drive.google.com/file/d/1KT5j-6kiR_5r6ud6GGjErjsNeVLcWd84/view?usp=drivesdk;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.64;18/08/2021
+Copia de Declaracion  de conformidad con documentacion..PDF;https://drive.google.com/file/d/1x-sZ3cAsWTKH5TSD7bbpipcA6S4GUVSn/view?usp=drivesdk;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;13.63;18/08/2021
+Copia de Copy of Medidor metrex.pdf;https://drive.google.com/file/d/106KlRiQzuF8ainBeVbunNx3djEcqrKrn/view?usp=drivesdk;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.65;18/08/2021
+Copia de Copy of Mayun 9684.pdf;https://drive.google.com/file/d/1G1Tzfyl0XUnVYPHlXOLjveuOWal9_1tK/view?usp=drivesdk;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.89;18/08/2021
+Copia de Copy of Regulador Humcar.pdf;https://drive.google.com/file/d/1GaJNk2om2ui4KioVkafnwlkPwX7TiiA9/view?usp=drivesdk;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.62;18/08/2021
+Copia de Copy of Mayun 5273 IV.pdf;https://drive.google.com/file/d/1KmBS8nJUXt8BDo71dwUsl_77YXFAKQuo/view?usp=drivesdk;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.88;18/08/2021
+Copia de Copy of Regulador metrex.pdf;https://drive.google.com/file/d/1M7uDU9cPtlfvUY_Nf0ZQVfwTFCFKO_ya/view?usp=drivesdk;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.62;18/08/2021
+Copia de Copy of Sedal-13465.pdf;https://drive.google.com/file/d/1RNBC8hsW9CDttj6uTxEhDLwT573hQy7w/view?usp=drivesdk;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;1.81;18/08/2021
+Copia de Copy of Maygas-368614.pdf;https://drive.google.com/file/d/1UKNfSanOFrrVm6TKyomasdTtt7TYBU2B/view?usp=drivesdk;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;02.08;18/08/2021
+Copia de Copy of OKA s.a.s 52368.pdf;https://drive.google.com/file/d/1qXiyTBUYfvtl2O-a9Ic2V_MHjpYY0zs8/view?usp=drivesdk;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;1.41;18/08/2021
+Copia de Copy of Mayun SGS 8345.pdf;https://drive.google.com/file/d/1tII8_HsPAXrQtJ-cQu8mlvnVMC0TZjaH/view?usp=drivesdk;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.58;18/08/2021
+Copia de Copy of Otros.pdf;https://drive.google.com/file/d/1ydkHaayMmir8Ps-Sj9KQ_IoFcgq9ShED/view?usp=drivesdk;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;15.63;18/08/2021
+Copia de Copy of Extrucol CER294097.pdf;https://drive.google.com/file/d/14n42Th7IPDh5CuXc-e-tf1trvJ2IocqM/view?usp=drivesdk;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;1.44;18/08/2021
+Copia de Copy of Accesorio TCL.pdf;https://drive.google.com/file/d/15XgUe4rS32pPHWjhGfvOhuwJZiVaFoVX/view?usp=drivesdk;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;8.14;18/08/2021
+Copia de Copy of Caja medidor.pdf;https://drive.google.com/file/d/1JnmOWW_b592RV_UG24DAV66rg8hvBp8K/view?usp=drivesdk;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.53;18/08/2021
+Copia de Copy of estufas.pdf;https://drive.google.com/file/d/1OYPUVuD-9h4T_vuMf0supARU6Hgl60hR/view?usp=drivesdk;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.61;18/08/2021
+Copia de Copy of Extrucol  CER294099.pdf;https://drive.google.com/file/d/1XxnD2Fd7Ix5xWDWDBy975gHCUFnUq7bw/view?usp=drivesdk;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.63;18/08/2021
+Copia de COEB01~1.PDF;https://drive.google.com/file/d/1bbHjWodPfQSO3yyiJN76rA-Do9gJ8q0A/view?usp=drivesdk;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.73;18/08/2021
+Copia de Copy of Flexco Gas 063.pdf;https://drive.google.com/file/d/1kbumPunTxxbQqH38C1TGwvlLgmfdWGvT/view?usp=drivesdk;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;03.05;18/08/2021
+Copia de COED97~1.PDF;https://drive.google.com/file/d/1t5dFFBqdb2otiP-2sEVFUPchcqMAwZDA/view?usp=drivesdk;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;1.56;18/08/2021
+Copia de COE802~1.PDF;https://drive.google.com/file/d/1t5iUi6ragwU-z4lQ0fRt_SBj-RdwYgat/view?usp=drivesdk;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.82;18/08/2021
+Copia de Copy of Certificado 3740 iv.pdf;https://drive.google.com/file/d/1y9sPgD1dU4A8dWFhsmc7kOoe8nB7FkKx/view?usp=drivesdk;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.48;18/08/2021
+Copia de CO19D3~1.PDF;https://drive.google.com/file/d/15EgQHUVLjXu1_JNub2AIbRd7eONme1-p/view?usp=drivesdk;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.69;18/08/2021
+Copia de CO49DE~1.PDF;https://drive.google.com/file/d/1CyJJ__CpQWpDTmrp4Yqnd4CeDxGz6fg8/view?usp=drivesdk;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.73;18/08/2021
+Copia de CO3A53~1.PDF;https://drive.google.com/file/d/1Eed4gqNbNTXzAV-iF9QIX4DPIiV4pFqz/view?usp=drivesdk;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;1.57;18/08/2021
+Copia de CO2BC0~1.PDF;https://drive.google.com/file/d/1WX2B14cdgQKAIvPpb-Mr4RzCNB70cOhK/view?usp=drivesdk;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;01.03;18/08/2021
+Copia de CO52C6~1.PDF;https://drive.google.com/file/d/1XnKHUVBiynibLNwh9eu1ziFgGp2l4xev/view?usp=drivesdk;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.69;18/08/2021
+Copia de COA983~1.PDF;https://drive.google.com/file/d/1cg0N_6XKDf3dBjw0NhUWYYUlYAxn2Rgt/view?usp=drivesdk;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;1.55;18/08/2021
+Copia de CO66AB~1.PDF;https://drive.google.com/file/d/1io-zdVMWYdkJwTQz7EQI6_IyrWJ3xF6K/view?usp=drivesdk;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.31;18/08/2021
+Copia de COBB95~1.PDF;https://drive.google.com/file/d/1lXQ6jHKQ0vC-Y42R0Silqp3vF_x0jY2g/view?usp=drivesdk;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.61;18/08/2021
+Copia de CO16BE~1.PDF;https://drive.google.com/file/d/1tv3FrU5YMcUPUWdWs4xke9eGzNbsD-CN/view?usp=drivesdk;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.29;18/08/2021
+Copia de COC01B~1.PDF;https://drive.google.com/file/d/1zQiPc3g-lIrAa9bsV5lxVFkLlCWjam5v/view?usp=drivesdk;1. Certificado de materiales;2. Libreria / 1. Certificado de materiales;application/pdf;0.87;18/08/2021`;
 
         function GestorNormativo() {
           const [documents, setDocuments] = useState([]);
@@ -86,43 +367,42 @@ Copia de CO66AB~1.PDF,https://drive.google.com/file/d/1io-zdVMWYdkJwTQz7EQI6_Iyr
 
           useEffect(() => {
             const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-            
-            // --- PARSEO CSV ---
-            Papa.parse(csvData, {
-                header: true,
-                skipEmptyLines: true,
-                complete: (results) => {
-                    const parsedDocs = results.data.map((row, index) => {
-                        // Limpieza de Categoría (e.g., "5. Resoluciones" -> "Resoluciones")
-                        const rawCat = row['Carpeta Actual'] || 'General';
-                        const cleanCat = rawCat.replace(/^\d+\.\s*/, '').trim(); 
-                        
-                        // ID Generado
-                        let prefix = cleanCat.substring(0,3).toUpperCase();
-                        if (prefix === 'CER') prefix = 'MAT'; // Alias para certificados
-                        const id = `${prefix}-${String(index + 1).padStart(3, '0')}`;
 
-                        return {
-                            id: id,
-                            code: row['Nombre del Archivo'] || 'SIN NOMBRE',
-                            title: row['Nombre del Archivo']?.replace(/\.pdf$/i, '') || 'Documento sin título',
-                            category: cleanCat,
-                            originalCategory: rawCat,
-                            date: row['Fecha Creación'] || 'N/A',
-                            status: 'DISPONIBLE', // Por defecto ya que son de librería
-                            url: row['Enlace (URL)'] || '#',
-                            type: row['Tipo'] || 'Unknown'
-                        };
-                    }).filter(doc => doc.url && doc.url !== '#'); // Filtrar líneas vacías o inválidas
+            // CARGA DE BASE DE DATOS
+            if (csvData) {
+                Papa.parse(csvData, {
+                    header: true,
+                    delimiter: ";",
+                    skipEmptyLines: true,
+                    complete: (results) => {
+                        const parsedDocs = results.data.map((row, index) => {
+                            const rawCat = row['Carpeta Actual'] || 'General';
+                            const cleanCat = rawCat.replace(/^\d+\.\s*/, '').trim(); 
+                            const rawName = row['Nombre del Archivo'] || 'Documento sin nombre';
+                            const title = rawName.replace(/\.pdf$/i, '');
+                            const url = row['Enlace (URL)'];
+                            if (!url || url.length < 5) return null;
 
-                    setDocuments(parsedDocs);
+                            return {
+                                id: `DOC-${String(index + 1).padStart(3, '0')}`,
+                                code: rawName,
+                                title: title,
+                                category: cleanCat || 'Sin Categoría',
+                                originalCategory: rawCat,
+                                date: row['Fecha Creación'] || 'N/A',
+                                status: 'VIGENTE',
+                                url: url,
+                                type: row['Tipo'] || 'Archivo'
+                            };
+                        }).filter(doc => doc !== null);
 
-                    // Extraer categorías únicas
-                    const uniqueCats = ['Todos', ...new Set(parsedDocs.map(d => d.category))].sort();
-                    setCategories(uniqueCats);
-                }
-            });
-
+                        setDocuments(parsedDocs);
+                        const cats = [...new Set(parsedDocs.map(d => d.category))].sort();
+                        setCategories(['Todos', ...cats]);
+                    },
+                    error: (err) => console.error("Error CSV:", err)
+                });
+            }
             return () => clearInterval(timer);
           }, []);
 
@@ -144,21 +424,12 @@ Copia de CO66AB~1.PDF,https://drive.google.com/file/d/1io-zdVMWYdkJwTQz7EQI6_Iyr
               setCurrentPage(1);
           }, [activeCategory, searchTerm]);
 
-          const getStatusColor = (status) => {
-            switch (status) {
-              case 'DISPONIBLE': return 'text-emerald-400 border-emerald-400 bg-emerald-400/10';
-              case 'VIGENTE': return 'text-cyan-400 border-cyan-400 bg-cyan-400/10';
-              default: return 'text-slate-400 border-slate-400';
-            }
-          };
-
           const getCategoryIcon = (cat) => {
-             // Mapeo dinámico simple basado en palabras clave
-             const lowerCat = cat.toLowerCase();
-             if (lowerCat.includes('res')) return <Icons.BookOpen size={12} className="text-purple-500" />;
-             if (lowerCat.includes('cert')) return <Icons.Shield size={12} className="text-emerald-500" />;
-             if (lowerCat.includes('lib')) return <Icons.Database size={12} className="text-blue-500" />;
-             if (lowerCat.includes('ing')) return <Icons.Cpu size={12} className="text-cyan-500" />;
+             const lower = cat.toLowerCase();
+             if (lower.includes('resol')) return <Icons.BookOpen size={12} className="text-purple-500" />;
+             if (lower.includes('certif')) return <Icons.Shield size={12} className="text-emerald-500" />;
+             if (lower.includes('libreria')) return <Icons.Database size={12} className="text-blue-500" />;
+             if (lower.includes('ing') || lower.includes('man')) return <Icons.Cpu size={12} className="text-cyan-500" />;
              return <Icons.FileText size={12} className="text-slate-400" />;
           };
 
@@ -175,19 +446,17 @@ Copia de CO66AB~1.PDF,https://drive.google.com/file/d/1io-zdVMWYdkJwTQz7EQI6_Iyr
                     <Icons.Database className="text-cyan-500" size={24} />
                     <div>
                       <h1 className="text-lg font-bold tracking-wider text-cyan-50 uppercase">Gestor Normativo</h1>
-                      <div className="text-[10px] text-cyan-600 leading-none tracking-[0.2em]">LIBRERÍA CENTRAL V.3.0 - CSV LINKED</div>
+                      <div className="text-[10px] text-cyan-600 leading-none tracking-[0.2em]">
+                        LIBRERÍA CENTRAL ({documents.length} DOCS)
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="hidden md:flex items-center gap-6 text-xs text-slate-500">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                    <span>ESTADO: ONLINE</span>
-                  </div>
-                  <div className="flex items-center gap-2 border-l border-slate-800 pl-4">
+                <div className="flex items-center gap-4">
+                  <div className="hidden md:flex items-center gap-2 text-xs text-slate-500 border-l border-slate-800 pl-4">
                     <Icons.Clock size={14} />
-                    <span>{currentTime.toLocaleTimeString('es-ES', { hour12: false })} UTC-5</span>
+                    <span>{currentTime.toLocaleTimeString('es-ES', { hour12: false })}</span>
                   </div>
                 </div>
               </header>
@@ -195,16 +464,16 @@ Copia de CO66AB~1.PDF,https://drive.google.com/file/d/1io-zdVMWYdkJwTQz7EQI6_Iyr
               <div className="flex flex-1 overflow-hidden relative">
                 
                 {/* --- SIDEBAR --- */}
-                <aside className={`${sidebarOpen ? 'w-64' : 'w-0'} bg-slate-950 border-r border-slate-800 transition-all duration-300 flex flex-col overflow-hidden relative`}>
+                <aside className={`${sidebarOpen ? 'w-72' : 'w-0'} bg-slate-950 border-r border-slate-800 transition-all duration-300 flex flex-col overflow-hidden relative`}>
                   <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
                        style={{ backgroundImage: 'linear-gradient(#00ffff 1px, transparent 1px), linear-gradient(90deg, #00ffff 1px, transparent 1px)', backgroundSize: '20px 20px' }}>
                   </div>
 
-                  <div className="p-4 space-y-6 z-10 overflow-y-auto h-full pb-20">
+                  <div className="p-4 space-y-6 z-10 overflow-y-auto h-full pb-20 custom-scrollbar">
                     <div>
-                      <h3 className="text-xs font-bold text-slate-500 mb-3 px-2 flex items-center gap-2">
+                      <h3 className="text-xs font-bold text-slate-500 mb-3 px-2 flex items-center gap-2 uppercase">
                         <Icons.Filter size={12} />
-                        CARPETAS / CATEGORÍAS
+                        CARPETAS
                       </h3>
                       <nav className="space-y-1">
                         {categories.map(cat => (
@@ -217,28 +486,11 @@ Copia de CO66AB~1.PDF,https://drive.google.com/file/d/1io-zdVMWYdkJwTQz7EQI6_Iyr
                                 : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900'
                               }`}
                           >
-                            <span>{cat}</span>
+                            <span className="truncate pr-2">{cat}</span>
                             {activeCategory === cat && getCategoryIcon(cat)}
                           </button>
                         ))}
                       </nav>
-                    </div>
-
-                    <div className="border-t border-slate-800 pt-4">
-                       <div className="bg-slate-900 border border-slate-700 p-3 rounded text-[10px] space-y-2">
-                         <div className="flex justify-between text-slate-400">
-                           <span>TOTAL DOCS:</span>
-                           <span className="text-cyan-400">{documents.length}</span>
-                         </div>
-                         <div className="flex justify-between text-slate-400">
-                           <span>VISIBLES:</span>
-                           <span className="text-cyan-400">{filteredDocs.length}</span>
-                         </div>
-                         <div className="h-1 w-full bg-slate-800 rounded-full overflow-hidden mt-2">
-                           <div className="h-full bg-cyan-600 w-3/4"></div>
-                         </div>
-                         <p className="text-slate-600 text-center pt-1">BASE DE DATOS: CSV</p>
-                       </div>
                     </div>
                   </div>
                 </aside>
@@ -262,22 +514,9 @@ Copia de CO66AB~1.PDF,https://drive.google.com/file/d/1io-zdVMWYdkJwTQz7EQI6_Iyr
                       />
                     </div>
                     
-                    {/* View Toggle */}
                     <div className="flex bg-slate-950 border border-slate-700 rounded p-1">
-                        <button 
-                            onClick={() => setViewMode('grid')}
-                            className={`p-2 rounded ${viewMode === 'grid' ? 'bg-cyan-900/50 text-cyan-400' : 'text-slate-500 hover:text-slate-300'}`}
-                            title="Vista Tarjetas"
-                        >
-                            <Icons.Grid size={18} />
-                        </button>
-                        <button 
-                            onClick={() => setViewMode('list')}
-                            className={`p-2 rounded ${viewMode === 'list' ? 'bg-cyan-900/50 text-cyan-400' : 'text-slate-500 hover:text-slate-300'}`}
-                            title="Vista Lista"
-                        >
-                            <Icons.List size={18} />
-                        </button>
+                        <button onClick={() => setViewMode('grid')} className={`p-2 rounded ${viewMode === 'grid' ? 'bg-cyan-900/50 text-cyan-400' : 'text-slate-500 hover:text-slate-300'}`}><Icons.Grid size={18} /></button>
+                        <button onClick={() => setViewMode('list')} className={`p-2 rounded ${viewMode === 'list' ? 'bg-cyan-900/50 text-cyan-400' : 'text-slate-500 hover:text-slate-300'}`}><Icons.List size={18} /></button>
                     </div>
                   </div>
 
@@ -288,44 +527,23 @@ Copia de CO66AB~1.PDF,https://drive.google.com/file/d/1io-zdVMWYdkJwTQz7EQI6_Iyr
                     {viewMode === 'grid' && (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                         {currentDocs.map((doc) => (
-                            <div 
-                            key={doc.id}
-                            className="group relative bg-slate-950 border border-slate-800 hover:border-cyan-500/50 transition-all duration-300 overflow-hidden flex flex-col h-48"
-                            >
-                            <div className="absolute top-0 right-0 w-4 h-4 border-t border-r border-slate-600 group-hover:border-cyan-500 transition-colors"></div>
-                            <div className="absolute bottom-0 left-0 w-4 h-4 border-b border-l border-slate-600 group-hover:border-cyan-500 transition-colors"></div>
-
-                            <div className="p-4 flex flex-col h-full">
-                                <div className="flex justify-between items-start mb-2">
-                                <div className="flex items-center gap-2">
-                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{doc.id}</span>
+                            <div key={doc.id} className="group relative bg-slate-950 border border-slate-800 hover:border-cyan-500/50 transition-all duration-300 overflow-hidden flex flex-col h-48">
+                                <div className="absolute top-0 right-0 w-4 h-4 border-t border-r border-slate-600 group-hover:border-cyan-500 transition-colors"></div>
+                                <div className="absolute bottom-0 left-0 w-4 h-4 border-b border-l border-slate-600 group-hover:border-cyan-500 transition-colors"></div>
+                                <div className="p-4 flex flex-col h-full">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{doc.id}</span>
+                                        </div>
+                                        <span className="text-[9px] px-2 py-0.5 border rounded-sm font-bold tracking-wider text-emerald-400 border-emerald-400 bg-emerald-400/10">VIGENTE</span>
+                                    </div>
+                                    <h4 className="text-xs text-cyan-100 font-bold mb-1 leading-tight group-hover:text-cyan-400 transition-colors uppercase truncate" title={doc.code}>{doc.code}</h4>
+                                    <p className="text-[11px] text-slate-400 mb-2 flex-grow line-clamp-3 leading-relaxed border-t border-slate-900 pt-2">{doc.title}</p>
+                                    <div className="flex items-center justify-between mt-auto">
+                                        <span className="text-[9px] text-slate-600 bg-slate-900 px-1 rounded">{doc.date}</span>
+                                        <a href={doc.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-[10px] text-cyan-500 hover:text-cyan-300 hover:underline uppercase tracking-wide font-bold">ABRIR <Icons.ExternalLink size={10} /></a>
+                                    </div>
                                 </div>
-                                <span className={`text-[9px] px-2 py-0.5 border rounded-sm font-bold tracking-wider ${getStatusColor(doc.status)}`}>
-                                    {doc.status}
-                                </span>
-                                </div>
-
-                                <h4 className="text-xs text-cyan-100 font-bold mb-1 leading-tight group-hover:text-cyan-400 transition-colors uppercase truncate" title={doc.code}>
-                                {doc.code}
-                                </h4>
-                                <p className="text-[11px] text-slate-400 mb-2 flex-grow line-clamp-3 leading-relaxed border-t border-slate-900 pt-2">
-                                {doc.title}
-                                </p>
-
-                                <div className="flex items-center justify-between mt-auto">
-                                <span className="text-[9px] text-slate-600 bg-slate-900 px-1 rounded">{doc.date}</span>
-                                <a 
-                                    href={doc.url} 
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center gap-1 text-[10px] text-cyan-500 hover:text-cyan-300 hover:underline uppercase tracking-wide font-bold"
-                                >
-                                    ABRIR <Icons.ExternalLink size={10} />
-                                </a>
-                                </div>
-                            </div>
-                            
-                            <div className="absolute inset-0 bg-gradient-to-t from-cyan-900/10 to-transparent opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-300"></div>
                             </div>
                         ))}
                         </div>
@@ -338,10 +556,10 @@ Copia de CO66AB~1.PDF,https://drive.google.com/file/d/1io-zdVMWYdkJwTQz7EQI6_Iyr
                                 <thead className="bg-slate-900 text-slate-400 border-b border-slate-800">
                                     <tr>
                                         <th className="p-3 uppercase tracking-wider font-medium">ID</th>
-                                        <th className="p-3 uppercase tracking-wider font-medium">Nombre</th>
-                                        <th className="p-3 uppercase tracking-wider font-medium">Carpeta</th>
+                                        <th className="p-3 uppercase tracking-wider font-medium">Nombre / Archivo</th>
+                                        <th className="p-3 uppercase tracking-wider font-medium">Categoría</th>
                                         <th className="p-3 uppercase tracking-wider font-medium">Fecha</th>
-                                        <th className="p-3 uppercase tracking-wider font-medium text-right">Acción</th>
+                                        <th className="p-3 uppercase tracking-wider font-medium text-right">Link</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-800">
@@ -351,11 +569,7 @@ Copia de CO66AB~1.PDF,https://drive.google.com/file/d/1io-zdVMWYdkJwTQz7EQI6_Iyr
                                             <td className="p-3 font-bold text-cyan-100 group-hover:text-cyan-400">{doc.title}</td>
                                             <td className="p-3 text-slate-500">{doc.category}</td>
                                             <td className="p-3 text-slate-500">{doc.date}</td>
-                                            <td className="p-3 text-right">
-                                                <a href={doc.url} target="_blank" className="text-cyan-600 hover:text-cyan-400">
-                                                    <Icons.ExternalLink size={14} />
-                                                </a>
-                                            </td>
+                                            <td className="p-3 text-right"><a href={doc.url} target="_blank" className="text-cyan-600 hover:text-cyan-400"><Icons.ExternalLink size={14} /></a></td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -365,36 +579,22 @@ Copia de CO66AB~1.PDF,https://drive.google.com/file/d/1io-zdVMWYdkJwTQz7EQI6_Iyr
                     
                     {filteredDocs.length === 0 && (
                       <div className="h-full flex flex-col items-center justify-center text-slate-600 opacity-50 py-12">
-                        <Icons.Terminal size={48} className="mb-4" />
+                        <Icons.List size={48} className="mb-4" />
                         <p className="text-lg uppercase tracking-widest">No se encontraron registros</p>
-                        <p className="text-xs">Cargando base de datos o sin resultados...</p>
                       </div>
                     )}
                   </div>
                   
-                  {/* FOOTER / PAGINATION */}
+                  {/* FOOTER */}
                   <footer className="h-12 bg-slate-950 border-t border-slate-800 flex items-center justify-between px-4 text-[10px] text-slate-500 z-10">
                     <div className="flex items-center gap-4">
                         <span>PÁGINA {currentPage} DE {totalPages || 1}</span>
                         <span className="hidden md:inline text-slate-600">|</span>
-                        <span className="hidden md:inline">REGISTROS: {filteredDocs.length}</span>
+                        <span>REGISTROS: {filteredDocs.length}</span>
                     </div>
-
                     <div className="flex gap-2">
-                        <button 
-                            disabled={currentPage === 1}
-                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                            className="p-1.5 border border-slate-700 rounded hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                        >
-                            <Icons.ChevronLeft size={14} />
-                        </button>
-                        <button 
-                            disabled={currentPage === totalPages || totalPages === 0}
-                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                            className="p-1.5 border border-slate-700 rounded hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                        >
-                            <Icons.ChevronRight size={14} />
-                        </button>
+                        <button disabled={currentPage === 1} onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} className="p-1.5 border border-slate-700 rounded hover:bg-slate-800 disabled:opacity-30 transition-colors"><Icons.ChevronLeft size={14} /></button>
+                        <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} className="p-1.5 border border-slate-700 rounded hover:bg-slate-800 disabled:opacity-30 transition-colors"><Icons.ChevronRight size={14} /></button>
                     </div>
                   </footer>
                 </main>
