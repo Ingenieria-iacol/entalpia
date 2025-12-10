@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Entalpia Planes De Formacion</title>
+    <title>GasEngineering Hub - Panel Principal</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -65,7 +65,7 @@
             );
         };
 
-        // --- DATOS SIMULADOS (Enriquecidos para el Modal) ---
+        // --- DATOS SIMULADOS (Con Imágenes Añadidas) ---
         const initialTrainingPlans = [
             { 
                 id: 101, 
@@ -83,6 +83,8 @@
                 progress: 0, 
                 imageColor: "bg-red-900",
                 gradientColor: "from-red-900 to-black",
+                // Imagen de fuego industrial / caldera
+                imageUrl: "https://images.unsplash.com/photo-1598282367500-4b2046420556?q=80&w=1000&auto=format&fit=crop", 
                 url: "./curso-quemadores.html",
                 chapters: [
                     { title: "Fundamentos Termodinámicos", duration: "14m" },
@@ -106,6 +108,8 @@
                 progress: 35, 
                 imageColor: "bg-blue-800",
                 gradientColor: "from-blue-900 to-black",
+                // Imagen de tubería / construcción
+                imageUrl: "https://images.unsplash.com/photo-1581092921461-eab62e97a78e?q=80&w=1000&auto=format&fit=crop",
                 url: "./curso-redes.html",
                 chapters: [
                     { title: "Introducción a Normas", duration: "10m" },
@@ -129,6 +133,8 @@
                 progress: 0, 
                 imageColor: "bg-green-800",
                 gradientColor: "from-green-900 to-black",
+                // Imagen de manómetros / industria
+                imageUrl: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=1000&auto=format&fit=crop",
                 url: "./curso-instrumentacion.html",
                 chapters: [
                     { title: "Reguladores Pilotados", duration: "35m" },
@@ -152,6 +158,8 @@
                 progress: 0, 
                 imageColor: "bg-yellow-700",
                 gradientColor: "from-yellow-800 to-black",
+                // Imagen de seguridad industrial / válvula
+                imageUrl: "https://images.unsplash.com/photo-1599818827727-4a7b7a57acbd?q=80&w=1000&auto=format&fit=crop",
                 url: "./curso-seguridad.html",
                 chapters: [
                     { title: "Propiedades del GLP", duration: "15m" },
@@ -175,6 +183,8 @@
                 progress: 0, 
                 imageColor: "bg-purple-900",
                 gradientColor: "from-purple-900 to-black",
+                // Imagen de planos / inspección
+                imageUrl: "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?q=80&w=1000&auto=format&fit=crop",
                 url: "./curso-auditoria.html",
                 chapters: [
                     { title: "Marco Legal", duration: "25m" },
@@ -217,6 +227,13 @@
 
                         {/* HERO SECTION (Imagen/Gradiente) */}
                         <div className={`relative h-96 w-full bg-gradient-to-b ${plan.gradientColor}`}>
+                            {/* IMAGEN DE FONDO (Ajustada para mayor visibilidad) */}
+                            <img 
+                                src={plan.imageUrl} 
+                                alt={plan.title}
+                                className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-80"
+                            />
+                            
                             <div className="absolute inset-0 bg-gradient-to-t from-[#181818] via-transparent to-black/30"></div>
                             
                             {/* Contenido Hero */}
@@ -402,7 +419,7 @@
                         <div className="max-w-7xl mx-auto">
                             
                             <div className="mb-8">
-                                <h2 className="text-3xl font-bold text-white mb-2">Mis Rutas de Aprendizaje</h2>
+                                <h2 className="text-3xl font-bold text-white mb-2">Planes de formación y re entrenamiento</h2>
                                 <p className="text-gray-400">Selecciona un módulo para ver detalles y contenido.</p>
                             </div>
 
@@ -414,10 +431,19 @@
                                         style={{ animationDelay: `${index * 100}ms` }}
                                         className="animate-card bg-[#151515] rounded-xl border border-gray-800 overflow-hidden flex flex-col hover:scale-[1.02] hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-900/10 transition-all cursor-pointer group h-full"
                                     >
-                                        {/* Card Image Area */}
-                                        <div className={`h-40 ${plan.imageColor} relative p-5 flex flex-col justify-between group-hover:brightness-110 transition-all`}>
-                                            <div className="flex justify-between items-start">
-                                                <span className="bg-black/60 backdrop-blur-md text-xs font-bold px-3 py-1 rounded-full text-white border border-white/10">
+                                        {/* Card Image Area (CON IMAGEN MÁS VISIBLE) */}
+                                        <div className={`h-40 ${plan.imageColor} relative p-5 flex flex-col justify-between group-hover:brightness-110 transition-all overflow-hidden`}>
+                                            
+                                            {/* IMAGEN DE FONDO (Overlay ajustado) */}
+                                            {/* Cambio: opacity-30 -> opacity-75 y hover:opacity-90 para que se vean claras */}
+                                            <img 
+                                                src={plan.imageUrl} 
+                                                alt={plan.title}
+                                                className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-75 hover:opacity-100 transition-opacity duration-500"
+                                            />
+
+                                            <div className="relative z-10 flex justify-between items-start">
+                                                <span className="bg-black/60 backdrop-blur-md text-xs font-bold px-3 py-1 rounded-full text-white border border-white/10 shadow-sm">
                                                     {plan.category}
                                                 </span>
                                                 {plan.enrolled && (
@@ -426,7 +452,8 @@
                                                     </div>
                                                 )}
                                             </div>
-                                            <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-[#151515] to-transparent"></div>
+                                            {/* Gradiente protector de texto más fuerte para contraste */}
+                                            <div className="absolute bottom-0 left-0 w-full h-2/3 bg-gradient-to-t from-[#151515] via-[#151515]/60 to-transparent z-0"></div>
                                         </div>
                                         
                                         {/* Card Content */}
@@ -491,4 +518,3 @@
     </script>
 </body>
 </html>
-
