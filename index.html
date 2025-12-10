@@ -212,7 +212,8 @@
                 <input type="text" id="user-static" class="login-input" placeholder="Usuario" required>
                 <div class="password-wrapper">
                     <input type="password" id="pass-static" class="login-input" placeholder="Contraseña" style="margin-bottom:0;" required>
-                    <i class="fas fa-eye toggle-password" onclick="togglePasswordVisibility('pass-static')"></i>
+                    <!-- CORREGIDO: Se pasa 'this' explícitamente a la función para no depender de la estructura del DOM -->
+                    <i class="fas fa-eye toggle-password" onclick="togglePasswordVisibility('pass-static', this)"></i>
                 </div>
                 <div style="margin-bottom: 20px;"></div>
                 <button type="submit" class="btn login-btn-primary">INICIAR SESIÓN</button>
@@ -401,8 +402,16 @@
             { u: "alexander221977@gmail.com", p: "2505", n: "Alexander", apellido: "", f: "29/11/2025", img: "", profesion: "", area: "", telefono: "", ubicacion: "" }
         ];
         
-        let dbUsuarios = JSON.parse(localStorage.getItem('sofia_users'));
-        if (!dbUsuarios || dbUsuarios.length === 0) {
+        // CORREGIDO: Manejo de errores en localStorage
+        let dbUsuarios = [];
+        try {
+            dbUsuarios = JSON.parse(localStorage.getItem('sofia_users'));
+        } catch (e) {
+            console.error("Error cargando usuarios, usando predeterminados", e);
+            dbUsuarios = null;
+        }
+
+        if (!dbUsuarios || !Array.isArray(dbUsuarios) || dbUsuarios.length === 0) {
             dbUsuarios = DATOS_INICIALES;
         }
 
@@ -515,7 +524,7 @@
                 descripcion: "Realiza un diagnostico segun el error declarado por el equipo e identifica la solucion", 
                 categoria: "Utilidades y Conversión",
                 subtitulo: "Herramienta Multi-propósito"
-            },
+             },
             { 
                 id: 13,
                 nombre: "Isoplanos basicos", 
@@ -524,7 +533,6 @@
                 descripcion: "Dibuja un isoplano, agrega componentes y descarga un archivo plano para modeladores y memorias de calculo", 
                 categoria: "Diseño y Modelado",
                 subtitulo: "Planimetrias"
-            }
             },
             { 
                 id: 14,
@@ -539,7 +547,11 @@
 
         let perfilActual = "General";
         let usuarioActivo = null;
-        let favoritos = JSON.parse(localStorage.getItem('favs')) || [];
+        let favoritos = [];
+        try {
+            favoritos = JSON.parse(localStorage.getItem('favs')) || [];
+        } catch(e) { favoritos = []; }
+        
         const fallbackImg = "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2070";
 
         // --- AUDIO PERSISTENTE ---
@@ -562,9 +574,13 @@
                 audioPlayer.src = randomTrack;
                 localStorage.setItem('audio_track', randomTrack);
             }
+            // Catch error if autoplay is blocked
             const playPromise = audioPlayer.play();
             if (playPromise !== undefined) {
-                playPromise.catch(error => { document.body.addEventListener('click', () => { audioPlayer.play(); }, { once: true }); });
+                playPromise.catch(error => { 
+                    console.log("Autoplay prevenido por el navegador, se activará al hacer click.");
+                    document.body.addEventListener('click', () => { audioPlayer.play(); }, { once: true }); 
+                });
             }
         }
         audioPlayer.addEventListener('timeupdate', () => { localStorage.setItem('audio_time', audioPlayer.currentTime); });
@@ -572,7 +588,10 @@
         // --- INICIALIZACIÓN DE SESIÓN ---
         window.addEventListener('load', () => {
             gestionarMusica();
-            const sessionUser = JSON.parse(localStorage.getItem('sofia_session'));
+            let sessionUser = null;
+            try {
+                sessionUser = JSON.parse(localStorage.getItem('sofia_session'));
+            } catch(e) { console.error("Error leyendo sesion"); }
             
             if (sessionUser) {
                 const updatedUser = dbUsuarios.find(u => u.u === sessionUser.u);
@@ -591,10 +610,12 @@
             }
         });
 
-        // --- FUNCIÓN VER/OCULTAR PASSWORD ---
-        function togglePasswordVisibility(inputId) {
+        // --- FUNCIÓN VER/OCULTAR PASSWORD (CORREGIDA) ---
+        function togglePasswordVisibility(inputId, iconElement) {
             const input = document.getElementById(inputId);
-            const icon = input.nextElementSibling;
+            
+            // Si el icono no se pasa (por si acaso), intentar buscarlo al lado
+            const icon = iconElement || input.nextElementSibling;
             
             if (input.type === "password") {
                 input.type = "text";
@@ -614,7 +635,9 @@
             if (source === 'General') { u = document.getElementById('user-static').value.trim(); p = document.getElementById('pass-static').value.trim(); err = document.getElementById('error-static'); perfilActual = "General"; } 
             else { u = document.getElementById('user-dyn').value.trim(); p = document.getElementById('pass-dyn').value.trim(); err = document.getElementById('error-dyn'); }
 
-            const user = dbUsuarios.find(c => c.u === u && c.p === p);
+            // Safe find
+            const user = (dbUsuarios || []).find(c => c.u === u && c.p === p);
+            
             if (user) {
                 usuarioActivo = user;
                 localStorage.setItem('sofia_session', JSON.stringify(user));
@@ -779,15 +802,18 @@
         }
         function finalizarCarga() {
             const m = document.getElementById('membership-modal');
-            const p = m.dataset.pendingProfile;
+            const p = m.dataset.pendingProfile || 'General'; // Fallback
             m.style.display = 'none';
             const ls = document.getElementById('login-screen');
             if (ls.style.display !== 'none') {
                 ls.style.opacity = '0';
                 setTimeout(() => {
                     ls.style.display = 'none';
-                    document.getElementById('main-interface').classList.remove('hidden');
-                    document.getElementById('main-interface').style.opacity = '1';
+                    const mainInterface = document.getElementById('main-interface');
+                    if(mainInterface) {
+                        mainInterface.classList.remove('hidden');
+                        mainInterface.style.opacity = '1';
+                    }
                     renderizarFilas(); iniciarCarrusel(); actualizarAvatarUI();
                 }, 800);
             }
@@ -796,6 +822,7 @@
 
         function renderizarFilas() {
             const c = document.getElementById('content-rows');
+            if(!c) return;
             c.innerHTML = "";
             if (favoritos.length > 0) {
                 const fs = HERRAMIENTAS.filter(h => favoritos.includes(h.nombre));
@@ -836,6 +863,7 @@
             const t = HERRAMIENTAS[hIdx];
             const c = document.getElementById('hero-content');
             const s = document.getElementById('hero-section');
+            if(!c || !s) return;
             c.classList.add('fade-out');
             setTimeout(() => {
                 document.getElementById('hero-title').textContent = t.nombre;
@@ -877,20 +905,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
