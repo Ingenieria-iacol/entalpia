@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GasEngineering Hub - Formación Profesional</title>
+    <title>GasEngineering Hub - Ruta de Aprendizaje</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -19,47 +19,34 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
-        body { background-color: #0f0f0f; }
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: #0f0f0f; 
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #3f3f3f; 
-          border-radius: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #555; 
-        }
+        body { background-color: #0b0b0b; color: #e5e5e5; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #555; }
+        
+        /* Animaciones */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse-border { 0% { border-color: #2563eb; box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); } 70% { border-color: #3b82f6; box-shadow: 0 0 0 6px rgba(37, 99, 235, 0); } 100% { border-color: #2563eb; box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); } }
+        
+        .animate-fadeIn { animation: fadeIn 0.3s ease-out forwards; }
+        .animate-slideDown { animation: slideDown 0.4s ease-out forwards; }
+        .active-module-border { animation: pulse-border 2s infinite; }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, createElement } = React;
+        const { useState, useEffect, createElement, useMemo } = React;
 
-        // Componente Icon Helper para usar Lucide en entorno CDN sin compilación
+        // --- ICON COMPONENT ---
         const Icon = ({ name, size = 24, className = "" }) => {
             const iconData = lucide.icons[name];
             if (!iconData) return null;
-
-            // Convertimos la definición de Lucide a elementos SVG de React
             return (
-                <svg 
-                    xmlns="http://www.w3.org/2000/svg" 
-                    width={size} 
-                    height={size} 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    strokeWidth="2" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    className={className}
-                >
+                <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
                     {iconData.map((child, index) => {
                         const [tag, attrs] = child;
                         return createElement(tag, { ...attrs, key: index });
@@ -68,307 +55,345 @@
             );
         };
 
-        // Datos del curso
-        const courseData = {
-            title: "Certificación Profesional: Ingeniería de Gas y Combustión Industrial",
-            instructor: "Ing. Roberto Méndez, PhD.",
-            subscribers: "12.5k estudiantes",
-            description: "Este programa integral cubre desde los fundamentos termodinámicos de la combustión hasta el diseño avanzado de redes de distribución de gas natural y GLP, cumpliendo con normativas NFPA y ASME.",
-            tags: ["Combustión", "Gas Natural", "Hidráulica", "Seguridad Industrial"]
-        };
+        // --- DATA INICIAL (Módulos de un curso específico) ---
+        const initialModules = [
+            { id: 1, title: "1. Introducción a la Termodinámica de la Combustión", duration: "14:20", completed: true, locked: false, description: "Conceptos base: Entalpía, Entropía y reacciones exotérmicas en quemadores industriales.", resources: ["PDF Termodinámica", "Tabla Entalpía"] },
+            { id: 2, title: "2. Estequiometría y Cálculo de Aire Teórico", duration: "22:15", completed: true, locked: false, description: "Cálculo preciso de la relación aire-combustible para maximizar la eficiencia y reducir emisiones.", resources: ["Calculadora Excel"] },
+            { id: 3, title: "3. Diseño de Redes: Tuberías de Polietileno y Acero", duration: "35:40", completed: false, locked: false, description: "Selección de materiales según presión de operación. Diferencias entre normas ASTM D2513 y API 5L.", resources: ["Norma NTC 2505", "Catálogo Tuberías"] },
+            { id: 4, title: "4. Regulación y Medición (ERM): Selección de Equipos", duration: "28:10", completed: false, locked: true, description: "Criterios para dimensionar reguladores de presión y medidores de flujo tipo diafragma y rotativos.", resources: [] },
+            { id: 5, title: "5. Quemadores Industriales: Atmosféricos vs. Aire Forzado", duration: "31:05", completed: false, locked: true, description: "Diferencias operativas, curvas de trabajo y aplicaciones típicas en calderas y hornos.", resources: [] },
+            { id: 6, title: "6. Normativa NFPA 54 y 86: Seguridad en Sistemas", duration: "45:00", completed: false, locked: true, description: "Revisión crítica de los estándares de seguridad para la instalación de equipos a gas.", resources: [] }
+        ];
 
-        const playlist = [
-            { id: 1, title: "1. Introducción a la Termodinámica de la Combustión", duration: "14:20", thumbnail: "bg-orange-600", completed: true, category: "Fundamentos" },
-            { id: 2, title: "2. Estequiometría y Cálculo de Aire Teórico", duration: "22:15", thumbnail: "bg-blue-600", completed: true, category: "Fundamentos" },
-            { id: 3, title: "3. Diseño de Redes: Tuberías de Polietileno y Acero", duration: "35:40", thumbnail: "bg-slate-600", completed: false, category: "Redes y Tuberías", isPlaying: true },
-            { id: 4, title: "4. Regulación y Medición (ERM): Selección de Equipos", duration: "28:10", thumbnail: "bg-zinc-700", completed: false, category: "Equipos" },
-            { id: 5, title: "5. Quemadores Industriales: Atmosféricos vs. Aire Forzado", duration: "31:05", thumbnail: "bg-red-700", completed: false, category: "Equipos" },
-            { id: 6, title: "6. Normativa NFPA 54 y 86: Seguridad en Sistemas", duration: "45:00", thumbnail: "bg-yellow-700", completed: false, category: "Normativa" },
-            { id: 7, title: "7. Análisis de Gases de Chimenea y Eficiencia", duration: "19:30", thumbnail: "bg-gray-600", completed: false, category: "Mantenimiento" }
+        // --- DATA: PLANES (CATÁLOGO) ---
+        const initialTrainingPlans = [
+            { id: 101, title: "Experto en Mantenimiento de Quemadores", category: "Combustión", type: "Membresía", hours: 45, level: "Avanzado", enrolled: false, progress: 0, imageColor: "bg-red-900" },
+            { id: 102, title: "Diseño de Redes Internas Residenciales", category: "Redes", type: "Versión Libre", hours: 12, level: "Básico", enrolled: true, progress: 35, imageColor: "bg-blue-800" },
+            { id: 103, title: "Instrumentación en Estaciones (ERM)", category: "Instrumentación", type: "Membresía", hours: 60, level: "Intermedio", enrolled: false, progress: 0, imageColor: "bg-green-800" },
+            { id: 104, title: "Seguridad Operativa con GLP", category: "Seguridad", type: "Versión Libre", hours: 8, level: "Todos", enrolled: false, progress: 0, imageColor: "bg-yellow-700" }
         ];
 
         function App() {
-            const [currentVideo, setCurrentVideo] = useState(playlist[2]);
-            const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-            const [activeTab, setActiveTab] = useState('temario');
+            // Estado de los Módulos (Contenido Vertical)
+            const [modules, setModules] = useState(initialModules);
+            const [currentModuleId, setCurrentModuleId] = useState(3); 
+            
+            // Estado de UI general - CAMBIO AQUÍ: showCatalog inicializado en TRUE
+            const [showCatalog, setShowCatalog] = useState(true);
+            const [plans, setPlans] = useState(initialTrainingPlans);
 
-            const handleVideoChange = (video) => {
-                setCurrentVideo(video);
+            // Cálculos de progreso
+            const completedCount = modules.filter(m => m.completed).length;
+            const progressPercentage = Math.round((completedCount / modules.length) * 100);
+
+            // Handlers
+            const handleCompleteModule = (id) => {
+                const currentIndex = modules.findIndex(m => m.id === id);
+                const nextIndex = currentIndex + 1;
+
+                const updatedModules = modules.map((module, index) => {
+                    if (module.id === id) {
+                        return { ...module, completed: true };
+                    }
+                    if (index === nextIndex) {
+                        return { ...module, locked: false };
+                    }
+                    return module;
+                });
+
+                setModules(updatedModules);
+                
+                if (nextIndex < modules.length) {
+                    setCurrentModuleId(modules[nextIndex].id);
+                    setTimeout(() => {
+                        document.getElementById(`module-${modules[nextIndex].id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 100);
+                }
             };
 
-            const handleGoBack = () => {
-                // En una app real usarías navigate(-1) o history.back()
-                // Aquí simulamos la acción con un alert o console.log
-                console.log("Regresando al dashboard...");
-                // window.history.back(); // Descomentar para funcionalidad real
+            const toggleModuleExpansion = (id, locked) => {
+                if (!locked) setCurrentModuleId(currentModuleId === id ? null : id);
+            };
+
+            const handleSelectPlan = (plan) => {
+                // Aquí podrías cargar datos reales del plan seleccionado
+                console.log("Plan seleccionado:", plan.title);
+                setShowCatalog(false); // Cerrar catálogo al seleccionar
             };
 
             return (
-                <div className="flex flex-col h-screen bg-[#0f0f0f] text-white font-sans overflow-hidden">
-                
-                {/* --- HEADER --- */}
-                <header className="flex items-center justify-between px-4 py-3 bg-[#0f0f0f] border-b border-gray-800 z-20">
-                    <div className="flex items-center gap-2">
-                        {/* BOTÓN REGRESAR INTEGRADO */}
-                        <button 
-                            onClick={handleGoBack}
-                            className="p-2 mr-2 hover:bg-gray-800 rounded-full text-gray-400 hover:text-white transition-colors"
-                            title="Volver al Panel Principal"
-                        >
-                            <Icon name="ArrowLeft" className="w-6 h-6" />
-                        </button>
-
-                        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 hover:bg-gray-800 rounded-full">
-                            <Icon name="Menu" className="w-6 h-6" />
-                        </button>
-                        
-                        <div className="flex items-center gap-1 cursor-pointer ml-2">
-                            <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center">
-                            <Icon name="Flame" className="w-5 h-5 text-white fill-current" />
-                            </div>
-                            <span className="text-xl font-bold tracking-tight hidden sm:inline">GasEngineering<span className="text-xs align-top opacity-70">Hub</span></span>
-                        </div>
-                    </div>
-
-                    <div className="hidden md:flex flex-1 max-w-2xl mx-8">
-                    <div className="flex w-full">
-                        <input 
-                        type="text" 
-                        placeholder="Buscar temas (ej. Válvulas solenoides, NFPA...)" 
-                        className="w-full bg-[#121212] border border-gray-700 rounded-l-full py-2 px-4 focus:outline-none focus:border-blue-500"
-                        />
-                        <button className="bg-gray-800 border border-l-0 border-gray-700 px-5 rounded-r-full hover:bg-gray-700 flex items-center justify-center">
-                        <Icon name="Search" className="w-5 h-5" />
-                        </button>
-                    </div>
-                    </div>
-
-                    <div className="flex items-center gap-4">
-                    <button className="hidden sm:block p-2 hover:bg-gray-800 rounded-full"><Icon name="Bell" className="w-6 h-6" /></button>
-                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center font-bold text-sm cursor-pointer">
-                        ING
-                    </div>
-                    </div>
-                </header>
-
-                {/* --- CONTENT --- */}
-                <div className="flex flex-1 overflow-hidden">
+                <div className="flex flex-col h-screen bg-[#0b0b0b] font-sans text-gray-100 overflow-hidden">
                     
-                    <main className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar">
-                    <div className="max-w-[1280px] mx-auto">
-                        
-                        {/* PLAYER */}
-                        <div className="aspect-video w-full bg-black rounded-xl overflow-hidden relative group shadow-2xl border border-gray-800">
-                        <div className={`w-full h-full flex items-center justify-center flex-col ${currentVideo.thumbnail} opacity-40 bg-cover bg-center`}>
-                            <div className="mb-4 animate-pulse"><Icon name="Flame" size={96} className="text-white opacity-50" /></div>
-                            <h2 className="text-2xl font-bold text-center px-4">{currentVideo.title}</h2>
-                            <p className="mt-2 text-gray-300">Módulo de Ingeniería Aplicada</p>
+                    {/* --- HEADER --- */}
+                    <header className="flex items-center justify-between px-6 py-4 bg-[#0b0b0b]/95 backdrop-blur border-b border-gray-800 z-30 sticky top-0">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-gradient-to-br from-red-600 to-red-800 rounded-xl flex items-center justify-center shadow-lg shadow-red-900/20">
+                                <Icon name="Flame" className="w-6 h-6 text-white fill-current" />
+                            </div>
+                            <div>
+                                <h1 className="text-xl font-bold tracking-tight leading-none">GasEngineering<span className="text-gray-500 font-normal">Hub</span></h1>
+                                <p className="text-xs text-gray-400 mt-1">Ruta de Formación Profesional</p>
+                            </div>
                         </div>
 
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <div className="h-1 w-full bg-gray-600 rounded-full mb-4 cursor-pointer relative">
-                            <div className="absolute h-full w-1/3 bg-red-600 rounded-full"></div>
-                            <div className="absolute h-4 w-4 bg-red-600 rounded-full -top-1.5 left-1/3 shadow-lg transform scale-0 group-hover:scale-100 transition-transform"></div>
-                            </div>
-                            
-                            <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-4">
-                                <button className="hover:text-red-500"><Icon name="Pause" className="w-6 h-6 fill-current" /></button>
-                                <button className="hover:text-gray-300"><Icon name="SkipForward" className="w-6 h-6" /></button>
-                                <div className="flex items-center gap-2 group/vol">
-                                <Icon name="Volume2" className="w-5 h-5" />
-                                <div className="w-0 overflow-hidden group-hover/vol:w-20 transition-all">
-                                    <div className="h-1 w-16 bg-white rounded-full ml-2"></div>
+                        <div className="flex items-center gap-6">
+                            <button onClick={() => setShowCatalog(true)} className="hidden md:flex items-center gap-2 text-sm font-medium text-gray-300 hover:text-white transition-colors bg-[#1a1a1a] px-4 py-2 rounded-full border border-gray-800 hover:border-gray-600">
+                                <Icon name="LayoutGrid" size={16} /> Catálogo de Planes
+                            </button>
+                            <div className="flex items-center gap-3 pl-6 border-l border-gray-800">
+                                <div className="text-right hidden sm:block">
+                                    <p className="text-sm font-semibold">Ing. Estudiante</p>
+                                    <p className="text-xs text-green-500">Plan Premium</p>
                                 </div>
+                                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center font-bold shadow-lg">IE</div>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* --- MAIN SCROLLABLE AREA --- */}
+                    <main className="flex-1 overflow-y-auto custom-scrollbar relative">
+                        
+                        {/* PROGRESS HEADER (STICKY) */}
+                        <div className="sticky top-0 z-20 bg-[#0b0b0b]/95 backdrop-blur py-6 px-4 border-b border-gray-800/50">
+                            <div className="max-w-3xl mx-auto">
+                                <div className="flex justify-between items-end mb-2">
+                                    <h2 className="text-lg font-bold text-white">Progreso del Curso</h2>
+                                    <span className="text-sm font-mono text-blue-400">{progressPercentage}% Completado</span>
                                 </div>
-                                <span className="text-sm text-gray-300">12:45 / {currentVideo.duration}</span>
+                                <div className="h-2 w-full bg-gray-800 rounded-full overflow-hidden">
+                                    <div 
+                                        className="h-full bg-gradient-to-r from-blue-600 to-cyan-400 rounded-full transition-all duration-700 ease-out" 
+                                        style={{ width: `${progressPercentage}%` }}
+                                    ></div>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-4">
-                                <button><Icon name="Settings" className="w-5 h-5" /></button>
-                                <button><Icon name="Maximize" className="w-5 h-5" /></button>
-                            </div>
-                            </div>
-                        </div>
                         </div>
 
-                        {/* INFO */}
-                        <div className="mt-4 pb-4 border-b border-gray-800">
-                        <h1 className="text-xl md:text-2xl font-bold text-white mb-2">{currentVideo.title}</h1>
-                        
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                            <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-bold">
-                                RM
-                            </div>
-                            <div>
-                                <h3 className="font-semibold text-sm">{courseData.instructor}</h3>
-                                <p className="text-xs text-gray-400">{courseData.subscribers}</p>
-                            </div>
-                            <button className="bg-white text-black px-4 py-2 rounded-full font-medium text-sm hover:bg-gray-200 transition-colors ml-4">
-                                Suscribirse al Plan
-                            </button>
-                            </div>
+                        {/* --- VERTICAL TIMELINE CONTENT --- */}
+                        <div className="max-w-3xl mx-auto px-4 py-8 pb-32">
+                            <div className="relative">
+                                {/* Línea Vertical Conectora */}
+                                <div className="absolute left-6 top-4 bottom-4 w-0.5 bg-gray-800"></div>
 
-                            <div className="flex items-center gap-2">
-                            <button className="flex items-center gap-2 bg-[#272727] px-4 py-2 rounded-full hover:bg-[#3f3f3f] text-sm font-medium transition-colors">
-                                <Icon name="ThumbsUp" className="w-4 h-4" /> <span>Me gusta</span>
-                            </button>
-                            <button className="flex items-center gap-2 bg-[#272727] px-4 py-2 rounded-full hover:bg-[#3f3f3f] text-sm font-medium transition-colors">
-                                <Icon name="Share2" className="w-4 h-4" /> <span>Compartir</span>
-                            </button>
-                            <button className="bg-[#272727] p-2 rounded-full hover:bg-[#3f3f3f] transition-colors flex items-center">
-                                <Icon name="Download" className="w-4 h-4" />
-                            </button>
-                            </div>
-                        </div>
-                        </div>
+                                {modules.map((module, index) => {
+                                    const isActive = currentModuleId === module.id;
+                                    const isCompleted = module.completed;
+                                    const isLocked = module.locked;
 
-                        {/* DESCRIPTION */}
-                        <div className="mt-4 bg-[#1a1a1a] rounded-xl p-4 hover:bg-[#222] transition-colors cursor-pointer">
-                        <div className="flex gap-2 text-sm font-bold mb-2">
-                            <span>1,452 vistas</span>
-                            <span>•</span>
-                            <span>hace 2 días</span>
-                            {courseData.tags.map(tag => (
-                            <span key={tag} className="text-blue-400">#{tag.replace(/\s/g, '')}</span>
-                            ))}
-                        </div>
-                        <p className="text-sm text-gray-300 whitespace-pre-line mb-4">
-                            {courseData.description}
-                            {'\n\n'}
-                            En este módulo abordaremos el cálculo crítico para el dimensionamiento de tuberías, considerando la fórmula de Weymouth y Panhandle B para alta presión.
-                        </p>
-                        
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                            <div className="bg-[#272727] p-3 rounded-lg flex items-center gap-3">
-                            <Icon name="BookOpen" className="text-orange-500 w-5 h-5" />
-                            <div>
-                                <p className="text-xs text-gray-400">Recurso</p>
-                                <p className="text-sm font-semibold">Tabla de Caudales</p>
-                            </div>
-                            </div>
-                            <div className="bg-[#272727] p-3 rounded-lg flex items-center gap-3">
-                            <Icon name="FileText" className="text-blue-500 w-5 h-5" />
-                            <div>
-                                <p className="text-xs text-gray-400">Normativa</p>
-                                <p className="text-sm font-semibold">PDF NFPA 54</p>
-                            </div>
-                            </div>
-                            <div className="bg-[#272727] p-3 rounded-lg flex items-center gap-3">
-                            <Icon name="Activity" className="text-green-500 w-5 h-5" />
-                            <div>
-                                <p className="text-xs text-gray-400">Práctica</p>
-                                <p className="text-sm font-semibold">Simulador Flujo</p>
-                            </div>
-                            </div>
-                        </div>
-                        </div>
-                        
-                        {/* COMMENTS */}
-                        <div className="mt-6">
-                            <h3 className="font-bold text-lg mb-4">Comentarios destacados de alumnos</h3>
-                            <div className="flex gap-3 mb-4">
-                                <div className="w-10 h-10 rounded-full bg-purple-600 flex-shrink-0 flex items-center justify-center font-bold text-xs">JA</div>
-                                <div>
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <span className="text-sm font-semibold">Juan Arias</span>
-                                        <span className="text-xs text-gray-500">hace 1 hora</span>
+                                    return (
+                                        <div 
+                                            key={module.id} 
+                                            id={`module-${module.id}`}
+                                            className={`relative pl-20 py-2 group transition-all duration-500 ${isActive ? 'mb-8' : 'mb-2'}`}
+                                        >
+                                            {/* CONNECTOR LINE HIGHLIGHT (Active only) */}
+                                            {isActive && <div className="absolute left-6 -top-4 h-[calc(100%+2rem)] w-0.5 bg-blue-600/50 shadow-[0_0_10px_rgba(37,99,235,0.5)] z-0"></div>}
+
+                                            {/* INDICATOR CIRCLE */}
+                                            <div 
+                                                onClick={() => toggleModuleExpansion(module.id, isLocked)}
+                                                className={`absolute left-2 top-2 w-9 h-9 rounded-full border-4 z-10 flex items-center justify-center cursor-pointer transition-all duration-300 shadow-xl
+                                                    ${isCompleted 
+                                                        ? 'bg-green-500 border-[#0b0b0b] text-black scale-100 hover:scale-110' 
+                                                        : isActive 
+                                                            ? 'bg-blue-600 border-[#0b0b0b] text-white scale-110 shadow-blue-500/30' 
+                                                            : 'bg-[#1a1a1a] border-gray-700 text-gray-500 scale-100 hover:border-gray-500'
+                                                    }
+                                                    ${isLocked ? 'opacity-50 cursor-not-allowed' : ''}
+                                                `}
+                                            >
+                                                {isCompleted ? <Icon name="Check" size={16} strokeWidth={3} /> : 
+                                                 isLocked ? <Icon name="Lock" size={14} /> : 
+                                                 <span className="text-sm font-bold">{index + 1}</span>}
+                                            </div>
+
+                                            {/* CARD CONTENT */}
+                                            <div 
+                                                className={`rounded-2xl border transition-all duration-300 overflow-hidden bg-[#121212]
+                                                    ${isActive 
+                                                        ? 'border-blue-600/50 shadow-[0_0_30px_-5px_rgba(37,99,235,0.15)] ring-1 ring-blue-500/20 active-module-border' 
+                                                        : 'border-gray-800 hover:border-gray-700 opacity-80 hover:opacity-100'
+                                                    }
+                                                    ${isLocked ? 'opacity-40 grayscale pointer-events-none' : ''}
+                                                `}
+                                            >
+                                                {/* Card Header (Always visible) */}
+                                                <div 
+                                                    onClick={() => toggleModuleExpansion(module.id, isLocked)}
+                                                    className={`p-5 flex items-center justify-between cursor-pointer ${isActive ? 'bg-[#1a1a1a] border-b border-gray-800' : ''}`}
+                                                >
+                                                    <div>
+                                                        <h3 className={`font-bold text-lg ${isActive ? 'text-white' : 'text-gray-300'}`}>
+                                                            {module.title}
+                                                        </h3>
+                                                        <div className="flex items-center gap-4 mt-1 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                            <span className="flex items-center gap-1"><Icon name="Clock" size={12} /> {module.duration}</span>
+                                                            <span>•</span>
+                                                            <span className={isCompleted ? "text-green-500" : isActive ? "text-blue-400" : ""}>
+                                                                {isCompleted ? "Completado" : isActive ? "En Progreso" : "Pendiente"}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-gray-500">
+                                                        {isActive ? <Icon name="ChevronUp" /> : <Icon name="ChevronDown" />}
+                                                    </div>
+                                                </div>
+
+                                                {/* Expanded Content (Only if Active) */}
+                                                {isActive && (
+                                                    <div className="animate-slideDown">
+                                                        {/* Video Player Area */}
+                                                        <div className="aspect-video bg-black relative group">
+                                                            <div className="absolute inset-0 flex items-center justify-center bg-gray-900/50">
+                                                                {/* Mock Player UI */}
+                                                                <div className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/20 group-hover:scale-110 transition-transform cursor-pointer shadow-2xl">
+                                                                    <Icon name="Play" size={32} className="text-white fill-white ml-1" />
+                                                                </div>
+                                                            </div>
+                                                            {/* Bottom Bar Mock */}
+                                                            <div className="absolute bottom-0 w-full h-1 bg-gray-800">
+                                                                <div className="h-full w-1/3 bg-red-600"></div>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Description & Action Area */}
+                                                        <div className="p-6">
+                                                            <div className="mb-6">
+                                                                <h4 className="text-sm font-bold text-gray-400 uppercase mb-2">Descripción del Módulo</h4>
+                                                                <p className="text-gray-300 leading-relaxed text-sm">
+                                                                    {module.description}
+                                                                    <br/><br/>
+                                                                    En este capítulo analizaremos las fórmulas de flujo crítico y subcrítico, fundamentales para el dimensionamiento correcto según la NTC 2505.
+                                                                </p>
+                                                            </div>
+
+                                                            {/* Resources Mini-List */}
+                                                            {module.resources.length > 0 && (
+                                                                <div className="flex gap-3 mb-8 overflow-x-auto pb-2">
+                                                                    {module.resources.map((res, idx) => (
+                                                                        <div key={idx} className="flex items-center gap-2 bg-[#1a1a1a] border border-gray-700 px-3 py-2 rounded-lg text-xs font-medium text-gray-300 hover:border-gray-500 hover:text-white transition-colors cursor-pointer shrink-0">
+                                                                            <Icon name="FileText" size={14} className="text-blue-500" />
+                                                                            {res}
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            )}
+
+                                                            {/* Action Button: Complete & Next */}
+                                                            <div className="flex justify-end pt-4 border-t border-gray-800">
+                                                                <button 
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleCompleteModule(module.id);
+                                                                    }}
+                                                                    className="group flex items-center gap-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg shadow-blue-900/30 transition-all transform hover:translate-y-[-1px] active:translate-y-[1px]"
+                                                                >
+                                                                    <span>Concluir Capítulo y Continuar</span>
+                                                                    <Icon name="ArrowRight" size={18} className="group-hover:translate-x-1 transition-transform" />
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+
+                                {/* Final Celebration Marker */}
+                                <div className="pl-20 py-8 opacity-50">
+                                    <div className="border-2 border-dashed border-gray-800 rounded-xl p-6 text-center">
+                                        <Icon name="Award" className="mx-auto mb-2 text-gray-600" size={32} />
+                                        <p className="text-sm text-gray-500">Completa todos los módulos para obtener tu certificado</p>
                                     </div>
-                                    <p className="text-sm">Excelente explicación sobre la caída de presión en tuberías de polietileno. ¿Podría profundizar en la fusión a tope en el siguiente video?</p>
                                 </div>
+
                             </div>
                         </div>
-
-                    </div>
                     </main>
 
-                    {/* --- SIDEBAR --- */}
-                    <aside className={`${isSidebarOpen ? 'w-full lg:w-[400px]' : 'w-0'} bg-[#0f0f0f] border-l border-gray-800 transition-all duration-300 flex flex-col flex-shrink-0 absolute lg:relative z-10 h-full right-0`}>
-                    
-                    <div className="p-4 border-b border-gray-800 bg-[#0f0f0f]">
-                        <div className="flex justify-between items-center mb-2">
-                            <h2 className="font-bold text-lg">Contenido del Curso</h2>
-                            <span className="text-xs text-gray-400">2/7 Completado</span>
-                        </div>
-                        <div className="flex bg-[#1f1f1f] p-1 rounded-lg mb-2">
-                            <button 
-                            onClick={() => setActiveTab('temario')}
-                            className={`flex-1 py-1 text-sm rounded-md transition-all ${activeTab === 'temario' ? 'bg-[#3f3f3f] text-white shadow' : 'text-gray-400 hover:text-white'}`}
-                            >
-                            Temario
-                            </button>
-                            <button 
-                            onClick={() => setActiveTab('recursos')}
-                            className={`flex-1 py-1 text-sm rounded-md transition-all ${activeTab === 'recursos' ? 'bg-[#3f3f3f] text-white shadow' : 'text-gray-400 hover:text-white'}`}
-                            >
-                            Certificación
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
-                        {activeTab === 'temario' ? (
-                            <div className="space-y-1">
-                            {playlist.map((video) => (
-                                <div 
-                                key={video.id}
-                                onClick={() => handleVideoChange(video)}
-                                className={`flex gap-2 p-2 rounded-xl cursor-pointer transition-colors group ${currentVideo.id === video.id ? 'bg-[#272727] border border-gray-700' : 'hover:bg-[#1f1f1f]'}`}
-                                >
-                                    <div className={`relative w-28 h-16 rounded-lg ${video.thumbnail} flex-shrink-0 overflow-hidden`}>
-                                        <div className="absolute bottom-1 right-1 bg-black/80 text-white text-xs px-1 rounded">
-                                            {video.duration}
-                                        </div>
-                                        {video.completed && (
-                                            <div className="absolute top-0 left-0 w-full h-full bg-black/50 flex items-center justify-center">
-                                                <Icon name="CheckCircle2" className="w-6 h-6 text-green-500" />
-                                            </div>
-                                        )}
-                                        {currentVideo.id === video.id && !video.completed && (
-                                            <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/20">
-                                                <Icon name="Play" className="w-6 h-6 text-white fill-white" />
-                                            </div>
-                                        )}
+                    {/* --- MODAL DE CATÁLOGO (Ahora se muestra inicialmente) --- */}
+                    {showCatalog && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md animate-fadeIn p-4">
+                            <div className="bg-[#121212] w-full max-w-5xl max-h-[85vh] rounded-2xl border border-gray-800 shadow-2xl overflow-hidden flex flex-col">
+                                
+                                {/* Modal Header */}
+                                <div className="p-6 border-b border-gray-800 flex justify-between items-center bg-[#1a1a1a]">
+                                    <div>
+                                        <h2 className="text-2xl font-bold flex items-center gap-3">
+                                            <Icon name="Library" className="text-blue-500" size={28} /> 
+                                            Catálogo de Formación Especializada
+                                        </h2>
+                                        <p className="text-gray-400 text-sm mt-1 ml-10">Selecciona un plan de carrera para comenzar</p>
                                     </div>
+                                    <button onClick={() => setShowCatalog(false)} className="p-2 hover:bg-gray-800 rounded-full transition-colors">
+                                        <Icon name="X" size={24} />
+                                    </button>
+                                </div>
 
-                                    <div className="flex flex-col justify-center flex-1 min-w-0">
-                                        <h4 className={`text-sm font-semibold line-clamp-2 ${currentVideo.id === video.id ? 'text-white' : 'text-gray-200 group-hover:text-white'}`}>
-                                            {video.title}
-                                        </h4>
-                                        <p className="text-xs text-gray-400 mt-1">{video.category}</p>
-                                        {currentVideo.id === video.id && (
-                                            <p className="text-xs text-red-400 mt-0.5 flex items-center gap-1">
-                                                <Icon name="Activity" className="w-3 h-3" /> Reproduciendo
-                                            </p>
-                                        )}
+                                {/* Modal Body (Grid) */}
+                                <div className="p-6 overflow-y-auto bg-[#0f0f0f] custom-scrollbar flex-1">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        {plans.map(plan => (
+                                            <div 
+                                                key={plan.id} 
+                                                onClick={() => handleSelectPlan(plan)}
+                                                className="bg-[#1a1a1a] rounded-xl border border-gray-800 overflow-hidden flex flex-col hover:scale-[1.02] hover:border-blue-500/50 transition-all cursor-pointer group shadow-lg"
+                                            >
+                                                {/* Card Image Area */}
+                                                <div className={`h-36 ${plan.imageColor} relative p-4 flex flex-col justify-end`}>
+                                                    <span className="bg-black/60 backdrop-blur-md text-xs font-bold px-3 py-1 rounded-full text-white border border-white/10 self-start mb-auto">
+                                                        {plan.category}
+                                                    </span>
+                                                    {plan.enrolled && (
+                                                        <div className="absolute top-4 right-4 bg-green-500 text-white p-1 rounded-full shadow-lg">
+                                                            <Icon name="Check" size={14} strokeWidth={3} />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                
+                                                {/* Card Content */}
+                                                <div className="p-5 flex-1 flex flex-col">
+                                                    <h3 className="font-bold text-lg mb-2 text-white group-hover:text-blue-400 transition-colors line-clamp-2">
+                                                        {plan.title}
+                                                    </h3>
+                                                    
+                                                    <div className="flex items-center gap-4 text-xs text-gray-400 mb-4 mt-1">
+                                                        <span className="flex items-center gap-1"><Icon name="Clock" size={12}/> {plan.hours} hrs</span>
+                                                        <span className="flex items-center gap-1"><Icon name="BarChart" size={12}/> {plan.level}</span>
+                                                    </div>
+
+                                                    {plan.enrolled ? (
+                                                        <div className="mt-auto">
+                                                            <div className="flex justify-between text-xs text-gray-400 mb-1">
+                                                                <span>Tu Progreso</span>
+                                                                <span>{plan.progress}%</span>
+                                                            </div>
+                                                            <div className="h-1.5 w-full bg-gray-700 rounded-full overflow-hidden">
+                                                                <div className="h-full bg-green-500 rounded-full" style={{ width: `${plan.progress}%` }}></div>
+                                                            </div>
+                                                            <button className="w-full mt-3 py-2 rounded-lg bg-green-600/20 text-green-400 border border-green-600/50 text-sm font-bold hover:bg-green-600 hover:text-white transition-colors">
+                                                                Continuar
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="mt-auto">
+                                                            <span className={`inline-block text-xs font-bold px-2 py-1 rounded border mb-3 ${plan.type === 'Membresía' ? 'border-purple-500/30 text-purple-400 bg-purple-500/10' : 'border-blue-500/30 text-blue-400 bg-blue-500/10'}`}>
+                                                                {plan.type}
+                                                            </span>
+                                                            <button className="w-full py-2 rounded-lg bg-gray-800 text-gray-300 border border-gray-700 hover:bg-white hover:text-black hover:border-white text-sm font-bold transition-all">
+                                                                Ver Detalles
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
-                            ))}
-                            
-                            <div className="mt-6 p-4 bg-gradient-to-br from-blue-900 to-slate-900 rounded-xl border border-blue-700 mx-2">
-                                <h3 className="font-bold text-white mb-2">¿Listo para certificarte?</h3>
-                                <p className="text-xs text-blue-200 mb-3">Obtén tu diploma oficial en Ingeniería de Combustión completando todos los módulos.</p>
-                                <button className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded-lg transition-colors">
-                                    Ver Plan Premium
-                                </button>
                             </div>
-                            </div>
-                        ) : (
-                            <div className="p-4 text-center">
-                                <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <Icon name="BookOpen" className="w-8 h-8 text-gray-400" />
-                                </div>
-                                <h3 className="text-lg font-bold">Material de Apoyo</h3>
-                                <p className="text-sm text-gray-400 mt-2">Accede a los PDFs técnicos, tablas de cálculo de tuberías y normativas ASME B31.8 asociadas a este curso.</p>
-                                <button className="mt-4 px-4 py-2 border border-gray-600 rounded-full text-sm hover:bg-gray-800">
-                                    Descargar Pack de Recursos
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                    </aside>
-
-                </div>
+                        </div>
+                    )}
                 </div>
             );
         }
