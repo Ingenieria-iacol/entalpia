@@ -7,190 +7,6 @@
     <!-- Fuente moderna -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Firebase SDKs -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDocs, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // --- CONFIGURACIÓN FIREBASE ---
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // --- VARIABLES GLOBALES ---
-        let currentUser = null;
-        let isRegistering = false; // Controla si estamos en modo Login o Registro
-
-        // --- UI REFERENCIAS ---
-        const loginModal = document.getElementById('login-modal');
-        const appContainer = document.getElementById('app-container');
-        const userEmailDisplay = document.getElementById('user-email-display');
-        const loadingOverlay = document.getElementById('loading-overlay');
-        const loginTitle = document.getElementById('login-title');
-        const loginBtn = document.getElementById('login-btn-action');
-        const toggleAuthText = document.getElementById('toggle-auth-text');
-        const loginError = document.getElementById('login-error');
-        
-        // --- AUTH LOGIC ---
-        // Escuchar cambios de estado
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUser = user;
-                userEmailDisplay.textContent = user.email;
-                loginModal.style.display = 'none';
-                appContainer.style.display = 'flex';
-                initializeDashboard(user);
-            } else {
-                currentUser = null;
-                appContainer.style.display = 'none';
-                loginModal.style.display = 'flex';
-                loadingOverlay.style.display = 'none';
-            }
-        });
-
-        // Alternar entre Login y Registro
-        window.toggleAuthMode = () => {
-            isRegistering = !isRegistering;
-            loginError.textContent = ""; // Limpiar errores
-            
-            if (isRegistering) {
-                loginTitle.innerHTML = 'Crear Cuenta <span style="color:var(--primary)">ERP</span>';
-                loginBtn.textContent = "Registrarme";
-                toggleAuthText.innerHTML = '¿Ya tienes cuenta? <span class="link-text" onclick="toggleAuthMode()">Inicia Sesión aquí</span>';
-            } else {
-                loginTitle.innerHTML = 'ENTALPIA <span style="color:var(--primary)">ERP</span>';
-                loginBtn.textContent = "Acceder al Sistema";
-                toggleAuthText.innerHTML = '¿No tienes cuenta? <span class="link-text" onclick="toggleAuthMode()">Regístrate aquí</span>';
-            }
-        };
-
-        // Manejar Autenticación (Login o Registro)
-        window.handleAuth = async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            
-            loginError.textContent = "";
-
-            if (!email || !password) {
-                loginError.textContent = "Por favor ingresa correo y contraseña.";
-                return;
-            }
-
-            loadingOverlay.style.display = 'flex';
-
-            try {
-                if (isRegistering) {
-                    // Modo Registro
-                    await createUserWithEmailAndPassword(auth, email, password);
-                    // El onAuthStateChanged manejará la redirección automática
-                } else {
-                    // Modo Login (Estricto)
-                    await signInWithEmailAndPassword(auth, email, password);
-                    // El onAuthStateChanged manejará la redirección
-                }
-            } catch (error) {
-                loadingOverlay.style.display = 'none';
-                console.error("Auth Error:", error);
-                
-                // Mensajes de error amigables
-                let msg = "Error de autenticación.";
-                if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
-                    msg = "Credenciales incorrectas. Verifica tu correo o contraseña.";
-                } else if (error.code === 'auth/email-already-in-use') {
-                    msg = "Este correo ya está registrado. Intenta iniciar sesión.";
-                } else if (error.code === 'auth/weak-password') {
-                    msg = "La contraseña debe tener al menos 6 caracteres.";
-                } else {
-                    msg = "Error: " + error.message;
-                }
-                loginError.textContent = msg;
-            }
-        };
-
-        // Logout
-        window.handleLogout = () => {
-            signOut(auth);
-            // Resetear UI al salir
-            isRegistering = true; 
-            toggleAuthMode(); // Volver a modo login por defecto
-        };
-
-        // --- DB LOGIC ---
-        
-        async function initializeDashboard(user) {
-            // 1. Cargar Tareas
-            const tasksRef = collection(db, 'artifacts', appId, 'users', user.uid, 'tasks');
-            const q = query(tasksRef, orderBy('createdAt', 'desc'));
-            
-            onSnapshot(q, (snapshot) => {
-                const tasksList = document.getElementById('tasks-list');
-                tasksList.innerHTML = ''; // Limpiar
-                
-                if (snapshot.empty) {
-                    tasksList.innerHTML = '<div style="padding:10px; color:#666; font-size:0.9rem;">No hay tareas pendientes.</div>';
-                }
-
-                snapshot.forEach((doc) => {
-                    const task = doc.data();
-                    const taskEl = document.createElement('div');
-                    taskEl.className = 'task-item';
-                    taskEl.innerHTML = `
-                        <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask('${doc.id}', ${!task.completed})">
-                        <div class="${task.completed ? 'task-done' : ''}">
-                            <div style="font-weight:500;">${task.title}</div>
-                            <div style="color:${task.isLate ? 'var(--danger)' : 'var(--text-muted)'}; font-size:0.75rem;">${task.subtitle || 'General'}</div>
-                        </div>
-                    `;
-                    tasksList.appendChild(taskEl);
-                });
-            }, (error) => {
-                console.error("Error tasks:", error);
-            });
-
-            loadingOverlay.style.display = 'none';
-        }
-
-        // Crear Nueva Tarea
-        window.saveNewTask = async () => {
-            if (!currentUser) return;
-            const title = document.getElementById('new-task-title').value;
-            if (!title) return alert('Escribe un título');
-
-            const tasksRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'tasks');
-            
-            try {
-                await addDoc(tasksRef, {
-                    title: title,
-                    subtitle: 'Creado ahora',
-                    completed: false,
-                    createdAt: serverTimestamp(),
-                    isLate: false
-                });
-                closeModal('task-modal');
-                document.getElementById('new-task-title').value = '';
-            } catch (e) {
-                alert('Error guardando tarea: ' + e.message);
-            }
-        };
-
-        // Toggle Tarea
-        window.toggleTask = async (taskId, newState) => {
-           // Lógica visual simulada para respuesta rápida en one-file
-           // En producción usar updateDoc(doc(...), {completed: newState})
-           console.log("Toggle task", taskId, newState);
-        };
-
-        // --- MODAL UTILS ---
-        window.openModal = (id) => document.getElementById(id).style.display = 'flex';
-        window.closeModal = (id) => document.getElementById(id).style.display = 'none';
-
-    </script>
-
     <style>
         /* --- SISTEMA DE DISEÑO (Design System) --- */
         :root {
@@ -346,7 +162,10 @@
 
     <!-- LOADING OVERLAY -->
     <div id="loading-overlay" class="full-screen-modal" style="background: white; z-index: 10000; color: black;">
-        <div>Cargando ERP Entalpia...</div>
+        <div style="text-align: center;">
+            <div style="font-weight: bold; margin-bottom: 10px;">Iniciando Entalpia ERP...</div>
+            <div style="font-size: 0.8rem; color: #666;">Verificando entorno local</div>
+        </div>
     </div>
 
     <!-- 1. LOGIN MODAL -->
@@ -364,6 +183,10 @@
             <div id="login-error" style="color: var(--danger); margin-top: 10px; font-size: 0.85rem;"></div>
             <div style="margin-top: 15px; font-size: 0.8rem; color: #666;" id="toggle-auth-text">
                 ¿No tienes cuenta? <span class="link-text" onclick="toggleAuthMode()">Regístrate aquí</span>
+            </div>
+            
+            <div style="margin-top: 20px; font-size: 0.7rem; color: #aaa; border-top: 1px solid #eee; padding-top: 10px;">
+                Modo: <span id="system-mode">Detectando...</span>
             </div>
         </div>
     </div>
@@ -457,12 +280,12 @@
                             </div>
                         </div>
 
-                        <!-- TASKS (REAL TIME FROM FIRESTORE) -->
+                        <!-- TASKS (REAL TIME FROM MOCK/FIREBASE) -->
                         <div class="card">
                             <h3>Mis Tareas</h3>
                             <div id="tasks-list" style="display:flex; flex-direction:column; gap:10px; margin-top:15px;">
                                 <!-- Se llena con JS -->
-                                <div style="color:gray;">Cargando tareas de tu nube privada...</div>
+                                <div style="color:gray;">Cargando tareas...</div>
                             </div>
                         </div>
                     </div>
@@ -493,5 +316,258 @@
             </div>
         </main>
     </div>
+
+    <!-- LOGIC SCRIPT (HYBRID FIREBASE/LOCAL) -->
+    <script type="module">
+        // Importamos Firebase, pero usaremos try-catch para manejar el entorno local
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- SISTEMA HÍBRIDO DE DATOS ---
+        const MOCK_STORAGE_KEY = 'entalpia_local_db';
+        let isLocalMode = false;
+        let app, auth, db;
+        let currentUser = null;
+        let isRegistering = false;
+
+        // UI Refs
+        const loginModal = document.getElementById('login-modal');
+        const appContainer = document.getElementById('app-container');
+        const userEmailDisplay = document.getElementById('user-email-display');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const systemModeLabel = document.getElementById('system-mode');
+        const loginError = document.getElementById('login-error');
+        const loginTitle = document.getElementById('login-title');
+        const loginBtn = document.getElementById('login-btn-action');
+        const toggleAuthText = document.getElementById('toggle-auth-text');
+
+        // --- 1. DETECCIÓN DE ENTORNO ---
+        try {
+            if (typeof __firebase_config !== 'undefined') {
+                // Estamos en el entorno de la IA o con config inyectada
+                const firebaseConfig = JSON.parse(__firebase_config);
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                systemModeLabel.textContent = "Conectado a Nube (Firebase)";
+                systemModeLabel.style.color = "var(--success)";
+                
+                // Listener Real
+                onAuthStateChanged(auth, (user) => {
+                    handleSessionChange(user);
+                });
+            } else {
+                throw new Error("No config found");
+            }
+        } catch (e) {
+            // Estamos en entorno LOCAL (archivo .html en PC)
+            isLocalMode = true;
+            systemModeLabel.textContent = "Modo Local (Offline Capable)";
+            systemModeLabel.style.color = "var(--warning)";
+            console.log("Iniciando modo local simulado...");
+            
+            // Simulamos sesión al cargar
+            const savedUser = sessionStorage.getItem('entalpia_user');
+            if (savedUser) {
+                handleSessionChange(JSON.parse(savedUser));
+            } else {
+                handleSessionChange(null);
+            }
+        }
+
+        // --- 2. MANEJO DE SESIÓN UNIFICADO ---
+        function handleSessionChange(user) {
+            loadingOverlay.style.display = 'none';
+            if (user) {
+                currentUser = user;
+                userEmailDisplay.textContent = user.email;
+                loginModal.style.display = 'none';
+                appContainer.style.display = 'flex';
+                loadTasks(); // Cargar datos
+            } else {
+                currentUser = null;
+                appContainer.style.display = 'none';
+                loginModal.style.display = 'flex';
+            }
+        }
+
+        // --- 3. UI FUNCTIONS ---
+        window.toggleAuthMode = () => {
+            isRegistering = !isRegistering;
+            loginError.textContent = "";
+            if (isRegistering) {
+                loginTitle.innerHTML = 'Crear Cuenta <span style="color:var(--primary)">ERP</span>';
+                loginBtn.textContent = "Registrarme (Local)";
+                toggleAuthText.innerHTML = '¿Ya tienes cuenta? <span class="link-text" onclick="toggleAuthMode()">Inicia Sesión</span>';
+            } else {
+                loginTitle.innerHTML = 'ENTALPIA <span style="color:var(--primary)">ERP</span>';
+                loginBtn.textContent = "Acceder al Sistema";
+                toggleAuthText.innerHTML = '¿No tienes cuenta? <span class="link-text" onclick="toggleAuthMode()">Regístrate</span>';
+            }
+        };
+
+        window.handleAuth = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            loginError.textContent = "";
+
+            if (!email || !password) {
+                loginError.textContent = "Ingresa correo y contraseña";
+                return;
+            }
+
+            loadingOverlay.style.display = 'flex';
+
+            if (isLocalMode) {
+                // --- LÓGICA LOCAL MOCK ---
+                setTimeout(() => {
+                    const localUsers = JSON.parse(localStorage.getItem('entalpia_users') || '[]');
+                    const existingUser = localUsers.find(u => u.email === email);
+
+                    if (isRegistering) {
+                        if (existingUser) {
+                            loginError.textContent = "El usuario ya existe localmente.";
+                            loadingOverlay.style.display = 'none';
+                        } else {
+                            const newUser = { uid: 'local_' + Date.now(), email: email, password: password };
+                            localUsers.push(newUser);
+                            localStorage.setItem('entalpia_users', JSON.stringify(localUsers));
+                            sessionStorage.setItem('entalpia_user', JSON.stringify(newUser));
+                            handleSessionChange(newUser);
+                        }
+                    } else {
+                        // Login
+                        if (existingUser && existingUser.password === password) {
+                            sessionStorage.setItem('entalpia_user', JSON.stringify(existingUser));
+                            handleSessionChange(existingUser);
+                        } else {
+                            loginError.textContent = "Credenciales incorrectas (Modo Local). Regístrate si es la primera vez.";
+                            loadingOverlay.style.display = 'none';
+                        }
+                    }
+                }, 800);
+            } else {
+                // --- LÓGICA FIREBASE REAL ---
+                try {
+                    if (isRegistering) {
+                        await createUserWithEmailAndPassword(auth, email, password);
+                    } else {
+                        await signInWithEmailAndPassword(auth, email, password);
+                    }
+                } catch (error) {
+                    loadingOverlay.style.display = 'none';
+                    let msg = "Error: " + error.code;
+                    if(error.code === 'auth/invalid-credential') msg = "Credenciales inválidas.";
+                    if(error.code === 'auth/email-already-in-use') msg = "Correo ya registrado.";
+                    loginError.textContent = msg;
+                }
+            }
+        };
+
+        window.handleLogout = () => {
+            if (isLocalMode) {
+                sessionStorage.removeItem('entalpia_user');
+                handleSessionChange(null);
+            } else {
+                signOut(auth);
+            }
+            isRegistering = false;
+            // Reset UI text
+            loginTitle.innerHTML = 'ENTALPIA <span style="color:var(--primary)">ERP</span>';
+            loginBtn.textContent = "Acceder al Sistema";
+            toggleAuthText.innerHTML = '¿No tienes cuenta? <span class="link-text" onclick="toggleAuthMode()">Regístrate aquí</span>';
+        };
+
+        // --- 4. DATA FUNCTIONS (HYBRID) ---
+        function loadTasks() {
+            const tasksList = document.getElementById('tasks-list');
+            tasksList.innerHTML = '';
+
+            if (isLocalMode) {
+                // Cargar de LocalStorage
+                const allData = JSON.parse(localStorage.getItem(MOCK_STORAGE_KEY) || '{}');
+                const userTasks = allData[currentUser.uid] || [];
+                
+                renderTasks(userTasks);
+                
+                // Polling simple para simular reactividad local
+                window.localInterval = setInterval(() => {
+                    const currentData = JSON.parse(localStorage.getItem(MOCK_STORAGE_KEY) || '{}');
+                    const currentTasks = currentData[currentUser.uid] || [];
+                    if(JSON.stringify(currentTasks) !== JSON.stringify(userTasks)) {
+                        renderTasks(currentTasks);
+                    }
+                }, 2000);
+
+            } else {
+                // Cargar de Firestore
+                const tasksRef = collection(db, 'artifacts', (typeof __app_id !== 'undefined' ? __app_id : 'default'), 'users', currentUser.uid, 'tasks');
+                const q = query(tasksRef, orderBy('createdAt', 'desc'));
+                onSnapshot(q, (snapshot) => {
+                    const tasks = [];
+                    snapshot.forEach(doc => tasks.push({ id: doc.id, ...doc.data() }));
+                    renderTasks(tasks);
+                });
+            }
+        }
+
+        function renderTasks(tasks) {
+            const tasksList = document.getElementById('tasks-list');
+            tasksList.innerHTML = '';
+            if (tasks.length === 0) {
+                tasksList.innerHTML = '<div style="padding:10px; color:#666;">No hay tareas.</div>';
+                return;
+            }
+            tasks.forEach(task => {
+                const el = document.createElement('div');
+                el.className = 'task-item';
+                el.innerHTML = `
+                    <input type="checkbox" ${task.completed ? 'checked' : ''} disabled>
+                    <div class="${task.completed ? 'task-done' : ''}">
+                        <div style="font-weight:500;">${task.title}</div>
+                        <div style="font-size:0.75rem; color:#888;">${task.subtitle || 'Pendiente'}</div>
+                    </div>
+                `;
+                tasksList.appendChild(el);
+            });
+        }
+
+        window.saveNewTask = async () => {
+            const title = document.getElementById('new-task-title').value;
+            if(!title) return;
+
+            const newTask = {
+                title: title,
+                subtitle: 'Creado el ' + new Date().toLocaleDateString(),
+                completed: false,
+                createdAt: Date.now()
+            };
+
+            if (isLocalMode) {
+                const allData = JSON.parse(localStorage.getItem(MOCK_STORAGE_KEY) || '{}');
+                if (!allData[currentUser.uid]) allData[currentUser.uid] = [];
+                
+                // Add to beginning
+                allData[currentUser.uid].unshift(newTask);
+                localStorage.setItem(MOCK_STORAGE_KEY, JSON.stringify(allData));
+                
+                // Manual render update
+                loadTasks(); 
+            } else {
+                const tasksRef = collection(db, 'artifacts', (typeof __app_id !== 'undefined' ? __app_id : 'default'), 'users', currentUser.uid, 'tasks');
+                await addDoc(tasksRef, { ...newTask, createdAt: serverTimestamp() });
+            }
+
+            closeModal('task-modal');
+            document.getElementById('new-task-title').value = '';
+        };
+
+        // Modal Helpers
+        window.openModal = (id) => document.getElementById(id).style.display = 'flex';
+        window.closeModal = (id) => document.getElementById(id).style.display = 'none';
+
+    </script>
 </body>
 </html>
