@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluador de Monoespacios NTC 3631</title>
+    
+    <!-- Tailwind CSS (Estilos) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons (Iconos) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* Estilos base para transiciones suaves */
+        .transition-all { transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 300ms; }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 min-h-screen p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto space-y-6">
+        
+        <!-- Header -->
+        <div class="flex items-center space-x-3 mb-6">
+            <div class="p-3 bg-blue-600 rounded-lg shadow-lg">
+                <i data-lucide="home" class="w-8 h-8 text-white"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900">Evaluador de Monoespacios</h1>
+                <p class="text-slate-500 text-sm">Basado en NTC 3631 (Segunda Actualización) - Anexo B</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <!-- Columna Izquierda: Datos y Cálculos -->
+            <div class="md:col-span-1 space-y-6">
+                
+                <!-- Tarjeta Dimensiones -->
+                <div class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden p-5">
+                    <h2 class="flex items-center font-semibold text-lg mb-4 text-blue-700">
+                        <i data-lucide="ruler" class="w-5 h-5 mr-2"></i>
+                        Dimensiones
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">Área en Planta (A)</label>
+                            <div class="relative">
+                                <input type="number" id="inputArea" step="0.01" class="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none pl-3 pr-10" placeholder="0.00">
+                                <span class="absolute right-3 top-2 text-slate-400 text-sm">m²</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">Altura (H)</label>
+                            <div class="relative">
+                                <input type="number" id="inputAltura" step="0.01" class="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none pl-3 pr-10" placeholder="0.00">
+                                <span class="absolute right-3 top-2 text-slate-400 text-sm">m</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tarjeta Potencia Máxima -->
+                <div class="bg-blue-50 rounded-xl shadow-md border border-blue-100 overflow-hidden p-5">
+                    <h2 class="flex items-center font-semibold text-lg mb-4 text-blue-800">
+                        <i data-lucide="calculator" class="w-5 h-5 mr-2"></i>
+                        Potencia Máxima
+                    </h2>
+                    <div class="text-center">
+                        <div class="text-4xl font-bold text-blue-700 mb-1">
+                            <span id="displayPotenciaMax">0.00</span> <span class="text-lg font-normal text-blue-500">kW</span>
+                        </div>
+                        <p class="text-xs text-blue-400 mt-2 font-mono">P = (A × H) / 3.4</p>
+                        
+                        <div class="mt-4 pt-4 border-t border-blue-200">
+                            <label class="block text-sm font-medium text-blue-800 mb-1 text-left">Potencia a Instalar</label>
+                            <div class="relative">
+                                <input type="number" id="inputPotencia" step="0.01" class="w-full p-2 border border-blue-300 rounded-md focus:ring-2 focus:ring-blue-200 outline-none pl-3 pr-10 bg-white" placeholder="0.00">
+                                <span class="absolute right-3 top-2 text-slate-400 text-sm">kW</span>
+                            </div>
+                            <p id="errorPotencia" class="text-xs text-red-600 mt-1 flex items-center hidden">
+                                <i data-lucide="alert-circle" class="w-3 h-3 mr-1"></i> Excede el límite calculado
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna Derecha: Checklist Normativo -->
+            <div class="md:col-span-2 space-y-6">
+                <div class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+                    <div class="p-5 border-b border-gray-100 bg-gray-50">
+                        <h2 class="flex items-center font-semibold text-lg text-slate-800">
+                            <i data-lucide="check-circle-2" class="w-5 h-5 mr-2 text-green-600"></i>
+                            Verificación Normativa (Anexo B)
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-1">Marque las casillas únicamente si se cumple la condición.</p>
+                    </div>
+                    
+                    <div class="p-5 space-y-4">
+                        <!-- Grupo B.1 -->
+                        <div class="space-y-3">
+                            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider flex items-center">
+                                <i data-lucide="flame" class="w-4 h-4 mr-1"></i> Ubicación de Artefactos (B.1)
+                            </h3>
+                            
+                            <label class="flex items-start p-3 hover:bg-slate-50 rounded-lg cursor-pointer border border-transparent hover:border-slate-100 transition-all">
+                                <input type="checkbox" class="check-normativo mt-1 w-5 h-5 text-blue-600 rounded focus:ring-blue-500 border-gray-300" id="chkUbicacion">
+                                <div class="ml-3">
+                                    <span class="block text-sm font-medium text-slate-700">Fuera del área de dormitorio</span>
+                                    <span class="block text-xs text-slate-500">Si no hay divisiones, se cuenta desde los bordes exteriores de la cama.</span>
+                                </div>
+                            </label>
+
+                            <label class="flex items-start p-3 hover:bg-slate-50 rounded-lg cursor-pointer border border-transparent hover:border-slate-100 transition-all">
+                                <input type="checkbox" class="check-normativo mt-1 w-5 h-5 text-blue-600 rounded focus:ring-blue-500 border-gray-300" id="chkDistancia">
+                                <div class="ml-3">
+                                    <span class="block text-sm font-medium text-slate-700">Distancia mínima de 2m (Tipo A)</span>
+                                    <span class="block text-xs text-slate-500">Artefactos Tipo A a mínimo 2 metros del límite del dormitorio. (Marcar si cumple o si no hay Tipo A).</span>
+                                </div>
+                            </label>
+
+                            <label class="flex items-start p-3 hover:bg-slate-50 rounded-lg cursor-pointer border border-transparent hover:border-slate-100 transition-all">
+                                <input type="checkbox" class="check-normativo mt-1 w-5 h-5 text-blue-600 rounded focus:ring-blue-500 border-gray-300" id="chkNtcAdicional">
+                                <div class="ml-3">
+                                    <span class="block text-sm font-medium text-slate-700">Cumple otras NTC específicas</span>
+                                    <span class="block text-xs text-slate-500">NTC 5360 (Chimeneas), NTC 3643 (Calentadores paso), NTC 3632 (Cocción), NTC 5256 (Secadoras).</span>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="border-t border-slate-100 my-4"></div>
+
+                        <!-- Grupo B.3 -->
+                        <div class="space-y-3">
+                            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider flex items-center">
+                                <i data-lucide="wind" class="w-4 h-4 mr-1"></i> Requisitos de Ventilación (B.3)
+                            </h3>
+
+                            <label class="flex items-start p-3 hover:bg-slate-50 rounded-lg cursor-pointer border border-transparent hover:border-slate-100 transition-all">
+                                <input type="checkbox" class="check-normativo mt-1 w-5 h-5 text-blue-600 rounded focus:ring-blue-500 border-gray-300" id="chkVentilacion">
+                                <div class="ml-3">
+                                    <span class="block text-sm font-medium text-slate-700">Sistema de ventilación (2 aberturas)</span>
+                                    <span class="block text-xs text-slate-500">Debe tener una abertura superior y una inferior permanentes.</span>
+                                </div>
+                            </label>
+
+                            <label class="flex items-start p-3 hover:bg-slate-50 rounded-lg cursor-pointer border border-transparent hover:border-slate-100 transition-all">
+                                <input type="checkbox" class="check-normativo mt-1 w-5 h-5 text-blue-600 rounded focus:ring-blue-500 border-gray-300" id="chkVentFuera">
+                                <div class="ml-3">
+                                    <span class="block text-sm font-medium text-slate-700">Ventilaciones fuera del dormitorio</span>
+                                    <span class="block text-xs text-slate-500">Ubicadas fuera del área definida por la cama.</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resultado Final -->
+                <div id="resultadoBox" class="bg-gray-50 border-gray-200 border-dashed rounded-xl p-6 border-2 transition-all duration-300">
+                    <div class="flex items-start">
+                        <div id="iconContainer" class="mr-3 flex-shrink-0">
+                            <i data-lucide="info" class="w-8 h-8 text-gray-400"></i>
+                        </div>
+                        
+                        <div>
+                            <h3 id="resultadoTitulo" class="text-xl font-bold mb-1 text-gray-700">Esperando datos...</h3>
+                            <p id="resultadoMensaje" class="text-sm opacity-90 text-gray-600">Ingrese la potencia a instalar.</p>
+                            <ul id="listaDetalles" class="mt-3 list-disc list-inside text-sm bg-white/50 p-3 rounded-lg hidden"></ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Script de Lógica -->
+    <script>
+        // Inicializar Iconos
+        lucide.createIcons();
+
+        // Referencias al DOM
+        const inputArea = document.getElementById('inputArea');
+        const inputAltura = document.getElementById('inputAltura');
+        const displayPotenciaMax = document.getElementById('displayPotenciaMax');
+        const inputPotencia = document.getElementById('inputPotencia');
+        const errorPotencia = document.getElementById('errorPotencia');
+        
+        // Checkboxes
+        const checkboxes = document.querySelectorAll('.check-normativo');
+        
+        // Resultado
+        const resultadoBox = document.getElementById('resultadoBox');
+        const resultadoTitulo = document.getElementById('resultadoTitulo');
+        const resultadoMensaje = document.getElementById('resultadoMensaje');
+        const listaDetalles = document.getElementById('listaDetalles');
+        const iconContainer = document.getElementById('iconContainer');
+
+        const FACTOR_DIVISOR = 3.4;
+        let potenciaMaximaCalculada = 0;
+
+        function actualizarCalculos() {
+            // 1. Calcular Potencia Máxima
+            const area = parseFloat(inputArea.value) || 0;
+            const altura = parseFloat(inputAltura.value) || 0;
+            
+            potenciaMaximaCalculada = (area > 0 && altura > 0) ? (area * altura) / FACTOR_DIVISOR : 0;
+            displayPotenciaMax.textContent = potenciaMaximaCalculada.toFixed(2);
+
+            // 2. Validar Input de Potencia vs Máximo
+            const potenciaIngresada = parseFloat(inputPotencia.value);
+            const excedeLimite = potenciaIngresada > potenciaMaximaCalculada;
+
+            if (potenciaIngresada && excedeLimite) {
+                inputPotencia.classList.add('border-red-300', 'bg-red-50', 'text-red-900');
+                inputPotencia.classList.remove('border-blue-300', 'bg-white');
+                errorPotencia.classList.remove('hidden');
+            } else {
+                inputPotencia.classList.remove('border-red-300', 'bg-red-50', 'text-red-900');
+                inputPotencia.classList.add('border-blue-300', 'bg-white');
+                errorPotencia.classList.add('hidden');
+            }
+
+            // 3. Evaluar Estado Global
+            evaluarEstadoGlobal(area, altura, potenciaIngresada, excedeLimite);
+        }
+
+        function evaluarEstadoGlobal(area, altura, potenciaIngresada, excedeLimite) {
+            listaDetalles.innerHTML = '';
+            listaDetalles.classList.add('hidden');
+
+            // Caso 0: Faltan datos básicos
+            if (area <= 0 || altura <= 0 || isNaN(potenciaIngresada) || potenciaIngresada <= 0) {
+                setEstado('PENDIENTE', 'Esperando datos completos...', 'bg-gray-50 border-gray-200 border-dashed text-gray-700');
+                return;
+            }
+
+            // Caso 1: Potencia Excedida
+            if (excedeLimite) {
+                setEstado('RECHAZADO', `La potencia instalada (${potenciaIngresada} kW) excede el máximo permitido (${potenciaMaximaCalculada.toFixed(2)} kW).`, 'bg-red-100 text-red-800 border-red-200 border-solid');
+                return;
+            }
+
+            // Caso 2: Verificar Checkbox Normativos
+            const faltantes = [];
+            if (!document.getElementById('chkUbicacion').checked) faltantes.push("Artefactos en zona de dormitorio");
+            if (!document.getElementById('chkDistancia').checked) faltantes.push("Distancia Tipo A < 2m");
+            if (!document.getElementById('chkNtcAdicional').checked) faltantes.push("Incumplimiento otras NTC (Calentadores/Cocina)");
+            if (!document.getElementById('chkVentilacion').checked) faltantes.push("Faltan ventilaciones (Sup/Inf)");
+            if (!document.getElementById('chkVentFuera').checked) faltantes.push("Ventilación en zona dormitorio");
+
+            if (faltantes.length > 0) {
+                setEstado('RECHAZADO', 'Incumplimiento de requisitos normativos de ubicación o ventilación.', 'bg-orange-100 text-orange-800 border-orange-200 border-solid');
+                listaDetalles.classList.remove('hidden');
+                faltantes.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = item;
+                    li.className = "font-medium";
+                    listaDetalles.appendChild(li);
+                });
+                return;
+            }
+
+            // Caso 3: Todo OK
+            setEstado('APROBADO', 'El monoespacio CUMPLE con los requisitos del Anexo B de la NTC 3631.', 'bg-green-100 text-green-800 border-green-200 border-solid');
+        }
+
+        function setEstado(titulo, mensaje, clasesColor) {
+            // Limpiar clases anteriores
+            resultadoBox.className = `rounded-xl p-6 border-2 transition-all duration-300 ${clasesColor}`;
+            resultadoTitulo.textContent = titulo;
+            resultadoMensaje.textContent = mensaje;
+
+            // Icono Dinámico
+            let iconName = 'info';
+            let iconColorClass = 'text-gray-400';
+
+            if (titulo === 'APROBADO') {
+                iconName = 'check-circle-2';
+                iconColorClass = 'text-green-600';
+            } else if (titulo === 'RECHAZADO') {
+                iconName = 'alert-circle';
+                // El color del texto ya viene en clasesColor para el contenedor, pero el icono necesita su clase
+                iconColorClass = clasesColor.includes('red') ? 'text-red-800' : 'text-orange-800';
+            }
+
+            iconContainer.innerHTML = `<i data-lucide="${iconName}" class="w-8 h-8 ${iconColorClass}"></i>`;
+            lucide.createIcons(); // Re-renderizar icono insertado
+        }
+
+        // Event Listeners
+        [inputArea, inputAltura, inputPotencia].forEach(el => {
+            el.addEventListener('input', actualizarCalculos);
+        });
+
+        checkboxes.forEach(chk => {
+            chk.addEventListener('change', actualizarCalculos);
+        });
+
+    </script>
+</body>
+</html>
