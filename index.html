@@ -2,18 +2,10 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Entalpia | Hub de Ingeniería</title>
-    
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://images.unsplash.com">
-    
-    <link rel="preload" as="image" href="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop">
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     
     <style>
         /* --- ESTILOS GENERALES --- */
@@ -28,7 +20,7 @@
             --edu-yellow: #f59e0b; 
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
 
         body {
             background-color: var(--bg-black);
@@ -51,7 +43,7 @@
             background-size: cover; background-position: center;
             display: flex; justify-content: center; align-items: center; z-index: 3000;
             transition: opacity 0.8s ease;
-            will-change: opacity; /* Optimización de animación */
+            padding: 20px;
         }
 
         .login-box-static {
@@ -76,6 +68,7 @@
         .toggle-password {
             position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
             color: #888; cursor: pointer; font-size: 1rem; z-index: 10;
+            padding: 10px; /* Mejor área táctil */
         }
         .toggle-password:hover { color: var(--primary-blue); }
 
@@ -105,7 +98,6 @@
         .nav-item { cursor: pointer; transition: color 0.3s; } 
         .nav-item:hover, .nav-item.active { color: white; font-weight: 700; }
         
-        /* BOTÓN PLANES DESTACADO */
         .nav-btn-planes {
             background-color: var(--primary-blue);
             color: white !important;
@@ -124,7 +116,6 @@
         .user-menu { display: flex; align-items: center; gap: 20px; font-size: 1.1rem; }
         .profile-badge { border: 1px solid rgba(255,255,255,0.3); padding: 4px 10px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; transition: all 0.3s; letter-spacing: 1px; }
         
-        /* BUSCADOR */
         .search-box { display: flex; align-items: center; background: transparent; border: 1px solid transparent; padding: 5px; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); overflow: hidden; width: 30px; border-radius: 4px; }
         .search-box.active { background: rgba(20, 20, 20, 0.9); border: 1px solid var(--primary-blue); width: 280px; box-shadow: 0 0 10px rgba(0, 113, 235, 0.2); }
         .search-input { background: transparent; border: none; color: white; outline: none; width: 0; transition: width 0.3s; padding-left: 10px; opacity: 0; font-size: 0.9rem; }
@@ -139,7 +130,6 @@
             background-color: #000; background-position: center top; background-size: cover;
             display: flex; align-items: center; padding-left: 4%;
             transition: background-image 0.8s ease-in-out;
-            will-change: background-image; /* Optimización */
         }
         .hero-overlay { position: absolute; inset: 0; background: linear-gradient(to right, #141414 10%, rgba(20,20,20,0.4) 60%, transparent 100%); z-index: 1; }
         .hero-overlay-btm { position: absolute; bottom: 0; left: 0; right: 0; height: 200px; background: linear-gradient(to top, #141414, transparent); z-index: 1; }
@@ -153,33 +143,23 @@
 
         /* --- CONTENIDO --- */
         .content-container { position: relative; z-index: 20; margin-top: -100px; padding-bottom: 50px; min-height: 400px; }
-        .row { margin-bottom: 3.5rem; /* Padding left removed here, moved to children */ }
+        .row { margin-bottom: 3.5rem; }
         .row-title { font-size: 1.5rem; font-weight: 700; color: #e5e5e5; margin-bottom: 1rem; padding-left: 4%; }
         
-        /* MEJORA: Scroll Horizontal */
         .row-scroller { 
-            display: flex; 
-            gap: 12px; 
-            overflow-x: auto; 
-            padding: 20px 4%; 
-            flex-wrap: nowrap; 
-            scroll-behavior: smooth;
+            display: flex; gap: 12px; overflow-x: auto; padding: 20px 4%; flex-wrap: nowrap; scroll-behavior: smooth;
             -webkit-overflow-scrolling: touch;
         }
-        
         .row-scroller::-webkit-scrollbar { height: 8px; }
         .row-scroller::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 4px; margin: 0 4%; }
         .row-scroller::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); border-radius: 4px; }
-        .row-scroller::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.5); }
         
         .search-results-grid { display: flex; flex-wrap: wrap; gap: 20px; padding-left: 4%; padding-right: 4%; }
         
-        /* Tarjetas Mejoradas */
         .tile {
             min-width: 280px; height: 160px; background-color: #252525; border-radius: 6px;
             transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), z-index 0s, box-shadow 0.3s;
             cursor: pointer; position: relative; overflow: hidden; flex-shrink: 0;
-            contain: content; /* Optimización de renderizado */
         }
         .tile:hover { transform: scale(1.3); z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.8); transition-delay: 0.1s; border: 1px solid rgba(255,255,255,0.1); }
         .tile-img { width: 100%; height: 100%; object-fit: cover; opacity: 0.9; }
@@ -190,7 +170,6 @@
         .tile-icon { width: 32px; height: 32px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; background: rgba(30,30,30,0.6); color: white; transition: 0.2s; }
         .tile-icon:hover { background: white; color: black; border-color: white; transform: scale(1.1); }
         .icon-play { background: white; color: black; border-color: white; }
-        
         .tile-title { font-size: 0.95rem; font-weight: 700; color: white; margin-bottom: 3px; text-shadow: 1px 1px 2px black; }
         .tile-subtitle { font-size: 0.65rem; color: #ccc; margin-bottom: 5px; line-height: 1.1; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .tile-meta { font-size: 0.7rem; color: var(--secondary-green); font-weight: 700; }
@@ -212,8 +191,8 @@
         .gate-close:hover { border-color: white; color: white; }
 
         /* --- MODALES FORMULARIOS --- */
-        .modal-base { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(8px); z-index: 6000; justify-content: center; align-items: center; animation: fadeIn 0.3s; overflow-y: auto; }
-        .edit-profile-box, .modal-login-content, .membership-box { background: #181818; padding: 40px; width: 95%; max-width: 550px; border-radius: 12px; border: 1px solid #333; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.7); }
+        .modal-base { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(8px); z-index: 6000; justify-content: center; align-items: center; animation: fadeIn 0.3s; overflow-y: auto; padding: 20px; }
+        .edit-profile-box, .modal-login-content, .membership-box { background: #181818; padding: 40px; width: 100%; max-width: 550px; border-radius: 12px; border: 1px solid #333; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.7); }
         
         .edit-avatar-preview { width: 120px; height: 120px; border-radius: 50%; background-color: #252525; margin: 0 auto 30px auto; background-size: cover; background-position: center; border: 3px solid #444; cursor: pointer; display: flex; justify-content: center; align-items: center; position: relative; overflow: hidden; transition: border-color 0.3s; }
         .edit-avatar-preview:hover { border-color: var(--primary-blue); }
@@ -226,27 +205,97 @@
         .edit-input.locked { background: #1a1a1a; color: #666; border-color: #333; cursor: not-allowed; }
         
         /* --- OTROS MODALES --- */
-        #dynamic-login-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 4500; justify-content: center; align-items: center; animation: fadeIn 0.3s; }
+        #dynamic-login-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 4500; justify-content: center; align-items: center; animation: fadeIn 0.3s; padding: 20px; }
         .modal-login-content { background: #181818; padding: 50px; width: 100%; max-width: 450px; border-radius: 8px; position: relative; border-top: 4px solid transparent; }
-        #membership-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000; justify-content: center; align-items: center; }
+        #membership-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000; justify-content: center; align-items: center; padding: 20px; }
         #video-modal { display: none; position: fixed; inset: 0; background: black; z-index: 5000; justify-content: center; align-items: center; flex-direction: column; }
         #viewer { display: none; position: fixed; inset: 0; background: black; z-index: 5500; flex-direction: column; }
-        #details-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 4200; justify-content: center; align-items: center; }
+        #details-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 4200; justify-content: center; align-items: center; padding: 20px; }
+
+        /* --- MODAL INSTALACIÓN APP --- */
+        #install-modal { display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: #252525; z-index: 7000; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); border: 1px solid #444; overflow: hidden; animation: slideUp 0.5s ease; flex-direction: column; }
+        .install-header { background: linear-gradient(90deg, var(--primary-blue), #005bb5); padding: 15px; display: flex; align-items: center; gap: 15px; }
+        .install-icon { font-size: 2rem; color: white; }
+        .install-body { padding: 20px; color: #ddd; font-size: 0.95rem; line-height: 1.5; text-align: center; }
+        .install-footer { padding: 0 20px 20px 20px; display: flex; gap: 10px; }
+        .btn-install { flex: 1; padding: 12px; border-radius: 6px; font-weight: bold; background: white; color: var(--primary-blue); }
+        .btn-cancel { flex: 1; padding: 12px; border-radius: 6px; font-weight: bold; background: transparent; border: 1px solid #555; color: #aaa; }
+        
+        @keyframes slideUp { from { transform: translate(-50%, 100%); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
 
         iframe { width: 100%; height: 100%; border: none; background: white; }
         video { width: 90%; max-width: 1000px; outline: none; border-radius: 8px; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
         @keyframes fadeIn { from { opacity: 0; transform: scale(1.02); } to { opacity: 1; transform: scale(1); } }
         footer { margin-top: 80px; padding: 40px; text-align: center; color: #555; font-size: 0.9rem; border-top: 1px solid #222; }
+
+        /* --- MEDIA QUERIES (RESPONSIVE) --- */
+        @media (max-width: 900px) {
+            .hero-title { font-size: 3rem; }
+            .hero-desc { font-size: 1.1rem; max-width: 90%; }
+        }
+
+        @media (max-width: 768px) {
+            /* Login */
+            .login-box-static { padding: 30px 20px; width: 95%; }
+            .login-title { font-size: 2.2rem; }
+            
+            /* Navbar Móvil */
+            .navbar { padding: 10px 5%; }
+            .nav-logo { font-size: 1.4rem; }
+            .nav-links { position: fixed; bottom: 0; left: 0; width: 100%; background: #1a1a1a; border-top: 1px solid #333; padding: 10px; justify-content: space-around; gap: 0; z-index: 1001; }
+            .nav-item { font-size: 0.75rem; display: flex; flex-direction: column; align-items: center; gap: 4px; color: #888; }
+            .nav-item i { font-size: 1.2rem; margin-bottom: 2px; display: block; } /* Iconos ficticios si se añadieran */
+            .nav-btn-planes { background: transparent; color: #888 !important; padding: 0; border-radius: 0; box-shadow: none; font-weight: 500; }
+            .nav-btn-planes:hover { transform: none; background: transparent; color: white !important; }
+            
+            /* User Menu Móvil */
+            .user-menu { gap: 15px; }
+            .profile-badge { display: none; } /* Ocultar texto de perfil en móvil */
+            .search-box.active { width: 180px; position: absolute; right: 60px; top: 10px; background: #141414; z-index: 1002; }
+            
+            /* Hero Móvil */
+            .hero { padding-left: 5%; justify-content: center; text-align: center; }
+            .hero-content { padding-top: 0; max-width: 100%; display: flex; flex-direction: column; align-items: center; }
+            .hero-title { font-size: 2.5rem; margin-top: 20px; }
+            .hero-desc { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; font-size: 1rem; }
+            .hero-buttons { flex-direction: row; width: 100%; justify-content: center; }
+            .btn-play, .btn-info { padding: 0.8rem 1.5rem; font-size: 1rem; }
+
+            /* Carrusel Móvil */
+            .row-title { font-size: 1.2rem; margin-left: 0; }
+            .tile { min-width: 160px; height: 240px; } /* Formato más vertical tipo móvil */
+            .tile-content { padding: 10px; }
+            .tile-title { font-size: 0.9rem; white-space: normal; }
+            .tile:hover { transform: scale(1.05); z-index: 50; } /* Menos zoom en móvil */
+            
+            /* Modales en Móvil */
+            .modal-login-content, .edit-profile-box, .membership-box { padding: 25px 20px; width: 95%; max-height: 85vh; overflow-y: auto; }
+            .form-row { flex-direction: column; gap: 10px; }
+            
+            /* Gate Perfiles */
+            .gate-title { font-size: 2.2rem; }
+            .profile-card { width: 120px; }
+            .profile-avatar { width: 120px; height: 120px; font-size: 3.5rem; }
+            
+            /* Detalles Modal */
+            #modal-banner { height: 250px; }
+            .btn-play { width: 100%; justify-content: center; }
+
+            /* Espacio para navbar inferior */
+            .content-container { padding-bottom: 80px; }
+            footer { margin-bottom: 60px; }
+        }
     </style>
 </head>
 <body>
 
     <audio id="bg-music" loop><source src="" type="audio/mpeg"></audio>
 
+    <!-- PANTALLA DE LOGIN -->
     <div id="login-screen">
         <div class="login-box-static">
             <h1 class="login-title">Entalpia</h1>
-            <div class="login-subtitle">Credenciales De Acceso</div>
+            <div class="login-subtitle">Hub de Ingeniería</div>
             <form onsubmit="intentarLogin(event, 'General')">
                 <input type="text" id="user-static" class="login-input" placeholder="Usuario" required>
                 <div class="password-wrapper">
@@ -261,37 +310,39 @@
                 <p id="error-static" class="login-error">Credenciales incorrectas.</p>
             </form>
             <div class="login-footer">
-                <p>&copy; 2025 SofI.A. Engineering Hub - Desarrollado para el futuro.</p>
+                <p>&copy; 2025 SofI.A. Engineering Hub</p>
             </div>
         </div>
     </div>
 
+    <!-- INTERFAZ PRINCIPAL -->
     <div id="main-interface" class="hidden">
         <nav id="navbar" class="navbar">
-            <div style="display:flex; align-items:center; gap:40px;">
+            <div style="display:flex; align-items:center; gap:20px;">
                 <div class="nav-logo" onclick="location.reload()">Entalpia</div>
-                <div class="nav-links">
-                    <a href="interfazDeOpcionInicio.html" class="nav-item">Inicio</a>
-                    <a href="#" class="nav-item active" onclick="location.reload()">Herramientas</a>
-                    <span class="nav-item">Mi Lista</span>
-                    <a href="ModalPrecios.html" class="nav-item nav-btn-planes">Planes</a>
-                </div>
+            </div>
+            
+            <div class="nav-links">
+                <a href="interfazDeOpcionInicio.html" class="nav-item"><i class="fas fa-home hidden-desktop" style="display:none;"></i> Inicio</a>
+                <a href="#" class="nav-item active" onclick="location.reload()"><i class="fas fa-th-large hidden-desktop" style="display:none;"></i> Herramientas</a>
+                <span class="nav-item"><i class="fas fa-list hidden-desktop" style="display:none;"></i> Mi Lista</span>
+                <a href="ModalPrecios.html" class="nav-item nav-btn-planes"><i class="fas fa-crown hidden-desktop" style="display:none;"></i> Planes</a>
             </div>
             
             <div class="user-menu">
-                <i id="audio-toggle" class="fas fa-volume-up" style="cursor:pointer; color:#ccc; margin-right:15px;" onclick="toggleAudio()" title="Silenciar/Activar Sonido"></i>
+                <i id="audio-toggle" class="fas fa-volume-up" style="cursor:pointer; color:#ccc;" onclick="toggleAudio()"></i>
 
                 <div class="search-box" id="search-box">
                     <i class="fas fa-search" onclick="toggleBuscador()" style="cursor:pointer; font-size:1.1rem; color:#ccc;"></i>
-                    <input type="text" id="search-input" class="search-input" placeholder="Títulos, categorías..." oninput="filtrarContenido(this.value)">
+                    <input type="text" id="search-input" class="search-input" placeholder="Buscar..." oninput="filtrarContenido(this.value)">
                 </div>
 
                 <span id="profile-indicator" class="profile-badge">GENERAL</span>
-                <i class="fas fa-users-cog" style="cursor:pointer; color:#ccc;" onclick="abrirGate()" title="Cambiar Perfil"></i>
-                <div id="nav-avatar-icon" class="nav-avatar av-gen" onclick="abrirEditorPerfil()" title="Ver/Editar Perfil">
+                <i class="fas fa-users-cog" style="cursor:pointer; color:#ccc;" onclick="abrirGate()"></i>
+                <div id="nav-avatar-icon" class="nav-avatar av-gen" onclick="abrirEditorPerfil()">
                     <i class="fas fa-user"></i>
                 </div>
-                <i class="fas fa-sign-out-alt" style="cursor:pointer; margin-left:15px; color:#ccc;" onclick="cerrarSesion()" title="Cerrar Sesión"></i>
+                <i class="fas fa-sign-out-alt" style="cursor:pointer; color:#ccc;" onclick="cerrarSesion()"></i>
             </div>
         </nav>
 
@@ -303,7 +354,7 @@
                 <p class="hero-desc" id="hero-desc">...</p>
                 <div class="hero-buttons">
                     <button class="btn btn-play" id="hero-btn-play"><i class="fas fa-play"></i> Abrir</button>
-                    <button class="btn btn-info" id="hero-btn-details"><i class="fas fa-info-circle"></i> Más Información</button>
+                    <button class="btn btn-info" id="hero-btn-details"><i class="fas fa-info-circle"></i> Info</button>
                 </div>
             </div>
         </div>
@@ -312,10 +363,11 @@
 
         <footer>
             <div style="margin-bottom:20px; font-size:1.2rem;"><i class="fab fa-facebook-f" style="margin:0 15px;"></i> <i class="fab fa-instagram" style="margin:0 15px;"></i></div>
-            <p>&copy; 2025 SofI.A. Engineering Git - Desarrollado para el futuro.</p>
+            <p>&copy; 2025 SofI.A. Engineering Git.</p>
         </footer>
     </div>
 
+    <!-- GATE DE PERFILES -->
     <div id="profile-gate">
         <h1 class="gate-title">Perfiles</h1>
         <div class="gate-profiles">
@@ -329,17 +381,33 @@
                 <div class="profile-avatar av-edu"><i class="fas fa-graduation-cap"></i></div><span class="profile-name">Académico</span>
             </div>
         </div>
-        <button class="btn gate-close" onclick="cerrarGate()">VOLVER AL MENU</button>
+        <button class="btn gate-close" onclick="cerrarGate()">VOLVER</button>
     </div>
 
+    <!-- MODAL INSTALACIÓN APP -->
+    <div id="install-modal">
+        <div class="install-header">
+            <div style="background:white; border-radius:8px; padding:5px;"><i class="fas fa-bolt" style="color:var(--primary-blue); font-size:1.5rem;"></i></div>
+            <div style="color:white; font-weight:bold;">Instalar Entalpia</div>
+        </div>
+        <div class="install-body" id="install-body-text">
+            Instala nuestra aplicación en tu pantalla de inicio para un acceso rápido y una experiencia a pantalla completa.
+        </div>
+        <div class="install-footer">
+            <button class="btn btn-cancel" onclick="cerrarInstallModal()">Ahora no</button>
+            <button class="btn btn-install" id="btn-install-trigger" onclick="instalarApp()">Instalar</button>
+        </div>
+    </div>
+
+    <!-- MODALES VARIOS -->
     <div id="dynamic-login-modal" class="modal-base">
         <div class="modal-login-content" id="modal-content-style">
-            <button onclick="cerrarLoginSecundario()" style="position:absolute; top:20px; right:25px; background:none; border:none; color:gray; font-size:1.8rem; cursor:pointer;">&times;</button>
-            <h2 id="dyn-title" style="margin-bottom:10px; font-size:2.2rem; color:white;">Perfil</h2>
-            <p id="dyn-subtitle" style="color:#888; margin-bottom:30px; font-size:0.9rem; text-transform:uppercase; letter-spacing:1px;">Verifique sus credenciales</p>
+            <button onclick="cerrarLoginSecundario()" style="position:absolute; top:10px; right:15px; background:none; border:none; color:gray; font-size:1.8rem; cursor:pointer;">&times;</button>
+            <h2 id="dyn-title" style="margin-bottom:10px; font-size:2rem; color:white;">Perfil</h2>
+            <p id="dyn-subtitle" style="color:#888; margin-bottom:20px; font-size:0.9rem;">Verifique sus credenciales</p>
             <form onsubmit="intentarLogin(event, 'Dynamic')">
-                <input type="text" id="user-dyn" class="login-input" placeholder="Usuario" required>
-                <input type="password" id="pass-dyn" class="login-input" placeholder="Contraseña" required>
+                <input type="text" id="user-dyn" class="login-input" placeholder="Usuario" required style="margin-bottom:15px;">
+                <input type="password" id="pass-dyn" class="login-input" placeholder="Contraseña" required style="margin-bottom:20px;">
                 <button type="submit" id="btn-dyn" class="btn login-btn-primary">ACCEDER</button>
                 <p id="error-dyn" class="login-error">Datos incorrectos</p>
             </form>
@@ -348,8 +416,8 @@
 
     <div id="edit-profile-modal" class="modal-base">
         <div class="edit-profile-box">
-            <button onclick="document.getElementById('edit-profile-modal').style.display='none'" style="position:absolute; top:20px; right:25px; background:none; border:none; color:gray; font-size:1.8rem; cursor:pointer;">&times;</button>
-            <h2 style="color:white; margin-bottom:30px; text-align:center; font-weight:300; font-size:2rem;">Perfil Profesional</h2>
+            <button onclick="document.getElementById('edit-profile-modal').style.display='none'" style="position:absolute; top:10px; right:15px; background:none; border:none; color:gray; font-size:1.8rem; cursor:pointer;">&times;</button>
+            <h2 style="color:white; margin-bottom:20px; text-align:center; font-weight:300; font-size:1.8rem;">Perfil</h2>
             
             <label for="avatar-upload">
                 <div id="preview-avatar" class="edit-avatar-preview"><i class="fas fa-camera" style="font-size:2rem; color:#666;"></i></div>
@@ -357,76 +425,62 @@
             <input type="file" id="avatar-upload" accept="image/*" style="display:none;" onchange="previsualizarImagen(event)">
 
             <div class="form-row">
-                <div class="form-group"><label class="form-label">Usuario (Email)</label><input type="text" id="edit-email" class="edit-input locked" readonly></div>
-                <div class="form-group"><label class="form-label">Contraseña</label><input type="password" id="edit-pass" class="edit-input locked" readonly></div>
+                <div class="form-group"><label class="form-label">Usuario</label><input type="text" id="edit-email" class="edit-input locked" readonly></div>
+                <div class="form-group"><label class="form-label">Pass</label><input type="password" id="edit-pass" class="edit-input locked" readonly></div>
             </div>
-            <hr style="border:0; border-top:1px solid #333; margin:25px 0;">
             <div class="form-row">
                 <div class="form-group"><label class="form-label">Nombre</label><input type="text" id="edit-name" class="edit-input" placeholder="Nombre"></div>
                 <div class="form-group"><label class="form-label">Apellido</label><input type="text" id="edit-lastname" class="edit-input" placeholder="Apellido"></div>
             </div>
-            <div class="form-row">
-                <div class="form-group"><label class="form-label">Teléfono</label><input type="tel" id="edit-phone" class="edit-input" placeholder="+57..."></div>
-                <div class="form-group"><label class="form-label">Ubicación</label><input type="text" id="edit-location" class="edit-input" placeholder="Ciudad, País"></div>
-            </div>
-            <div class="form-group" style="margin-bottom:20px;"><label class="form-label">Profesión</label>
+            <div class="form-group" style="margin-bottom:15px;"><label class="form-label">Profesión</label>
                 <select id="edit-profession" class="edit-input">
-                    <option value="">Seleccione...</option><option value="Ingeniero">Ingeniero</option><option value="Arquitecto">Arquitecto</option><option value="Tecnólogo">Tecnólogo</option><option value="Técnico">Técnico</option><option value="Estudiante">Estudiante</option><option value="Contratista">Contratista</option><option value="Otro">Otro</option>
+                    <option value="">Seleccione...</option><option value="Ingeniero">Ingeniero</option><option value="Arquitecto">Arquitecto</option><option value="Tecnólogo">Tecnólogo</option><option value="Otro">Otro</option>
                 </select>
             </div>
-            <div class="form-group" style="margin-bottom:20px;"><label class="form-label">Área de Conocimiento</label>
-                <select id="edit-area" class="edit-input" onchange="toggleConsultorArea()">
-                    <option value="">Seleccione...</option><option value="Electricidad">Electricidad</option><option value="Gas">Gas</option><option value="Agua">Agua</option><option value="Equipos eléctricos">Equipos eléctricos</option><option value="Sistemas de combustión">Sistemas de combustión</option><option value="Consultor">Consultor</option>
-                </select>
-            </div>
-            <div id="consultant-area-group" class="form-group hidden" style="margin-bottom:25px; border-left: 3px solid var(--secondary-green); padding-left: 15px;">
-                <label class="form-label" style="color:var(--secondary-green)">Especifique Área de Consultoría</label>
-                <select id="edit-consultant-area" class="edit-input">
-                    <option value="">Seleccione...</option><option value="Electricidad">Electricidad</option><option value="Gas">Gas</option><option value="Agua">Agua</option><option value="Equipos eléctricos">Equipos eléctricos</option><option value="Sistemas de combustión">Sistemas de combustión</option>
-                </select>
-            </div>
-            <button class="btn login-btn-primary" onclick="guardarCambiosPerfil()">GUARDAR DATOS</button>
+            <button class="btn login-btn-primary" onclick="guardarCambiosPerfil()">GUARDAR</button>
         </div>
     </div>
 
     <div id="membership-modal" class="modal-base">
         <div class="membership-box">
-            <i class="fas fa-check-circle" style="font-size:5rem; color:var(--secondary-green); margin-bottom:25px;"></i>
-            <h2 id="mem-greeting" style="margin-bottom:15px; font-weight:300; font-size:2rem;">Hola</h2>
-            <div id="mem-details" style="color:#bbb; margin-bottom:35px; line-height:1.6; font-size:1.1rem;"></div>
-            <button class="btn login-btn-primary" style="max-width:200px;" onclick="finalizarCarga()">ACEPTAR</button>
+            <i class="fas fa-check-circle" style="font-size:4rem; color:var(--secondary-green); margin-bottom:20px;"></i>
+            <h2 id="mem-greeting" style="margin-bottom:10px; font-weight:300; font-size:1.8rem;">Hola</h2>
+            <div id="mem-details" style="color:#bbb; margin-bottom:25px; line-height:1.4; font-size:1rem;"></div>
+            <button class="btn login-btn-primary" style="width:100%;" onclick="finalizarCarga()">ACEPTAR</button>
         </div>
     </div>
 
     <div id="video-modal" class="modal-base" onclick="this.style.display='none'; document.getElementById('promo-video').pause();">
-        <button style="position:absolute; top:30px; right:30px; background:none; border:none; color:white; font-size:2.5rem; cursor:pointer;">&times;</button>
+        <button style="position:absolute; top:20px; right:20px; background:none; border:none; color:white; font-size:2.5rem; cursor:pointer;">&times;</button>
         <video id="promo-video" controls src="VideoSaberMas.mp4"></video>
     </div>
     
     <div id="details-modal" class="modal-base" onclick="cerrarDetalles(event)">
-        <div style="background:#181818; width:90%; max-width:850px; border-radius:12px; overflow:hidden; box-shadow:0 30px 60px rgba(0,0,0,0.8);" onclick="event.stopPropagation()">
-            <div id="modal-banner" style="height:400px; background-size:cover; position:relative;">
+        <div style="background:#181818; width:100%; max-width:850px; border-radius:12px; overflow:hidden; box-shadow:0 30px 60px rgba(0,0,0,0.8);" onclick="event.stopPropagation()">
+            <div id="modal-banner" style="height:250px; background-size:cover; position:relative;">
                 <div style="position:absolute; inset:0; background:linear-gradient(to top, #181818 5%, transparent 60%);"></div>
-                <button onclick="cerrarDetalles(null)" style="position:absolute; top:20px; right:20px; width:40px; height:40px; border-radius:50%; border:none; background:rgba(0,0,0,0.5); color:white; font-size:1.5rem; cursor:pointer; backdrop-filter:blur(5px);">&times;</button>
+                <button onclick="cerrarDetalles(null)" style="position:absolute; top:15px; right:15px; width:35px; height:35px; border-radius:50%; border:none; background:rgba(0,0,0,0.5); color:white; font-size:1.2rem; cursor:pointer;">&times;</button>
             </div>
-            <div style="padding:40px 50px;">
-                <h1 id="modal-title" style="margin-bottom:15px; font-size:2.5rem; font-weight:800;">Titulo</h1>
-                <div style="display:flex; gap:20px; margin-bottom:25px; font-size:1rem; align-items:center;">
+            <div style="padding:25px;">
+                <h1 id="modal-title" style="margin-bottom:10px; font-size:2rem; font-weight:800; line-height:1.1;">Titulo</h1>
+                <div style="display:flex; gap:15px; margin-bottom:20px; font-size:0.9rem; align-items:center;">
                     <span style="color:var(--secondary-green); font-weight:700;">98% Coincidencia</span>
-                    <span id="modal-cat" style="background:#333; padding:2px 8px; border-radius:4px; font-size:0.8rem; letter-spacing:1px;">Cat</span>
+                    <span id="modal-cat" style="background:#333; padding:2px 8px; border-radius:4px; font-size:0.75rem;">Cat</span>
                 </div>
-                <p id="modal-desc" style="color:#ccc; line-height:1.6; margin-bottom:40px; font-size:1.1rem; font-weight:300;">Desc</p>
-                <button class="btn btn-play" id="modal-btn-open" style="font-size:1.2rem; padding:15px 40px;"><i class="fas fa-play"></i> Abrir Herramienta</button>
+                <p id="modal-desc" style="color:#ccc; line-height:1.5; margin-bottom:30px; font-size:1rem;">Desc</p>
+                <button class="btn btn-play" id="modal-btn-open" style="font-size:1.1rem; padding:12px; width:100%;"><i class="fas fa-play"></i> Abrir Herramienta</button>
             </div>
         </div>
     </div>
     
-    <div id="viewer" class="modal-base" style="background:black; z-index:5500; display:none; flex-direction:column;">
-        <div style="width:100%; padding:10px 30px; background:#141414; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333;">
-            <span id="viewer-title" style="font-weight:bold; font-size:1.2rem; color:var(--primary-blue);">App</span>
-            <button class="btn" style="background:transparent; border:1px solid #555; color:white; padding:5px 20px;" onclick="document.getElementById('viewer').style.display='none'; document.getElementById('app-frame').src='';">CERRAR</button>
+    <div id="viewer" class="modal-base" style="background:black; z-index:5500; display:none; flex-direction:column; padding:0;">
+        <div style="width:100%; padding:10px 15px; background:#141414; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; height:50px;">
+            <span id="viewer-title" style="font-weight:bold; font-size:1rem; color:var(--primary-blue); overflow:hidden; white-space:nowrap; text-overflow:ellipsis; max-width:70%;">App</span>
+            <button class="btn" style="background:transparent; border:1px solid #555; color:white; padding:5px 15px; font-size:0.8rem;" onclick="document.getElementById('viewer').style.display='none'; document.getElementById('app-frame').src='';">CERRAR</button>
         </div>
-        <iframe id="app-frame"></iframe>
+        <div style="flex:1; width:100%; position:relative;">
+             <iframe id="app-frame" style="width:100%; height:100%;"></iframe>
+        </div>
     </div>
 
     <script>
@@ -437,335 +491,190 @@
             { u: "alexander221977@gmail.com", p: "2505", n: "Alexander", apellido: "", f: "29/11/2025", img: "", profesion: "", area: "", telefono: "", ubicacion: "" }
         ];
         
-        // CORREGIDO: Manejo de errores en localStorage
         let dbUsuarios = [];
-        try {
-            dbUsuarios = JSON.parse(localStorage.getItem('sofia_users'));
-        } catch (e) {
-            console.error("Error cargando usuarios, usando predeterminados", e);
-            dbUsuarios = null;
-        }
+        try { dbUsuarios = JSON.parse(localStorage.getItem('sofia_users')); } catch (e) { dbUsuarios = null; }
+        if (!dbUsuarios || !Array.isArray(dbUsuarios) || dbUsuarios.length === 0) dbUsuarios = DATOS_INICIALES;
 
-        if (!dbUsuarios || !Array.isArray(dbUsuarios) || dbUsuarios.length === 0) {
-            dbUsuarios = DATOS_INICIALES;
-        }
-
-        // --- BASE DE DATOS COMPLETA DE HERRAMIENTAS ---
+        // --- BASE DE DATOS HERRAMIENTAS ---
         const HERRAMIENTAS = [
-            { 
-                id: 1,
-                nombre: "Calculadora de ventilación", 
-                url: "Calculadora de ventilacion 3631 V_Libre.html", 
-                imagen: "Imagen001.png", 
-                descripcion: "Determina la capacidad de ventilación de un recinto ingresando solo las dimensiones espaciales y la potencia instalada.", 
-                categoria: "Cálculos",
-                subtitulo: "Ventilacion NTC 3631 2da. Act"
-            },
-            { 
-                id: 2,
-                nombre: "Convertidor Universal GLP", 
-                url: "Aplicacion Convertidor Universal GLP",
-                imagen: "Imagen004convertidorGLP.png", 
-                descripcion: "Herramienta esencial para conversiones másicas precisas: de Kg a m3, de Galones a Kg, y otras unidades fundamentales.", 
-                categoria: "Utilidades y Conversión",
-                subtitulo: "Conversión másica precisa"
-            },
-            { 
-                id: 3,
-                nombre: "EnginnerIA", 
-                url: "Chat Bot",
-                imagen: "LogoIngenieroIA.png", 
-                descripcion: "Chatea con la I.A. experta sobre temas relacionados con las redes de gas y sistemas de combustión.", 
-                categoria: "Consultoria",
-                subtitulo: "Asistente Virtual Experto"
-            },
-            { 
-                id: 4,
-                nombre: "Diseño Media Presión", 
-                url: "Modelador Mueller V_Pro (1211)",
-                imagen: "Imagen003DiseñoMueller.png", 
-                descripcion: "Algoritmo Mueller: Estima las pérdidas de presión y calcula la velocidad en sistemas > 0,33 psi.", 
-                categoria: "Diseño y Modelado",
-                subtitulo: "Modelo Mueller (> 0.33 psi)"
-            },
-             { 
-                id: 5,
-                nombre: "Diseño Baja Presión", 
-                url: "Modelador Renoaurd-V_Pro",
-                imagen: "Imagen002DiseñoRenouard.png", 
-                descripcion: "Algoritmo Renouard: Estima las pérdidas de presión en sistemas que operan a presiones <= 0,33 psi.", 
-                categoria: "Diseño y Modelado",
-                subtitulo: "Modelo Renouard (<= 0.33 psi)"
-            },
-             { 
-                id: 6,
-                nombre: "Inspector De Ventilacion", 
-                url: "Calculadora de ventilacion 3631 V_Pro.html",
-                imagen: "ImagenAppInspectorVentil.png", 
-                descripcion: "Evalua la capacidad de ventilacion de un recinto en relacion a la NTC 3631 2da. Act.", 
-                categoria: "Cálculos",
-                subtitulo: "Ventilacion NTC 3631 2da. Act"
-            },
-             { 
-                id: 7,
-                nombre: "Inspector De Vacios Internos", 
-                url: "AppInspectorVaciosInternos_V1libre.html",
-                imagen: "ImgAppInspVaciosInternos_V1Libre.png", 
-                descripcion: "Evalua y califica un vacio interno de acuerdo con la NTC 3631 2da. Act.", 
-                categoria: "Cálculos",
-                subtitulo: "Ventilacion NTC 3631 2da. Act"
-             },
-            { 
-                id: 8,
-                nombre: "Seleccion adecuada de reguladores", 
-                url: "./inventario.html",
-                imagen: "ImagenReguladores.png", 
-                descripcion: "Ingresa la presion de entrada (de trabajo), elije la presion de salida y precisa el consumo para obtener la sugerencia del sistema", 
-                categoria: "Próximamente",
-                subtitulo: "Selección automática de equipos"
-             },
-            { 
-                id: 9,
-                nombre: "Gestor Normativo",
-                url: "AplicativoGestorNormativo_V1_Libre.html",
-                imagen: "ImagenGestorNormativo.png", 
-                descripcion: "Un repositorio de documentos de ingenieria, normas y marco regulatorio", 
-                categoria: "Consultoria",
-                subtitulo: "Biblioteca Legal Técnica"
-             },
-            { 
-                id: 10,
-                nombre: "Instalacion de tanques GLP", 
-                url: "./inventario.html",
-                imagen: "Imagendistanciamientodetanque.png", 
-                descripcion: "De acuerdo la normas tecnicas, centramos atencion especial a las distancias de los tanques de GLP", 
-                categoria: "Próximamente",
-                subtitulo: "Normas de seguridad GLP"
-             },
-            { 
-                id: 11,
-                nombre: "Convertidor Universal De Unidades", 
-                url: "Convertidor de unidades Todas las unidades.html",
-                imagen: "ImagenConvertidorUniversalDeUnidades.png", 
-                descripcion: "Realiza conversiones de todo magnitud y variable ya sea fisica o digital", 
-                categoria: "Utilidades y Conversión",
-                subtitulo: "Herramienta Multi-propósito"
-             },
-            { 
-                id: 12,
-                nombre: "Cuadro de errores y fallas CPD y CA", 
-                url: "Error de códigos de aplicación, calentadores.txt",
-                imagen: "ImgErroresCPD_CA.png", 
-                descripcion: "Realiza un diagnostico segun el error declarado por el equipo e identifica la solucion", 
-                categoria: "Próximamente",
-                subtitulo: "Herramienta Multi-propósito"
-             },
-            { 
-                id: 13,
-                nombre: "Isoplanos basicos", 
-                url: "Aplicacion_CAD_Mueller_Renouard_VLibre.html",
-                imagen: "ImgAplicacionCAD_Vlibre.png", 
-                descripcion: "Dibuja un isoplano, agrega componentes y descarga un archivo plano para modeladores y memorias de calculo", 
-                categoria: "Diseño y Modelado",
-                subtitulo: "Planimetrias"
-            },
-            { 
-                id: 14,
-                nombre: "Modelador de CPD", 
-                url: "AppCalibradorCombustion.html",
-                imagen: "ImgModeladorCPD_Vlibre.png", 
-                descripcion: "Analiza el comportamiento de un calentador de agua de paso", 
-                categoria: "Diseño y Modelado",
-                subtitulo: "Calentadores"
-            },
-            { 
-                id: 15,
-                nombre: "Modelador Mueller Version Plus", 
-                url: "Aplicacion_CAD_Mueller_Renouard_VLibre.html",
-                imagen: "ImgModeladores.png", 
-                descripcion: "Con esta herramente Plus solo tienes que construir el isometrico y el sistema te arrojara la memoria de calculo, en el evento que no cumpla, el sistema podra hacer las recomendaciones ", 
-                categoria: "Herramientas PLUS",
-                subtitulo: "Isoplanos"
-            },
-            { 
-                id: 16,
-                nombre: "Evalua Anexo D NTC 3631", 
-                url: "AppEvaluaAnexoDNTC3631_V1Libre.html",
-                imagen: "ImgAnexoD_ntc3631.png", 
-                descripcion: "Metodo de ventilacion para recintos ubicados a menos de 260 msnm ", 
-                categoria: "Cálculos",
-                subtitulo: "Ventilacion NTC 3631 2da. Act"
-            },
-            { 
-                id: 17,
-                nombre: "Evalua Monoespacio NTC 3631", 
-                url: "AppAnexoB_NTC3631.html",
-                imagen: "ImgMonoespacioV1_Libre.png", 
-                descripcion: "Metodo de evaluacion de recintos monoespaciales", 
-                categoria: "Cálculos",
-                subtitulo: "Ventilacion NTC 3631 2da. Act"
-            },
-            { 
-                id: 18,
-                nombre: "Glosario",
-                url: "",
-                imagen: "ImgGlosario.png", 
-                descripcion: "Un fondo de terminos, compendio de todas las definiciones normativas", 
-                categoria: "Próximamente",
-                subtitulo: "Biblioteca Técnica"
-             },
-            { 
-                id: 19,
-                nombre: "Requisitos para la ubicacion de artefactos Tipo A",
-                url: "AppNral3_NTC3833_ReqUbicaArtefTipoA.html",
-                imagen: "ImgNTC3833_ReqUbicaArtefTipoA.png", 
-                descripcion: "Determina la necesidad de conectar los artefactos tipo A a sistemas de evacuacion", 
-                categoria: "Cálculos",
-                subtitulo: "Ductos NTC 3833 1ra. Act"
-             }
+            { id: 1, nombre: "Calculadora de ventilación", url: "Calculadora de ventilacion 3631 V_Libre.html", imagen: "Imagen001.png", descripcion: "Determina la capacidad de ventilación de un recinto ingresando solo las dimensiones espaciales y la potencia instalada.", categoria: "Cálculos", subtitulo: "Ventilacion NTC 3631 2da. Act" },
+            { id: 2, nombre: "Convertidor Universal GLP", url: "Aplicacion Convertidor Universal GLP", imagen: "Imagen004convertidorGLP.png", descripcion: "Herramienta esencial para conversiones másicas precisas: de Kg a m3, de Galones a Kg, y otras unidades fundamentales.", categoria: "Utilidades y Conversión", subtitulo: "Conversión másica precisa" },
+            { id: 3, nombre: "EnginnerIA", url: "Chat Bot", imagen: "LogoIngenieroIA.png", descripcion: "Chatea con la I.A. experta sobre temas relacionados con las redes de gas y sistemas de combustión.", categoria: "Consultoria", subtitulo: "Asistente Virtual Experto" },
+            { id: 4, nombre: "Diseño Media Presión", url: "Modelador Mueller V_Pro (1211)", imagen: "Imagen003DiseñoMueller.png", descripcion: "Algoritmo Mueller: Estima las pérdidas de presión y calcula la velocidad en sistemas > 0,33 psi.", categoria: "Diseño y Modelado", subtitulo: "Modelo Mueller (> 0.33 psi)" },
+            { id: 5, nombre: "Diseño Baja Presión", url: "Modelador Renoaurd-V_Pro", imagen: "Imagen002DiseñoRenouard.png", descripcion: "Algoritmo Renouard: Estima las pérdidas de presión en sistemas que operan a presiones <= 0,33 psi.", categoria: "Diseño y Modelado", subtitulo: "Modelo Renouard (<= 0.33 psi)" },
+            { id: 6, nombre: "Inspector De Ventilacion", url: "Calculadora de ventilacion 3631 V_Pro.html", imagen: "ImagenAppInspectorVentil.png", descripcion: "Evalua la capacidad de ventilacion de un recinto en relacion a la NTC 3631 2da. Act.", categoria: "Cálculos", subtitulo: "Ventilacion NTC 3631 2da. Act" },
+            { id: 7, nombre: "Inspector De Vacios Internos", url: "AppInspectorVaciosInternos_V1libre.html", imagen: "ImgAppInspVaciosInternos_V1Libre.png", descripcion: "Evalua y califica un vacio interno de acuerdo con la NTC 3631 2da. Act.", categoria: "Cálculos", subtitulo: "Ventilacion NTC 3631 2da. Act" },
+            { id: 8, nombre: "Seleccion adecuada de reguladores", url: "./inventario.html", imagen: "ImagenReguladores.png", descripcion: "Ingresa la presion de entrada (de trabajo), elije la presion de salida y precisa el consumo para obtener la sugerencia del sistema", categoria: "Próximamente", subtitulo: "Selección automática de equipos" },
+            { id: 9, nombre: "Gestor Normativo", url: "AplicativoGestorNormativo_V1_Libre.html", imagen: "ImagenGestorNormativo.png", descripcion: "Un repositorio de documentos de ingenieria, normas y marco regulatorio", categoria: "Consultoria", subtitulo: "Biblioteca Legal Técnica" },
+            { id: 10, nombre: "Instalacion de tanques GLP", url: "./inventario.html", imagen: "Imagendistanciamientodetanque.png", descripcion: "De acuerdo la normas tecnicas, centramos atencion especial a las distancias de los tanques de GLP", categoria: "Próximamente", subtitulo: "Normas de seguridad GLP" },
+            { id: 11, nombre: "Convertidor Universal De Unidades", url: "Convertidor de unidades Todas las unidades.html", imagen: "ImagenConvertidorUniversalDeUnidades.png", descripcion: "Realiza conversiones de todo magnitud y variable ya sea fisica o digital", categoria: "Utilidades y Conversión", subtitulo: "Herramienta Multi-propósito" },
+            { id: 12, nombre: "Cuadro de errores y fallas CPD y CA", url: "Error de códigos de aplicación, calentadores.txt", imagen: "ImgErroresCPD_CA.png", descripcion: "Realiza un diagnostico segun el error declarado por el equipo e identifica la solucion", categoria: "Próximamente", subtitulo: "Herramienta Multi-propósito" },
+            { id: 13, nombre: "Isoplanos basicos", url: "Aplicacion_CAD_Mueller_Renouard_VLibre.html", imagen: "ImgAplicacionCAD_Vlibre.png", descripcion: "Dibuja un isoplano, agrega componentes y descarga un archivo plano para modeladores y memorias de calculo", categoria: "Diseño y Modelado", subtitulo: "Planimetrias" },
+            { id: 14, nombre: "Modelador de CPD", url: "AppCalibradorCombustion.html", imagen: "ImgModeladorCPD_Vlibre.png", descripcion: "Analiza el comportamiento de un calentador de agua de paso", categoria: "Diseño y Modelado", subtitulo: "Calentadores" },
+            { id: 15, nombre: "Modelador Mueller Version Plus", url: "Aplicacion_CAD_Mueller_Renouard_VLibre.html", imagen: "ImgModeladores.png", descripcion: "Solo tienes que construir el isometrico y el sistema te arrojara el calculo de presion ", categoria: "Herramientas PLUS", subtitulo: "Isoplanos" },
+            { id: 16, nombre: "Evalua Anexo D NTC 3631", url: "AppEvaluaAnexoDNTC3631_V1Libre.html", imagen: "ImgAnexoD_ntc3631.png", descripcion: "Metodo de ventilacion para recintos ubicados a menos de 260 msnm ", categoria: "Cálculos", subtitulo: "Ventilacion NTC 3631 2da. Act" },
+            { id: 17, nombre: "Evalua Monoespacio NTC 3631", url: "AppAnexoB_NTC3631.html", imagen: "ImgMonoespacioV1_Libre.png", descripcion: "Metodo de evaluacion de recintos monoespaciales", categoria: "Cálculos", subtitulo: "Ventilacion NTC 3631 2da. Act" },
+            { id: 18, nombre: "Glosario", url: "", imagen: "ImgGlosario.png", descripcion: "Un fondo de terminos, compendio de todas las definiciones normativas", categoria: "Próximamente", subtitulo: "Biblioteca Técnica" },
+            { id: 19, nombre: "Requisitos para la ubicacion de artefactos Tipo A", url: "AppNral3_NTC3833_ReqUbicaArtefTipoA.html", imagen: "ImgNTC3833_ReqUbicaArtefTipoA.png", descripcion: "Determina la necesidad de conectar los artefactos tipo A a sistemas de evacuacion", categoria: "Cálculos", subtitulo: "Ductos NTC 3833 1ra. Act" }
         ];
 
         let perfilActual = "General";
         let usuarioActivo = null;
         let favoritos = [];
-        try {
-            favoritos = JSON.parse(localStorage.getItem('favs')) || [];
-        } catch(e) { favoritos = []; }
+        try { favoritos = JSON.parse(localStorage.getItem('favs')) || []; } catch(e) { favoritos = []; }
         
         const fallbackImg = "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2070";
 
-        // --- AUDIO PERSISTENTE (MODIFICADO) ---
-        // Pistas de naturaleza y ambiente
+        // --- AUDIO ---
         const NATURE_TRACKS = [
-            "https://actions.google.com/sounds/v1/water/waves_crashing.ogg", // Olas de mar
-            "https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg", // Lluvia fuerte
-            "https://actions.google.com/sounds/v1/weather/strong_wind_whistling.ogg", // Viento
-            "https://actions.google.com/sounds/v1/ambiences/night_crickets_water_lapping.ogg" // Noche/Grillos
+            "https://actions.google.com/sounds/v1/water/waves_crashing.ogg", 
+            "https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg", 
+            "https://actions.google.com/sounds/v1/weather/strong_wind_whistling.ogg", 
+            "https://actions.google.com/sounds/v1/ambiences/night_crickets_water_lapping.ogg"
         ];
         const audioPlayer = document.getElementById('bg-music');
         let isMuted = false;
         let rotacionIntervalo;
 
         function gestionarMusica() {
-            // Verificar si hay una pista guardada o iniciar una nueva
             const savedTime = localStorage.getItem('audio_time');
             const savedTrack = localStorage.getItem('audio_track');
-            
             if (savedTrack && NATURE_TRACKS.includes(savedTrack)) {
                 audioPlayer.src = savedTrack;
                 if(savedTime) audioPlayer.currentTime = parseFloat(savedTime);
-            } else {
-                cambiarPistaAleatoria();
-            }
-
-            // Intentar reproducir
+            } else { cambiarPistaAleatoria(); }
+            
             const playPromise = audioPlayer.play();
             if (playPromise !== undefined) {
-                playPromise.catch(error => { 
-                    console.log("Autoplay prevenido, esperando interacción.");
-                    // Si falla el autoplay, mostrar botón en estado 'mute'
-                    isMuted = true;
-                    actualizarIconoAudio();
-                });
+                playPromise.catch(error => { isMuted = true; actualizarIconoAudio(); });
             }
-
-            // Iniciar rotación cada 12 minutos (12 * 60 * 1000 = 720000 ms)
             if(rotacionIntervalo) clearInterval(rotacionIntervalo);
-            rotacionIntervalo = setInterval(() => {
-                if(!audioPlayer.paused && !isMuted) {
-                    cambiarPistaAleatoria();
-                }
-            }, 720000); 
+            rotacionIntervalo = setInterval(() => { if(!audioPlayer.paused && !isMuted) cambiarPistaAleatoria(); }, 720000); 
         }
 
         function cambiarPistaAleatoria() {
             const randomTrack = NATURE_TRACKS[Math.floor(Math.random() * NATURE_TRACKS.length)];
             audioPlayer.src = randomTrack;
             localStorage.setItem('audio_track', randomTrack);
-            audioPlayer.play().catch(e => console.log(e));
+            audioPlayer.play().catch(e => {});
         }
 
         function toggleAudio() {
-            const icon = document.getElementById('audio-toggle');
-            if (audioPlayer.paused || isMuted) {
-                audioPlayer.play();
-                isMuted = false;
-            } else {
-                audioPlayer.pause();
-                isMuted = true;
-            }
+            if (audioPlayer.paused || isMuted) { audioPlayer.play(); isMuted = false; } 
+            else { audioPlayer.pause(); isMuted = true; }
             actualizarIconoAudio();
         }
 
         function actualizarIconoAudio() {
             const icon = document.getElementById('audio-toggle');
-            if(isMuted) {
-                icon.classList.remove('fa-volume-up');
-                icon.classList.add('fa-volume-mute');
-                icon.style.color = "#777";
+            if(isMuted) { icon.classList.remove('fa-volume-up'); icon.classList.add('fa-volume-mute'); icon.style.color = "#777"; } 
+            else { icon.classList.remove('fa-volume-mute'); icon.classList.add('fa-volume-up'); icon.style.color = "#ccc"; }
+        }
+        audioPlayer.addEventListener('timeupdate', () => { localStorage.setItem('audio_time', audioPlayer.currentTime); });
+
+        // --- LÓGICA DE INSTALACIÓN (PWA / APP) ---
+        let deferredPrompt;
+        const installModal = document.getElementById('install-modal');
+
+        // Escuchar el evento de instalación (Solo Chrome/Android/Edge)
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            mostrarModalInstalacion();
+        });
+
+        // Verificar si es iOS (para mostrar instrucciones manuales)
+        const isIos = () => {
+            const userAgent = window.navigator.userAgent.toLowerCase();
+            return /iphone|ipad|ipod/.test(userAgent);
+        }
+
+        function mostrarModalInstalacion() {
+            // Verificar si el usuario ya lo rechazó recientemente (opcional)
+            if(localStorage.getItem('app_install_dismissed')) return;
+
+            if (isIos()) {
+                document.getElementById('install-body-text').innerHTML = "Para instalar en iOS:<br>1. Pulsa el botón <strong>Compartir</strong> <i class='fas fa-share-square'></i><br>2. Selecciona <strong>'Agregar a Inicio'</strong> <i class='fas fa-plus-square'></i>";
+                document.getElementById('btn-install-trigger').style.display = 'none'; // iOS no permite trigger por botón
+                installModal.style.display = 'flex';
+            } else if (deferredPrompt) {
+                // Android / Desktop Chrome
+                installModal.style.display = 'flex';
             } else {
-                icon.classList.remove('fa-volume-mute');
-                icon.classList.add('fa-volume-up');
-                icon.style.color = "#ccc";
+                // Si no hay evento y no es iOS, no mostramos nada (o podríamos forzarlo en demo)
+                // Para propósitos de esta demo, lo mostramos si es la primera vez que carga
+                // if (!sessionStorage.getItem('demo_install_shown')) {
+                //     installModal.style.display = 'flex';
+                //     sessionStorage.setItem('demo_install_shown', 'true');
+                // }
             }
         }
 
-        audioPlayer.addEventListener('timeupdate', () => { localStorage.setItem('audio_time', audioPlayer.currentTime); });
+        function instalarApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('Usuario aceptó instalar');
+                    }
+                    deferredPrompt = null;
+                    cerrarInstallModal();
+                });
+            } else {
+                alert("La instalación automática no está disponible en este navegador. Busca la opción 'Instalar aplicación' en el menú de tu navegador.");
+                cerrarInstallModal();
+            }
+        }
 
-        // --- INICIALIZACIÓN DE SESIÓN (OPTIMIZADA) ---
-        // Cambiado de 'load' a 'DOMContentLoaded' para ejecución más rápida
-        document.addEventListener('DOMContentLoaded', () => {
+        function cerrarInstallModal() {
+            installModal.style.display = 'none';
+            localStorage.setItem('app_install_dismissed', 'true'); // Guardar preferencia
+        }
+
+        // --- INICIALIZACIÓN ---
+        window.addEventListener('load', () => {
             gestionarMusica();
             let sessionUser = null;
-            try {
-                sessionUser = JSON.parse(localStorage.getItem('sofia_session'));
-            } catch(e) { console.error("Error leyendo sesion"); }
+            try { sessionUser = JSON.parse(localStorage.getItem('sofia_session')); } catch(e) {}
             
+            // Iconos visibles en móvil
+            if (window.innerWidth <= 768) {
+                document.querySelectorAll('.hidden-desktop').forEach(el => el.style.display = 'inline-block');
+            }
+
             if (sessionUser) {
                 const updatedUser = dbUsuarios.find(u => u.u === sessionUser.u);
                 usuarioActivo = updatedUser || sessionUser; 
-                
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('main-interface').classList.remove('hidden');
                 document.getElementById('main-interface').style.opacity = '1';
-                
                 renderizarFilas();
                 iniciarCarrusel();
                 actualizarAvatarUI();
                 cambiarPerfilVisual("General");
+                
+                // Intentar mostrar modal de instalación después de cargar
+                setTimeout(mostrarModalInstalacion, 3000);
             } else {
                 document.getElementById('login-screen').style.display = 'flex';
             }
         });
 
-        // --- FUNCIÓN VER/OCULTAR PASSWORD (CORREGIDA) ---
+        // --- FUNCIONES INTERFAZ ---
         function togglePasswordVisibility(inputId, iconElement) {
             const input = document.getElementById(inputId);
-            
-            // Si el icono no se pasa (por si acaso), intentar buscarlo al lado
             const icon = iconElement || input.nextElementSibling;
-            
-            if (input.type === "password") {
-                input.type = "text";
-                icon.classList.remove("fa-eye");
-                icon.classList.add("fa-eye-slash");
-            } else {
-                input.type = "password";
-                icon.classList.remove("fa-eye-slash");
-                icon.classList.add("fa-eye");
-            }
+            if (input.type === "password") { input.type = "text"; icon.classList.remove("fa-eye"); icon.classList.add("fa-eye-slash"); } 
+            else { input.type = "password"; icon.classList.remove("fa-eye-slash"); icon.classList.add("fa-eye"); }
         }
 
-        // --- LOGIN ---
         function intentarLogin(e, source) {
             e.preventDefault();
             let u, p, err;
             if (source === 'General') { u = document.getElementById('user-static').value.trim(); p = document.getElementById('pass-static').value.trim(); err = document.getElementById('error-static'); perfilActual = "General"; } 
             else { u = document.getElementById('user-dyn').value.trim(); p = document.getElementById('pass-dyn').value.trim(); err = document.getElementById('error-dyn'); }
 
-            // Safe find
             const user = (dbUsuarios || []).find(c => c.u === u && c.p === p);
-            
             if (user) {
                 usuarioActivo = user;
                 localStorage.setItem('sofia_session', JSON.stringify(user));
@@ -773,9 +682,7 @@
                 let target = source === 'Dynamic' ? document.getElementById('dynamic-login-modal').dataset.targetProfile : "General";
                 if(source === 'Dynamic') { cerrarLoginSecundario(); cerrarGate(); }
                 mostrarModalMembresia(user, target);
-            } else {
-                err.style.display = 'block';
-            }
+            } else { err.style.display = 'block'; }
         }
 
         function cerrarSesion() {
@@ -784,7 +691,6 @@
             window.location.reload(); 
         }
 
-        // --- BUSCADOR ---
         function toggleBuscador() {
             const box = document.getElementById('search-box');
             box.classList.toggle('active');
@@ -799,43 +705,31 @@
             const resultados = HERRAMIENTAS.filter(h => h.nombre.toLowerCase().includes(termino) || h.descripcion.toLowerCase().includes(termino) || h.categoria.toLowerCase().includes(termino));
             container.innerHTML = "";
             if (resultados.length > 0) {
-                const title = document.createElement('h3'); title.className = 'row-title'; title.textContent = `Resultados para "${texto}"`;
+                const title = document.createElement('h3'); title.className = 'row-title'; title.textContent = `Resultados`;
                 const grid = document.createElement('div'); grid.className = 'search-results-grid';
                 resultados.forEach(tool => {
                     const img = tool.imagen.includes('.') ? tool.imagen : tool.imagen + '.jpg';
                     const isFav = favoritos.includes(tool.nombre);
                     const tile = document.createElement('div'); tile.className = 'tile';
                     tile.onclick = () => verDetalles(tool.id);
-                    // OPTIMIZACIÓN: loading="lazy" y decoding="async"
-                    tile.innerHTML = `<img src="${img}" class="tile-img" loading="lazy" decoding="async" onerror="this.src='${fallbackImg}'"><div class="tile-content"><div class="tile-actions"><div class="tile-icon icon-play" onclick="abrirApp('${tool.nombre}','${tool.url}');event.stopPropagation()"><i class="fas fa-play"></i></div><div class="tile-icon" onclick="toggleFav('${tool.nombre}');event.stopPropagation()"><i class="fas ${isFav?'fa-check':'fa-plus'}"></i></div><div class="tile-icon" onclick="verDetalles(${tool.id});event.stopPropagation()"><i class="fas fa-chevron-down"></i></div></div><div class="tile-title">${tool.nombre}</div><div class="tile-subtitle">${tool.subtitulo || tool.descripcion}</div><div class="tile-meta">98% para ti</div></div>`;
+                    tile.innerHTML = `<img src="${img}" class="tile-img" onerror="this.src='${fallbackImg}'"><div class="tile-content"><div class="tile-actions"><div class="tile-icon icon-play" onclick="abrirApp('${tool.nombre}','${tool.url}');event.stopPropagation()"><i class="fas fa-play"></i></div><div class="tile-icon" onclick="toggleFav('${tool.nombre}');event.stopPropagation()"><i class="fas ${isFav?'fa-check':'fa-plus'}"></i></div><div class="tile-icon" onclick="verDetalles(${tool.id});event.stopPropagation()"><i class="fas fa-chevron-down"></i></div></div><div class="tile-title">${tool.nombre}</div><div class="tile-subtitle">${tool.subtitulo || tool.descripcion}</div><div class="tile-meta">98% para ti</div></div>`;
                     grid.appendChild(tile);
                 });
                 container.appendChild(title); container.appendChild(grid);
-            } else { container.innerHTML = `<div style="padding:40px; color:#666; text-align:center; font-size:1.2rem;">No se encontraron resultados</div>`; }
+            } else { container.innerHTML = `<div style="padding:40px; color:#666; text-align:center;">Sin resultados</div>`; }
         }
 
-        // --- PERFIL ---
         function abrirEditorPerfil() {
             if (!usuarioActivo) return;
             document.getElementById('edit-email').value = usuarioActivo.u;
             document.getElementById('edit-pass').value = usuarioActivo.p;
             document.getElementById('edit-name').value = usuarioActivo.n || "";
             document.getElementById('edit-lastname').value = usuarioActivo.apellido || "";
-            document.getElementById('edit-phone').value = usuarioActivo.telefono || "";
-            document.getElementById('edit-location').value = usuarioActivo.ubicacion || "";
             document.getElementById('edit-profession').value = usuarioActivo.profesion || "";
-            document.getElementById('edit-area').value = usuarioActivo.area || "";
-            toggleConsultorArea();
             const pv = document.getElementById('preview-avatar');
             if (usuarioActivo.img) { pv.style.backgroundImage = `url('${usuarioActivo.img}')`; pv.innerHTML = ''; } 
             else { pv.style.backgroundImage = ''; pv.innerHTML = '<i class="fas fa-camera" style="font-size:2rem; color:#666;"></i>'; }
             document.getElementById('edit-profile-modal').style.display = 'flex';
-        }
-
-        function toggleConsultorArea() {
-            const area = document.getElementById('edit-area').value;
-            const div = document.getElementById('consultant-area-group');
-            if (area === 'Consultor') div.classList.remove('hidden'); else div.classList.add('hidden');
         }
 
         function previsualizarImagen(e) {
@@ -853,13 +747,7 @@
         function guardarCambiosPerfil() {
             usuarioActivo.n = document.getElementById('edit-name').value;
             usuarioActivo.apellido = document.getElementById('edit-lastname').value;
-            usuarioActivo.telefono = document.getElementById('edit-phone').value;
-            usuarioActivo.ubicacion = document.getElementById('edit-location').value;
             usuarioActivo.profesion = document.getElementById('edit-profession').value;
-            usuarioActivo.area = document.getElementById('edit-area').value;
-            if (usuarioActivo.area === 'Consultor') usuarioActivo.areaConsultor = document.getElementById('edit-consultant-area').value;
-            else usuarioActivo.areaConsultor = "";
-
             const fileInput = document.getElementById('avatar-upload');
             if (fileInput.files && fileInput.files[0]) {
                 const reader = new FileReader();
@@ -877,7 +765,6 @@
             }
             actualizarAvatarUI();
             document.getElementById('edit-profile-modal').style.display = 'none';
-            alert("Información actualizada.");
         }
 
         function actualizarAvatarUI() {
@@ -891,22 +778,10 @@
         function abrirGate() { document.getElementById('profile-gate').style.display = 'flex'; }
         function cerrarGate() { document.getElementById('profile-gate').style.display = 'none'; }
         
-        // --- MODIFICACIÓN: LÓGICA DE VALIDACIÓN DE PERFIL ---
         function validarCambioPerfil(p) { 
-            if (p === 'General') { 
-                cambiarPerfilVisual('General'); 
-                cerrarGate(); 
-            } else if (p === 'Corporativo') {
-                // TRY-CATCH PARA EVITAR ERRORES EN PREVIEW/BLOB
-                try {
-                    window.location.href = "ModalERP_CRM_V1.html";
-                } catch (e) {
-                    console.warn("Redirección bloqueada en entorno sandbox:", e);
-                    alert("En un entorno real (servidor), serás redirigido a ModalERP_CRM_V1.html.");
-                }
-            } else { 
-                abrirLoginSecundario(p); 
-            } 
+            if (p === 'General') { cambiarPerfilVisual('General'); cerrarGate(); } 
+            else if (p === 'Corporativo') { try { window.location.href = "ModalERP_CRM_V1.html"; } catch (e) { alert("Redirigiendo a ERP..."); } } 
+            else { abrirLoginSecundario(p); } 
         }
         
         function cambiarPerfilVisual(p) {
@@ -948,31 +823,20 @@
         }
        function finalizarCarga() {
             const m = document.getElementById('membership-modal');
-            const p = m.dataset.pendingProfile || 'General'; // Fallback
+            const p = m.dataset.pendingProfile || 'General';
             m.style.display = 'none';
-
-            // --- REDIRECCIÓN PERFIL ACADÉMICO ---
-            if (p === 'Académico') {
-                try {
-                    window.location.href = "ModalDeCursosPerfilAcademico_V1.html";
-                } catch (e) {
-                    console.warn("Redirección bloqueada en entorno sandbox:", e);
-                    alert("En un entorno real (servidor), serás redirigido a ModalDeCursosPerfilAcademico_V1.html.");
-                }
-                return;
-            }
-
+            if (p === 'Académico') { try { window.location.href = "ModalDeCursosPerfilAcademico_V1.html"; } catch (e) { alert("Redirigiendo a Cursos..."); } return; }
             const ls = document.getElementById('login-screen');
             if (ls.style.display !== 'none') {
                 ls.style.opacity = '0';
                 setTimeout(() => {
                     ls.style.display = 'none';
-                    const mainInterface = document.getElementById('main-interface');
-                    if(mainInterface) {
-                        mainInterface.classList.remove('hidden');
-                        mainInterface.style.opacity = '1';
-                    }
+                    document.getElementById('main-interface').classList.remove('hidden');
+                    document.getElementById('main-interface').style.opacity = '1';
                     renderizarFilas(); iniciarCarrusel(); actualizarAvatarUI();
+                    
+                    // Mostrar modal install tras login
+                    setTimeout(mostrarModalInstalacion, 3000);
                 }, 800);
             }
             cambiarPerfilVisual(p);
@@ -1001,8 +865,7 @@
                 const isFav = favoritos.includes(tool.nombre);
                 const tile = document.createElement('div'); tile.className = 'tile';
                 tile.onclick = () => verDetalles(tool.id);
-                // OPTIMIZACIÓN: loading="lazy" y decoding="async"
-                tile.innerHTML = `<img src="${img}" class="tile-img" loading="lazy" decoding="async" onerror="this.src='${fallbackImg}'"><div class="tile-content"><div class="tile-actions"><div class="tile-icon icon-play" onclick="abrirApp('${tool.nombre}','${tool.url}');event.stopPropagation()"><i class="fas fa-play"></i></div><div class="tile-icon" onclick="toggleFav('${tool.nombre}');event.stopPropagation()"><i class="fas ${isFav?'fa-check':'fa-plus'}"></i></div><div class="tile-icon" onclick="verDetalles(${tool.id});event.stopPropagation()"><i class="fas fa-chevron-down"></i></div></div><div class="tile-title">${tool.nombre}</div><div class="tile-subtitle">${tool.subtitulo || tool.descripcion}</div><div class="tile-meta">98% para ti</div></div>`;
+                tile.innerHTML = `<img src="${img}" class="tile-img" onerror="this.src='${fallbackImg}'"><div class="tile-content"><div class="tile-actions"><div class="tile-icon icon-play" onclick="abrirApp('${tool.nombre}','${tool.url}');event.stopPropagation()"><i class="fas fa-play"></i></div><div class="tile-icon" onclick="toggleFav('${tool.nombre}');event.stopPropagation()"><i class="fas ${isFav?'fa-check':'fa-plus'}"></i></div><div class="tile-icon" onclick="verDetalles(${tool.id});event.stopPropagation()"><i class="fas fa-chevron-down"></i></div></div><div class="tile-title">${tool.nombre}</div><div class="tile-subtitle">${tool.subtitulo || tool.descripcion}</div><div class="tile-meta">98% para ti</div></div>`;
                 scr.appendChild(tile);
             });
             row.appendChild(tEl); row.appendChild(scr); cont.appendChild(row);
@@ -1054,6 +917,7 @@
         function abrirApp(t, u) {
             document.getElementById('details-modal').style.display='none';
             document.getElementById('viewer').style.display='flex';
+            document.getElementById('viewer-title').textContent = t;
             document.getElementById('app-frame').src = u;
         }
         window.addEventListener('scroll', () => {
@@ -1063,4 +927,3 @@
     </script>
 </body>
 </html>
-
