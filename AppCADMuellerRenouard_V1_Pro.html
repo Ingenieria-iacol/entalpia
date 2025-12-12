@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IngenieroCAD - P&ID Web V3 (Modo Isométrico & Periféricos)</title>
+    <title>IngenieroCAD - P&ID Web V4 (Iso Clean & Instruments)</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -136,7 +136,6 @@
         const SYMBOL_GROUPS = {
             [LIB_CATEGORIES.MATERIALES]: [
                 { id: TOOLS.VALVE, label: 'Válvula', icon: ICONS.Valve },
-                { id: TOOLS.REGULATOR, label: 'Regulador', icon: ICONS.Regulator },
                 { id: TOOLS.TEE, label: 'Tee', icon: ICONS.TeeIcon },
                 { id: TOOLS.ELBOW_90, label: 'Codo 90°', icon: ICONS.Elbow },
                 { id: TOOLS.REDUCER, label: 'Reducción', icon: ICONS.ReducerIcon },
@@ -155,6 +154,7 @@
                 { id: TOOLS.HEATER, label: 'Calentador', icon: ICONS.Heater },
             ],
             [LIB_CATEGORIES.INSTRUMENTOS]: [
+                { id: TOOLS.REGULATOR, label: 'Regulador', icon: ICONS.Regulator },
                 { id: TOOLS.MANOMETER, label: 'Manómetro', icon: ICONS.Gauge },
                 { id: TOOLS.METER, label: 'Medidor', icon: ICONS.Activity },
                 { id: TOOLS.PRESSURE_SWITCH, label: 'Presostato', icon: ICONS.Settings2 },
@@ -585,15 +585,12 @@
                         ctx.quadraticCurveTo(0, 0, 0, elR/3);
                         ctx.lineTo(0, elR);
                         ctx.stroke();
-                        ctx.beginPath(); ctx.moveTo(-elR, -3); ctx.lineTo(-elR, 3); ctx.stroke();
-                        ctx.beginPath(); ctx.moveTo(-3, elR); ctx.lineTo(3, elR); ctx.stroke();
+                        // Ticks eliminados para limpieza visual
                         break;
                     case TOOLS.NIPPLE:
                         const nipL = baseSize * 1.5;
                         ctx.moveTo(-nipL/2, 0); ctx.lineTo(nipL/2, 0); ctx.stroke();
-                        ctx.moveTo(-nipL/2, -2); ctx.lineTo(-nipL/2, 2);
-                        ctx.moveTo(nipL/2, -2); ctx.lineTo(nipL/2, 2);
-                        ctx.stroke();
+                        // Ticks eliminados
                         break;
                     case TOOLS.BASE_SUPPORT:
                         const bsW = baseSize * 0.8; const bsH = baseSize * 1.2;
