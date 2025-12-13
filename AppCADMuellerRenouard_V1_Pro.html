@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IngenieroCAD - P&ID Web V10 (Estable)</title>
+    <title>IngenieroCAD - P&ID Web V11 (Manómetros & Uniones)</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -86,7 +86,7 @@
             Save: <React.Fragment><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></React.Fragment>,
             Elbow: <path d="M4 20a16 16 0 0 0 16-16" />,
             Flange: <React.Fragment><line x1="10" y1="4" x2="10" y2="20"/><line x1="14" y1="4" x2="14" y2="20"/><line x1="4" y1="12" x2="10" y2="12"/><line x1="14" y1="12" x2="20" y2="12"/></React.Fragment>,
-            Union: <React.Fragment><circle cx="12" cy="12" r="8"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="12" y1="4" x2="12" y2="20"/></React.Fragment>,
+            Union: <React.Fragment><rect x="6" y="4" width="12" height="16" rx="2" /><line x1="12" y1="2" x2="12" y2="22"/></React.Fragment>, 
             Nipple: <path d="M2 12h20" />, 
             Filter: <path d="M3 6h18L12 18z" />,
             Plug: <React.Fragment><path d="M6 6h12v12H6z"/><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></React.Fragment>,
@@ -105,9 +105,17 @@
         
         // --- ENGINEERING UNITS & DATA ---
         const PRESSURE_UNITS = ['psi', 'bar', 'mbar'];
+        const PRESSURE_UNITS_LOW = ['mbar', 'inH2O']; 
+        const PRESSURE_UNITS_HIGH = ['psi', 'bar']; 
+        
         const POWER_UNITS = ['kW', 'BTU/h', 'MJ/h', 'kcal/h'];
         const VOLUME_UNITS = ['m³', 'L', 'ft³'];
         const FLOW_UNITS = ['m³/h', 'L/min', 'ft³/h', 'gpm'];
+        
+        // Rangos de manómetros
+        const MANO_RANGES_LOW = ['0-150 mbar', '0-60 mbar', '0-300 mbar'];
+        const MANO_RANGES_HIGH = ['0-15', '0-30', '0-60', '0-100', '0-120', '0-150', '0-300', '0-600'];
+        const MANO_TYPES = ['Baja', 'Media', 'Alta'];
         
         const TOOLS = { SELECT: 'select', PAN: 'pan', LINE: 'line', RECTANGLE: 'rectangle', CIRCLE: 'circle', BEZIER: 'bezier', TEXT: 'text', TAG: 'tag_tool', DIMENSION: 'dimension_tool', TRAMO_DATA: 'tramo_data_tool', VALVE: 'valve', REGULATOR: 'regulator', REDUCER: 'reducer', TERMINAL: 'terminal', TEE: 'tee', ELBOW_90: 'elbow_90', FLANGE: 'flange', UNION_UNIVERSAL: 'union_universal', UNION_TUBE: 'union_tube', NIPPLE: 'nipple', FILTER: 'filter', PLUG: 'plug', BURNER: 'burner', BOILER: 'boiler', STOVE: 'stove', HEATER: 'heater', MANOMETER: 'manometer', METER: 'meter', PRESSURE_SWITCH: 'pressure_switch', SENSOR: 'sensor', BASE_SUPPORT: 'base_support', HANGER: 'hanger', CLAMP: 'clamp' };
         const LIB_CATEGORIES = { MATERIALES: 'Materiales', EQUIPOS: 'Equipos', INSTRUMENTOS: 'Instrumentos', PERIFERICOS: 'Periféricos' };
@@ -162,13 +170,20 @@
                             case TOOLS.TEE: desc = 'Tee'; spec = `Ø ${c.diameter || '-'}`; break;
                             case TOOLS.ELBOW_90: desc = 'Codo'; spec = `Ø ${c.diameter || '-'} (${c.bendAngle || 90}°)`; break;
                             case TOOLS.REDUCER: desc = 'Reducción'; spec = `${c.diaMajor||'?'} x ${c.diaMinor||'?'}`; break;
-                            case TOOLS.UNION_UNIVERSAL: desc = 'Unión Universal'; spec = `Ø ${c.diameter||'-'}`; break;
+                            case TOOLS.UNION_UNIVERSAL: desc = 'Unión Universal'; spec = `Ø ${c.diameter||'-'} | ${c.seat||'-'} | ${c.gender||'-'}`; break;
                             case TOOLS.UNION_TUBE: desc = 'Unión Tubo'; spec = `Ø ${c.diameter || '-'}`; break;
-                            case TOOLS.FILTER: desc = 'Filtro en Y'; spec = `Ø ${c.diameter||'-'}`; break;
+                            case TOOLS.FILTER: desc = 'Filtro en Y'; spec = `Ø ${c.diameter||'-'} | ${c.microns||'-'} micras`; break;
                             case TOOLS.BURNER: desc = `Quemador ${c.burnerType || ''}`; spec = `${c.btu||'-'} ${c.btuUnit||'BTU/h'}`; break;
                             case TOOLS.BOILER: desc = 'Caldera'; spec = `${c.bhp||'-'} BHP`; break;
                             case TOOLS.STOVE: desc = 'Estufa'; spec = `${c.btu||'-'} ${c.btuUnit||'BTU/h'}`; break;
                             case TOOLS.HEATER: desc = 'Calentador'; spec = `${c.capacity||'-'} ${c.capacityUnit||'L/min'}`; break;
+                            case TOOLS.MANOMETER: 
+                                const type = c.manometerType || 'Media';
+                                const range = c.range || '-';
+                                const unit = (type === 'Baja') ? (c.manometerUnit || 'mbar') : (c.manometerUnit || 'psi');
+                                desc = `Manómetro (${type})`; 
+                                spec = `${range} ${unit}`; 
+                                break;
                             default:
                                 const group = Object.keys(SYMBOL_GROUPS).find(k => SYMBOL_GROUPS[k].find(i => i.id === el.type));
                                 const itemDef = group ? SYMBOL_GROUPS[group].find(i => i.id === el.type) : null;
@@ -496,7 +511,27 @@
                     case TOOLS.HANGER: const hH = baseSize * 1.8; const hW = baseSize * 0.4; const strapR = baseSize * 0.45; ctx.beginPath(); ctx.arc(0, 0, strapR, 0, 2*Math.PI); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0, -strapR); ctx.lineTo(0, -hH); ctx.stroke(); ctx.beginPath(); ctx.moveTo(-hW, -hH); ctx.lineTo(hW, -hH); ctx.moveTo(-hW/2, -hH); ctx.lineTo(hW/2, -hH + 5); ctx.moveTo(-hW/2, -hH + 5); ctx.lineTo(hW/2, -hH + 10); ctx.stroke(); break;
                     case TOOLS.CLAMP: const cR = baseSize * 0.45; const lugSize = 4; ctx.beginPath(); ctx.arc(0, 0, cR, 0, 2*Math.PI); ctx.stroke(); ctx.strokeRect(-cR - lugSize, -lugSize/2, lugSize, lugSize); ctx.strokeRect(cR, -lugSize/2, lugSize, lugSize); ctx.beginPath(); ctx.moveTo(cR + lugSize, 0); ctx.lineTo(cR + lugSize + baseSize, 0); ctx.stroke(); break;
                     case TOOLS.FLANGE: const fH = baseSize * 0.8; const fW = baseSize * 0.3; ctx.moveTo(-fW, -fH); ctx.lineTo(-fW, fH); ctx.moveTo(fW, -fH); ctx.lineTo(fW, fH); ctx.stroke(); break;
-                    case TOOLS.UNION_UNIVERSAL: const unR = baseSize * 0.4; ctx.moveTo(-baseSize, 0); ctx.lineTo(baseSize, 0); ctx.stroke(); ctx.beginPath(); ctx.arc(0, 0, unR, 0, Math.PI*2); ctx.fill(); ctx.stroke(); break;
+                    
+                    case TOOLS.UNION_UNIVERSAL: 
+                         // NEW STYLE: Flange-like but with central "nut"
+                         const uuH = baseSize * 0.7; // Height of plates
+                         const uuW = baseSize * 0.2; // Width of plates
+                         const uuGap = baseSize * 0.2; // Gap for nut
+                         
+                         // Left Plate
+                         ctx.strokeRect(-uuW - uuGap/2, -uuH/2, uuW, uuH);
+                         // Right Plate
+                         ctx.strokeRect(uuGap/2, -uuH/2, uuW, uuH);
+                         
+                         // Central Nut (Hexagon simplified as rectangle with chamfer)
+                         const nutH = baseSize * 0.4;
+                         const nutW = baseSize * 0.25;
+                         ctx.fillStyle = element.color; // Fill to hide pipe line behind
+                         ctx.fillRect(-nutW/2, -nutH/2, nutW, nutH);
+                         ctx.strokeRect(-nutW/2, -nutH/2, nutW, nutH);
+                         // X cross for "flat" surface indication? No, keep clean.
+                         break;
+                    
                     case TOOLS.UNION_TUBE: const utW = baseSize * 0.2; const utH = baseSize * 0.4; ctx.moveTo(-baseSize, 0); ctx.lineTo(baseSize, 0); ctx.stroke(); ctx.beginPath(); ctx.rect(-utW, -utH, utW*2, utH*2); ctx.fill(); ctx.stroke(); break;
                     case TOOLS.FILTER: const filS = baseSize * 0.8; ctx.moveTo(-filS, 0); ctx.lineTo(filS, 0); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(filS, filS); ctx.lineTo(-filS, filS); ctx.closePath(); ctx.fill(); ctx.stroke(); break;
                     case TOOLS.PLUG: const plH = baseSize * 0.6; const plW = baseSize * 0.3; ctx.rect(-plW, -plH/2, plW, plH); ctx.fill(); ctx.stroke(); break;
@@ -632,6 +667,7 @@
                  const localScale = el.elementScale || 1; 
                  const baseSize = GRID_SIZE * 0.6 * localScale; 
                  const points = [];
+                 
                  const angle = el.rotation || 0;
                  const cos = Math.cos(angle); const sin = Math.sin(angle);
                  const trans = (lx, ly) => ({ x: lx * cos - ly * sin + el.x1, y: lx * sin + ly * cos + el.y1 });
@@ -888,15 +924,33 @@
                         <main ref={containerRef} className="flex-1 relative bg-[#1a1a1a] cursor-crosshair overflow-hidden">
                             <canvas ref={canvasRef} onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onWheel={handleWheel} onContextMenu={handleContextMenu} className="block touch-none" style={{ backgroundColor: '#1e1e1e' }} />
                             
-                            {/* Panel Propiedades de Selección */}
+                            {/* Panel Propiedades de Selección - FIXED & IMPROVED */}
                             {selectedIds.length > 0 && (
-                                <div className="absolute top-4 right-16 w-64 glass-panel rounded-xl p-4 shadow-2xl flex flex-col gap-3 fade-in z-20 overflow-y-auto max-h-[80vh]">
+                                <div className="absolute top-16 right-4 w-64 glass-panel rounded-xl p-4 shadow-2xl flex flex-col gap-3 fade-in z-20 overflow-y-auto max-h-[80vh]">
                                     <div className="flex justify-between items-center border-b border-gray-600 pb-2">
                                         <h3 className="text-sm font-bold text-white flex items-center gap-2"><Icon path={ICONS.Edit2} size={16}/> Propiedades ({selectedIds.length})</h3>
-                                        <button onClick={deleteSelection} className="p-1 bg-red-600 hover:bg-red-500 rounded text-white" title="Eliminar Selección"><Icon path={ICONS.Trash2} size={14}/></button>
+                                        <div className="flex gap-1">
+                                            <button onClick={deleteSelection} className="p-1 bg-red-600 hover:bg-red-500 rounded text-white" title="Eliminar Selección"><Icon path={ICONS.Trash2} size={14}/></button>
+                                            <button onClick={() => setSelectedIds([])} className="p-1 bg-gray-600 hover:bg-gray-500 rounded text-white" title="Cerrar Panel">✕</button>
+                                        </div>
                                     </div>
                                     
                                     <div className="space-y-3 mt-2">
+                                        
+                                        {/* Common Name/Tag Field */}
+                                        {selectedIds.length === 1 && (
+                                            <div>
+                                                <label className="text-xs font-bold text-blue-400 mb-1 block uppercase">Nombre / Tag</label>
+                                                <input 
+                                                    type="text" 
+                                                    className="prop-input font-bold text-yellow-400" 
+                                                    placeholder="Ej: V-101"
+                                                    value={elements.find(e => e.id === selectedIds[0])?.name || ''} 
+                                                    onChange={(e) => updateName(e.target.value)} 
+                                                />
+                                            </div>
+                                        )}
+
                                         {/* PROPIEDADES GENERALES */}
                                         <div className="section-title">General</div>
                                         <div>
@@ -969,26 +1023,48 @@
                                                     )}
 
                                                     {/* --- SMART PROPERTIES FOR COMPONENTS --- */}
+                                                    {el.type === TOOLS.MANOMETER && (
+                                                        <React.Fragment>
+                                                            <div className="section-title text-green-400">Datos Manómetro</div>
+                                                            <div><span className="prop-label">Clasificación</span>
+                                                                <select className="prop-input" value={custom.manometerType || 'Media'} onChange={(e) => updateCustomData('manometerType', e.target.value)}>
+                                                                    {MANO_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                                                                </select>
+                                                            </div>
+                                                            <div className="grid grid-cols-2 gap-2">
+                                                                <div>
+                                                                    <span className="prop-label">Rango</span>
+                                                                    <select className="prop-input" value={custom.range || ''} onChange={(e) => updateCustomData('range', e.target.value)}>
+                                                                        <option value="">--</option>
+                                                                        {(custom.manometerType === 'Baja' ? MANO_RANGES_LOW : MANO_RANGES_HIGH).map(r => <option key={r} value={r}>{r}</option>)}
+                                                                        <option value="custom">Otro / Personalizado</option>
+                                                                    </select>
+                                                                </div>
+                                                                {custom.range === 'custom' && (
+                                                                    <div><span className="prop-label">Escribir Rango</span><input type="text" className="prop-input" value={custom.customRangeVal || ''} onChange={(e) => updateCustomData('customRangeVal', e.target.value)} /></div>
+                                                                )}
+                                                                <div>
+                                                                    <span className="prop-label">Unidad</span>
+                                                                    <select className="prop-input" value={custom.manometerUnit || ''} onChange={(e) => updateCustomData('manometerUnit', e.target.value)}>
+                                                                         {(custom.manometerType === 'Baja' ? PRESSURE_UNITS_LOW : PRESSURE_UNITS_HIGH).map(u => <option key={u} value={u}>{u}</option>)}
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                        </React.Fragment>
+                                                    )}
+
                                                     {el.type === TOOLS.REGULATOR && (
                                                         <React.Fragment>
                                                             <div className="section-title text-green-400">Datos Regulador</div>
                                                             <div className="grid grid-cols-2 gap-2">
-                                                                <div><span className="prop-label">P. Entrada</span><input type="text" className="prop-input" value={custom.pIn || ''} onChange={(e) => updateCustomData('pIn', e.target.value)} /></div>
-                                                                <div><span className="prop-label">P. Salida</span><input type="text" className="prop-input" value={custom.pOut || ''} onChange={(e) => updateCustomData('pOut', e.target.value)} /></div>
+                                                                <div><span className="prop-label">P. Entrada</span><div className="prop-row"><input type="text" className="prop-input" value={custom.pIn || ''} onChange={(e) => updateCustomData('pIn', e.target.value)} /><select className="prop-select w-12" value={custom.pInUnit || 'psi'} onChange={(e) => updateCustomData('pInUnit', e.target.value)}>{PRESSURE_UNITS.map(u => <option key={u} value={u}>{u}</option>)}</select></div></div>
+                                                                <div><span className="prop-label">P. Salida</span><div className="prop-row"><input type="text" className="prop-input" value={custom.pOut || ''} onChange={(e) => updateCustomData('pOut', e.target.value)} /><select className="prop-select w-12" value={custom.pOutUnit || 'psi'} onChange={(e) => updateCustomData('pOutUnit', e.target.value)}>{PRESSURE_UNITS.map(u => <option key={u} value={u}>{u}</option>)}</select></div></div>
                                                             </div>
                                                             <div className="grid grid-cols-2 gap-2">
                                                                 <div><span className="prop-label">Dia. Ent.</span><select className="prop-input" value={custom.diaIn || ''} onChange={(e) => updateCustomData('diaIn', e.target.value)}>{DIAMETERS.map(d => <option key={d} value={d}>{d}</option>)}</select></div>
                                                                 <div><span className="prop-label">Dia. Sal.</span><select className="prop-input" value={custom.diaOut || ''} onChange={(e) => updateCustomData('diaOut', e.target.value)}>{DIAMETERS.map(d => <option key={d} value={d}>{d}</option>)}</select></div>
                                                             </div>
                                                             <div><span className="prop-label">Caudal (m³/h)</span><input type="text" className="prop-input" value={custom.flow || ''} onChange={(e) => updateCustomData('flow', e.target.value)} /></div>
-                                                        </React.Fragment>
-                                                    )}
-
-                                                    {el.type === TOOLS.VALVE && (
-                                                        <React.Fragment>
-                                                            <div className="section-title text-green-400">Datos Válvula</div>
-                                                            <div><span className="prop-label">Diámetro</span><select className="prop-input" value={custom.diameter || ''} onChange={(e) => updateCustomData('diameter', e.target.value)}>{DIAMETERS.map(d => <option key={d} value={d}>{d}</option>)}</select></div>
-                                                            <div><span className="prop-label">Tipo</span><select className="prop-input" value={custom.valveType || ''} onChange={(e) => updateCustomData('valveType', e.target.value)}>{VALVE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}</select></div>
                                                         </React.Fragment>
                                                     )}
                                                     
@@ -1002,6 +1078,14 @@
                                                                  </select>
                                                              </div>
                                                          </React.Fragment>
+                                                    )}
+
+                                                    {el.type === TOOLS.VALVE && (
+                                                        <React.Fragment>
+                                                            <div className="section-title text-green-400">Datos Válvula</div>
+                                                            <div><span className="prop-label">Diámetro</span><select className="prop-input" value={custom.diameter || ''} onChange={(e) => updateCustomData('diameter', e.target.value)}>{DIAMETERS.map(d => <option key={d} value={d}>{d}</option>)}</select></div>
+                                                            <div><span className="prop-label">Tipo</span><select className="prop-input" value={custom.valveType || ''} onChange={(e) => updateCustomData('valveType', e.target.value)}>{VALVE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}</select></div>
+                                                        </React.Fragment>
                                                     )}
 
                                                     {(el.type === TOOLS.TEE || el.type === TOOLS.UNION_TUBE) && (
@@ -1067,8 +1151,8 @@
                                                         <React.Fragment>
                                                             <div className="section-title text-yellow-400">Datos Equipo</div>
                                                             <div className="grid grid-cols-2 gap-2">
-                                                                <div><span className="prop-label">Consumo (BTU/h)</span><input type="text" className="prop-input" value={custom.btu || ''} onChange={(e) => updateCustomData('btu', e.target.value)} /></div>
-                                                                <div><span className="prop-label">P. Servicio</span><input type="text" className="prop-input" value={custom.servicePressure || ''} onChange={(e) => updateCustomData('servicePressure', e.target.value)} /></div>
+                                                                <div><span className="prop-label">Consumo</span><div className="prop-row"><input type="text" className="prop-input" value={custom.btu || ''} onChange={(e) => updateCustomData('btu', e.target.value)} /><select className="prop-select w-14" value={custom.btuUnit || 'BTU/h'} onChange={(e) => updateCustomData('btuUnit', e.target.value)}>{POWER_UNITS.map(u => <option key={u} value={u}>{u}</option>)}</select></div></div>
+                                                                <div><span className="prop-label">P. Servicio</span><div className="prop-row"><input type="text" className="prop-input" value={custom.servicePressure || ''} onChange={(e) => updateCustomData('servicePressure', e.target.value)} /><select className="prop-select w-12" value={custom.servicePressureUnit || 'psi'} onChange={(e) => updateCustomData('servicePressureUnit', e.target.value)}>{PRESSURE_UNITS.map(u => <option key={u} value={u}>{u}</option>)}</select></div></div>
                                                             </div>
                                                             <div><span className="prop-label">Fabricante</span><input type="text" className="prop-input" value={custom.manufacturer || ''} onChange={(e) => updateCustomData('manufacturer', e.target.value)} /></div>
                                                             <div><span className="prop-label">Referencia</span><input type="text" className="prop-input" value={custom.reference || ''} onChange={(e) => updateCustomData('reference', e.target.value)} /></div>
@@ -1086,8 +1170,8 @@
                                                     {el.type === TOOLS.HEATER && (
                                                         <React.Fragment>
                                                             <div className="section-title text-yellow-400">Datos Calentador</div>
-                                                            <div><span className="prop-label">Capacidad (L/min)</span><input type="text" className="prop-input" value={custom.capacityLmin || ''} onChange={(e) => updateCustomData('capacityLmin', e.target.value)} /></div>
-                                                            <div><span className="prop-label">Consumo (BTU/h)</span><input type="text" className="prop-input" value={custom.btu || ''} onChange={(e) => updateCustomData('btu', e.target.value)} /></div>
+                                                            <div><span className="prop-label">Capacidad</span><div className="prop-row"><input type="text" className="prop-input" value={custom.capacity || ''} onChange={(e) => updateCustomData('capacity', e.target.value)} /><select className="prop-select w-16" value={custom.capacityUnit || 'L/min'} onChange={(e) => updateCustomData('capacityUnit', e.target.value)}>{FLOW_UNITS.map(u => <option key={u} value={u}>{u}</option>)}</select></div></div>
+                                                            <div><span className="prop-label">Consumo</span><div className="prop-row"><input type="text" className="prop-input" value={custom.btu || ''} onChange={(e) => updateCustomData('btu', e.target.value)} /><select className="prop-select w-14" value={custom.btuUnit || 'BTU/h'} onChange={(e) => updateCustomData('btuUnit', e.target.value)}>{POWER_UNITS.map(u => <option key={u} value={u}>{u}</option>)}</select></div></div>
                                                         </React.Fragment>
                                                     )}
 
