@@ -31,26 +31,26 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
-            position: relative; /* Contexto para el fondo */
+            position: relative;
         }
 
-        /* --- FONDO DE MARCA DE AGUA (LOGO ENTALPIA) --- */
+        /* --- FONDO FIJO (MARCA DE AGUA) --- */
         body::before {
             content: "";
-            position: fixed;
+            position: fixed; /* Se mantiene fija al hacer scroll */
             bottom: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 80%; /* Ancho relativo responsivo */
-            max-width: 600px; /* Tamaño máximo para escritorio */
-            height: 50vh; /* Altura máxima de ocupación */
+            width: 80%;
+            max-width: 600px;
+            height: 50vh;
             background-image: url('LogoEntalpia.png');
             background-repeat: no-repeat;
             background-position: bottom center;
             background-size: contain;
-            opacity: 0.05; /* Muy tenue (5%) para prevalecer el fondo oscuro */
-            z-index: 0; /* Detrás del contenido interactivo */
-            pointer-events: none; /* No interfiere con clics */
+            opacity: 0.05; /* Muy tenue */
+            z-index: 0; /* Detrás del contenido */
+            pointer-events: none; /* No bloquea clics */
         }
 
         .hidden { display: none !important; }
@@ -106,7 +106,7 @@
             background-position: center top; background-size: cover;
             display: flex; align-items: center; padding-left: 4%;
             transition: background-image 0.8s ease-in-out;
-            z-index: 10; /* Asegura que esté sobre el logo de fondo */
+            z-index: 10; /* Sobre el fondo */
         }
         .hero-overlay { position: absolute; inset: 0; background: linear-gradient(to right, #141414 10%, rgba(20,20,20,0.4) 60%, transparent 100%); z-index: 1; }
         .hero-overlay-btm { position: absolute; bottom: 0; left: 0; right: 0; height: 200px; background: linear-gradient(to top, #141414, transparent); z-index: 1; }
