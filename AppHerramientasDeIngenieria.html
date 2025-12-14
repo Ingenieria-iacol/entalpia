@@ -31,26 +31,26 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
-            position: relative;
+            position: relative; /* Necesario para que el hijo absolute se posicione respecto al body */
         }
 
-        /* --- FONDO FIJO (MARCA DE AGUA) --- */
+        /* --- FONDO MARCA DE AGUA (ADHERIDO AL FINAL) --- */
         body::before {
             content: "";
-            position: fixed; /* Se mantiene fija al hacer scroll */
-            bottom: 0;
+            position: absolute; /* Clave: Se mueve con el scroll, adherido al fondo */
+            bottom: 0;          /* Pegado al final del documento */
             left: 50%;
             transform: translateX(-50%);
-            width: 80%;
-            max-width: 600px;
-            height: 50vh;
+            width: 90%;
+            max-width: 700px;
+            height: 600px;      /* Altura fija para controlar el tamaño */
             background-image: url('LogoEntalpia.png');
             background-repeat: no-repeat;
             background-position: bottom center;
             background-size: contain;
-            opacity: 0.05; /* Muy tenue */
-            z-index: 0; /* Detrás del contenido */
-            pointer-events: none; /* No bloquea clics */
+            opacity: 0.05;      /* Extremadamente tenue */
+            z-index: 0;         /* Detrás de todo */
+            pointer-events: none;
         }
 
         .hidden { display: none !important; }
