@@ -34,7 +34,7 @@
             position: relative; /* Necesario para el posicionamiento del fondo */
         }
 
-        /* --- FONDO MARCA DE AGUA (GIGANTE Y CENTRADA) --- */
+        /* --- FONDO MARCA DE AGUA (GIGANTE Y CENTRADA - ADHERIDA) --- */
         body::before {
             content: "";
             position: absolute;
@@ -290,7 +290,7 @@
                     <i class="fas fa-user"></i>
                 </div>
                 <!-- Botón Cerrar Sesión -->
-                <a href="index.html" onclick="limpiarSesion()" title="Cerrar Sesión" style="color:#ccc; text-decoration:none;">
+                <a href="Index.html" onclick="limpiarSesion()" title="Cerrar Sesión" style="color:#ccc; text-decoration:none;">
                     <i class="fas fa-sign-out-alt"></i>
                 </a>
             </div>
@@ -696,10 +696,15 @@
                 }
             }
             
-            const cats = [...new Set(HERRAMIENTAS.map(h => h.categoria))];
+            // Obtener categorías únicas
+            let cats = [...new Set(HERRAMIENTAS.map(h => h.categoria))];
+            
+            // ROTAR/MEZCLAR CATEGORÍAS PARA VISIBILIDAD (Nueva funcionalidad)
+            cats = cats.sort(() => Math.random() - 0.5);
+
             cats.forEach(cat => {
                 let its = HERRAMIENTAS.filter(h => h.categoria === cat);
-                // MEZCLAR ALEATORIAMENTE PARA VISIBILIDAD
+                // MEZCLAR ALEATORIAMENTE TARJETAS (Funcionalidad existente)
                 its = its.sort(() => Math.random() - 0.5);
                 crearFila(c, cat, its);
             });
@@ -775,4 +780,3 @@
     </script>
 </body>
 </html>
-
