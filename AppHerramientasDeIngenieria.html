@@ -31,25 +31,25 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
-            position: relative; /* Necesario para que el hijo absolute se posicione respecto al body */
+            position: relative;
         }
 
         /* --- FONDO MARCA DE AGUA (ADHERIDO AL FINAL) --- */
         body::before {
             content: "";
-            position: absolute; /* Clave: Se mueve con el scroll, adherido al fondo */
-            bottom: 0;          /* Pegado al final del documento */
+            position: absolute;
+            bottom: 0;
             left: 50%;
             transform: translateX(-50%);
             width: 90%;
             max-width: 700px;
-            height: 600px;      /* Altura fija para controlar el tamaño */
+            height: 600px;
             background-image: url('LogoEntalpia.png');
             background-repeat: no-repeat;
             background-position: bottom center;
             background-size: contain;
-            opacity: 0.05;      /* Extremadamente tenue */
-            z-index: 0;         /* Detrás de todo */
+            opacity: 0.05;
+            z-index: 0;
             pointer-events: none;
         }
 
@@ -106,7 +106,7 @@
             background-position: center top; background-size: cover;
             display: flex; align-items: center; padding-left: 4%;
             transition: background-image 0.8s ease-in-out;
-            z-index: 10; /* Sobre el fondo */
+            z-index: 10;
         }
         .hero-overlay { position: absolute; inset: 0; background: linear-gradient(to right, #141414 10%, rgba(20,20,20,0.4) 60%, transparent 100%); z-index: 1; }
         .hero-overlay-btm { position: absolute; bottom: 0; left: 0; right: 0; height: 200px; background: linear-gradient(to top, #141414, transparent); z-index: 1; }
@@ -161,6 +161,19 @@
         .tile-content { position: absolute; inset: 0; opacity: 0; background: linear-gradient(to top, #141414 10%, rgba(20,20,20,0.4)); display: flex; justify-content: center; align-items: center; transition: opacity 0.3s; }
         .tile:hover .tile-content { opacity: 1; }
         
+        /* Descripción visible en Hover */
+        .tile-description {
+            font-size: 0.8rem;
+            color: #ddd;
+            margin-bottom: 10px;
+            line-height: 1.3;
+            display: none;
+            text-align: center;
+            padding: 0 10px;
+            text-shadow: 0 1px 3px black;
+        }
+        .tile:hover .tile-description { display: block; }
+
         .tile-actions { display: flex; gap: 15px; }
         .tile-icon { width: 40px; height: 40px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); display: flex; align-items: center; justify-content: center; font-size: 1rem; background: rgba(30,30,30,0.6); color: white; transition: 0.2s; }
         .tile-icon:hover { background: white; color: black; border-color: white; transform: scale(1.1); }
@@ -588,12 +601,25 @@
 
         function filtrarContenido(texto) {
             const container = document.getElementById('content-rows');
+            
+            // Si el texto está vacío, restaurar la vista normal
             if (!texto) { renderizarFilas(); return; }
-            const termino = texto.toLowerCase();
-            const resultados = HERRAMIENTAS.filter(h => h.nombre.toLowerCase().includes(termino) || h.descripcion.toLowerCase().includes(termino) || h.categoria.toLowerCase().includes(termino));
+            
+            // Normalizar texto de búsqueda (quitar acentos y minúsculas)
+            const termino = texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            
+            const resultados = HERRAMIENTAS.filter(h => {
+                // Normalizar campos de datos para la comparación
+                const nombre = h.nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const desc = h.descripcion.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const cat = h.categoria.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                
+                return nombre.includes(termino) || desc.includes(termino) || cat.includes(termino);
+            });
+
             container.innerHTML = "";
             if (resultados.length > 0) {
-                const title = document.createElement('h3'); title.className = 'row-title'; title.textContent = `Resultados`;
+                const title = document.createElement('h3'); title.className = 'row-title'; title.textContent = `Resultados (${resultados.length})`;
                 const grid = document.createElement('div'); grid.className = 'search-results-grid';
                 // Para resultados de búsqueda, usamos la misma lógica visual simplificada
                 resultados.forEach(tool => {
@@ -602,7 +628,12 @@
                     grid.appendChild(tile);
                 });
                 container.appendChild(title); container.appendChild(grid);
-            } else { container.innerHTML = `<div style="padding:40px; color:#666; text-align:center;">Sin resultados</div>`; }
+            } else { 
+                container.innerHTML = `<div style="padding:40px; color:#666; text-align:center;">
+                    <i class="fas fa-search" style="font-size: 2rem; margin-bottom: 10px;"></i><br>
+                    Sin resultados para "${texto}"
+                </div>`; 
+            }
         }
 
         // Función Helper para crear el Tile con la nueva estructura
