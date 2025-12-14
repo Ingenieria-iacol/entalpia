@@ -171,42 +171,11 @@
             const [loading, setLoading] = useState(true);
             const [authError, setAuthError] = useState(false);
 
-            // Función helper para navegación robusta
-            const navigateToLogin = (e) => {
-                // Si se invocó desde un evento, prevenimos el default temporalmente
-                // para intentar nuestra lógica primero
-                if (e && e.preventDefault) e.preventDefault();
-
-                console.log("Intentando navegar al login...");
-                
-                // Limpiar sesión por seguridad
+            // Función simple para limpiar sesión sin bloquear navegación
+            const clearSession = () => {
+                console.log("Limpiando sesión...");
                 localStorage.removeItem('mockSessionUser');
-
-                const target = 'index.html';
-                
-                try {
-                    // Intento 1: Resolución de URL absoluta (anticipa error de "invalid URL" en rutas relativas)
-                    // Construimos la URL completa basándonos en la ubicación actual
-                    // Esto maneja casos donde 'index.html' solo no es aceptado por el entorno
-                    const currentUrl = window.location.href;
-                    // Eliminar el nombre del archivo actual si existe para obtener el directorio base
-                    const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
-                    const absoluteTarget = baseUrl + target;
-                    
-                    console.log("Navegando a (Absoluta):", absoluteTarget);
-                    window.location.href = absoluteTarget;
-                } catch (err) {
-                    console.warn("Navegación absoluta falló, intentando relativa simple...", err);
-                    // Intento 2: Fallback a simple asignación
-                    try {
-                        window.location.href = target;
-                    } catch (err2) {
-                        console.error("Navegación falló completamente.", err2);
-                        // Intento 3: Si todo falla, forzamos recarga o dejamos que el usuario use el link manual
-                        // (El return del componente mostrará el link <a> que funcionará por HTML nativo)
-                        alert("No se pudo redirigir automáticamente. Por favor usa el enlace manual.");
-                    }
-                }
+                // No llamamos a e.preventDefault() para dejar que el enlace HTML funcione naturalmente
             };
 
             useEffect(() => {
@@ -218,17 +187,13 @@
                     try {
                         setUser(JSON.parse(session));
                     } catch (e) {
-                        // Si el JSON está corrupto, forzar logout
+                        // Si el JSON está corrupto, limpiar y mostrar error
                         localStorage.removeItem('mockSessionUser');
                         setAuthError(true);
                     }
                     setLoading(false);
                 }
             }, []);
-
-            const handleLogout = () => {
-                navigateToLogin(); 
-            };
 
             if (loading) return null;
 
@@ -245,10 +210,10 @@
                                 Tu sesión ha expirado o no tienes permisos para ver este panel.
                             </p>
                             
-                            {/* Botón Mejorado: Combina onClick JS con href HTML nativo */}
+                            {/* ENLACE HTML ESTÁNDAR - Método a prueba de fallos */}
                             <a 
                                 href="index.html"
-                                onClick={navigateToLogin}
+                                onClick={clearSession}
                                 className="inline-flex w-full justify-center py-3 px-4 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold transition-all shadow-lg shadow-blue-900/40 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
                             >
                                 Volver al Login
@@ -280,13 +245,15 @@
                                         <div className="text-xs text-blue-400 uppercase tracking-wider">{user.plan} • {user.type}</div>
                                     </div>
                                     
-                                    <button 
-                                        onClick={handleLogout}
-                                        className="p-2 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                                    {/* Botón de Logout en Navbar también corregido */}
+                                    <a 
+                                        href="index.html"
+                                        onClick={clearSession}
+                                        className="p-2 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors flex items-center justify-center"
                                         title="Cerrar Sesión"
                                     >
                                         <Icons.LogOut className="w-5 h-5" />
-                                    </button>
+                                    </a>
                                 </div>
                             </div>
                         </div>
