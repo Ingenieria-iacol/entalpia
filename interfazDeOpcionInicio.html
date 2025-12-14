@@ -50,14 +50,12 @@
             text-shadow: 0 0 10px rgba(0, 113, 235, 0.5);
         }
 
-        /* Contenedor para los botones del header */
         .nav-items {
             display: flex;
             gap: 15px;
             align-items: center;
         }
 
-        /* Botón convertido a enlace con estilo de botón */
         .btn-login {
             background-color: var(--brand-blue);
             color: white;
@@ -67,7 +65,7 @@
             font-weight: bold;
             cursor: pointer;
             transition: 0.3s;
-            text-decoration: none; /* Quita el subrayado del enlace */
+            text-decoration: none;
             display: inline-block;
             font-size: 1rem;
         }
@@ -76,7 +74,6 @@
             background-color: var(--brand-blue-hover);
         }
 
-        /* Estilo alternativo para el botón de Planes (Ghost button) */
         .btn-ghost {
             background-color: transparent;
             border: 1px solid var(--text-white);
@@ -88,18 +85,31 @@
             border-color: white;
         }
 
-        /* --- Hero Section --- */
+        /* --- Hero Section Modified for Video --- */
         .hero {
             height: 85vh;
-            /* SE HA ACTUALIZADO LA IMAGEN DE FONDO A LogoEntalpia.png */
-            background-image: url('LogoEntalpia.png'); 
-            background-size: cover;
-            background-position: center;
+            /* La imagen de fondo se mantiene como fallback por si el video falla */
+            background-color: #000; 
             position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
             text-align: center;
+            overflow: hidden; /* Asegura que el video no se salga del contenedor */
+        }
+
+        /* Estilos para el video de fondo */
+        #bg-video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            z-index: 0;
+            transform: translate(-50%, -50%);
+            object-fit: cover;
         }
 
         .hero::after {
@@ -109,14 +119,17 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.4);
+            /* Capa oscura para asegurar que el texto sea legible sobre el video */
+            background: rgba(0,0,0,0.5); 
             box-shadow: inset 0 -100px 100px #141414;
+            z-index: 1;
         }
 
         .hero-content {
             z-index: 2;
             max-width: 800px;
             padding: 20px;
+            position: relative;
         }
 
         .hero h1 {
@@ -202,7 +215,7 @@
             height: 100%;
             object-fit: cover;
             opacity: 0.6;
-            transition: opacity 0.3s;
+            transition: opacity 0.5s ease-in-out; /* Transición suavizada para el cambio de imagen */
         }
 
         .card-overlay {
@@ -227,7 +240,7 @@
         }
 
         .card:hover img {
-            opacity: 1;
+            opacity: 1 !important; /* Forza opacidad completa al hacer hover */
         }
 
         /* --- Features Split Section --- */
@@ -320,7 +333,6 @@
         <div class="logo">Herramientas<span style="color: white; font-size: 0.8em;">De</span>Ingenieria</div>
         
         <div class="nav-items">
-            <!-- Nuevo botón agregado -->
             <a href="ModalPrecios.html" class="btn-login btn-ghost">Planes</a>
             <a href="index.html" class="btn-login">Ir a Herramientas</a>
         </div>
@@ -328,6 +340,13 @@
     </header>
 
     <div class="hero">
+        <!-- Video de Fondo Automático -->
+        <video autoplay muted loop id="bg-video">
+            <source src="VideoSaberMas.mp4" type="video/mp4">
+            <!-- Fallback por si el navegador no soporta video -->
+            Tu navegador no soporta el video HTML5.
+        </video>
+
         <div class="hero-content">
             <h1>ENTALPIA</h1>
             <p>Precisión que genera potencia</p>
@@ -345,25 +364,25 @@
         <div class="section-title">Tecnologías Básicas</div>
         <div class="card-grid">
             <div class="card">
-                <img src="ImCalculadoraEspecializada.png" alt="Modeladores" onerror="this.onerror=null;this.src='https://placehold.co/300x200/141414/white?text=Modeladores';">
+                <img id="card-img-0" src="ImCalculadoraEspecializada.png" alt="Modeladores" onerror="this.onerror=null;this.src='https://placehold.co/300x200/141414/white?text=Modeladores';">
                 <div class="card-overlay">
                     <div class="card-title">Modeladores</div>
                 </div>
             </div>
             <div class="card">
-                <img src="ImgModeladores.png" alt="Calculadoras" onerror="this.onerror=null;this.src='https://placehold.co/300x200/141414/white?text=Calculadoras';">
+                <img id="card-img-1" src="ImgModeladores.png" alt="Calculadoras" onerror="this.onerror=null;this.src='https://placehold.co/300x200/141414/white?text=Calculadoras';">
                 <div class="card-overlay">
                     <div class="card-title">Calculadoras especializadas</div>
                 </div>
             </div>
             <div class="card">
-                <img src="LogoIngenieroIA.png" alt="Consultorías" onerror="this.onerror=null;this.src='https://placehold.co/300x200/141414/white?text=IA+Consultoria';">
+                <img id="card-img-2" src="LogoIngenieroIA.png" alt="Consultorías" onerror="this.onerror=null;this.src='https://placehold.co/300x200/141414/white?text=IA+Consultoria';">
                 <div class="card-overlay">
                     <div class="card-title">Inteligencia Artificial y consultorías</div>
                 </div>
             </div>
             <div class="card">
-                <img src="ImgUtilidades.png" alt="Utilidades" onerror="this.onerror=null;this.src='https://placehold.co/300x200/141414/white?text=Utilidades';">
+                <img id="card-img-3" src="ImgUtilidades.png" alt="Utilidades" onerror="this.onerror=null;this.src='https://placehold.co/300x200/141414/white?text=Utilidades';">
                 <div class="card-overlay">
                     <div class="card-title">Convertidores y otras herramientas</div>
                 </div>
@@ -373,13 +392,13 @@
         <div class="section-title">Herramientas de Colaboración</div>
         <div class="card-grid">
              <div class="card">
-                <img src="ImgDocentes.png" alt="Docentes" onerror="this.onerror=null;this.src='https://placehold.co/300x200/141414/white?text=Docentes';">
+                <img id="card-img-4" src="ImgDocentes.png" alt="Docentes" onerror="this.onerror=null;this.src='https://placehold.co/300x200/141414/white?text=Docentes';">
                 <div class="card-overlay">
                     <div class="card-title">Contenido para docentes</div>
                 </div>
             </div>
             <div class="card">
-                <img src="ImgEstudiantes.png" alt="Semilleros" onerror="this.onerror=null;this.src='https://placehold.co/300x200/141414/white?text=Planes';">
+                <img id="card-img-5" src="ImgEstudiantes.png" alt="Semilleros" onerror="this.onerror=null;this.src='https://placehold.co/300x200/141414/white?text=Planes';">
                 <div class="card-overlay">
                     <div class="card-title">Planes de formación o reentrenamiento</div>
                 </div>
@@ -426,6 +445,49 @@
         <br>
         <p style="font-size: 0.8rem;">© 2025 Software De Inteligencia Artificial - SofI.A.</p>
     </footer>
+
+    <!-- Script para alternar imágenes automáticamente -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Arrays de pares de imágenes para alternar (Imagen A <-> Imagen B)
+            // Se usa un efecto de "shuffle" con las imágenes existentes para la demo
+            const imagePairs = [
+                ['ImCalculadoraEspecializada.png', 'ImgModeladores.png'], // Card 0
+                ['ImgModeladores.png', 'ImCalculadoraEspecializada.png'], // Card 1
+                ['LogoIngenieroIA.png', 'ImgUtilidades.png'],             // Card 2
+                ['ImgUtilidades.png', 'LogoIngenieroIA.png'],             // Card 3
+                ['ImgDocentes.png', 'ImgEstudiantes.png'],                // Card 4
+                ['ImgEstudiantes.png', 'ImgDocentes.png']                 // Card 5
+            ];
+
+            let isAlternate = false;
+
+            // Función que se ejecuta cada 4 segundos
+            setInterval(() => {
+                isAlternate = !isAlternate;
+                
+                // Seleccionamos todas las imágenes de las cards
+                const images = document.querySelectorAll('.card img');
+
+                images.forEach((img, index) => {
+                    if (imagePairs[index]) {
+                        // 1. Desvanecer imagen actual
+                        img.style.opacity = '0.2';
+                        
+                        // 2. Cambiar la fuente después de que la transición visual comience
+                        setTimeout(() => {
+                            const newSrc = isAlternate ? imagePairs[index][1] : imagePairs[index][0];
+                            img.src = newSrc;
+                            
+                            // Restaurar opacidad (dejamos que el CSS controle la opacidad base de 0.6)
+                            img.style.opacity = ''; 
+                        }, 300); // 300ms coincide aprox con parte de la transición
+                    }
+                });
+
+            }, 4000); // Intervalo de 4000ms (4 segundos)
+        });
+    </script>
 
 </body>
 </html>
