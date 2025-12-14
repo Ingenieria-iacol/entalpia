@@ -88,14 +88,15 @@
         /* --- Hero Section Modified for Video --- */
         .hero {
             height: 85vh;
-            /* La imagen de fondo se mantiene como fallback por si el video falla */
+            /* La imagen de fondo se mantiene como fallback por si el video falla o tarda en cargar */
             background-color: #000; 
             position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
             text-align: center;
-            overflow: hidden; /* Asegura que el video no se salga del contenedor */
+            overflow: hidden;
+            cursor: pointer; /* Indica que es interactivo */
         }
 
         /* Estilos para el video de fondo */
@@ -215,7 +216,7 @@
             height: 100%;
             object-fit: cover;
             opacity: 0.6;
-            transition: opacity 0.5s ease-in-out; /* Transición suavizada para el cambio de imagen */
+            transition: opacity 0.5s ease-in-out;
         }
 
         .card-overlay {
@@ -240,7 +241,7 @@
         }
 
         .card:hover img {
-            opacity: 1 !important; /* Forza opacidad completa al hacer hover */
+            opacity: 1 !important;
         }
 
         /* --- Features Split Section --- */
@@ -340,10 +341,13 @@
     </header>
 
     <div class="hero">
-        <!-- Video de Fondo Automático -->
-        <video autoplay loop id="bg-video">
+        <!-- 
+            Video de Fondo:
+            - Se eliminó 'loop' para que pare al finalizar.
+            - Se mantiene autoplay y sonido.
+        -->
+        <video autoplay id="bg-video">
             <source src="VideoSaberMas.mp4" type="video/mp4">
-            <!-- Fallback por si el navegador no soporta video -->
             Tu navegador no soporta el video HTML5.
         </video>
 
@@ -446,46 +450,57 @@
         <p style="font-size: 0.8rem;">© 2025 Software De Inteligencia Artificial - SofI.A.</p>
     </footer>
 
-    <!-- Script para alternar imágenes automáticamente -->
+    <!-- Scripts -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Arrays de pares de imágenes para alternar (Imagen A <-> Imagen B)
-            // Se usa un efecto de "shuffle" con las imágenes existentes para la demo
+            
+            // --- Lógica del Video Banner ---
+            const heroSection = document.querySelector('.hero');
+            const video = document.getElementById('bg-video');
+
+            if (heroSection && video) {
+                // Al hacer clic en el banner (hero), reiniciar el video
+                heroSection.addEventListener('click', (e) => {
+                    // Evitar que el video se reinicie si se está llenando el formulario
+                    if (e.target.closest('.email-form')) {
+                        return;
+                    }
+
+                    // Si el video terminó o está pausado, reproducir desde el inicio
+                    if (video.paused || video.ended) {
+                        video.currentTime = 0;
+                        video.play().catch(err => console.log("Error al reproducir video:", err));
+                    }
+                });
+            }
+
+            // --- Lógica de Alternancia de Imágenes de Tarjetas (Se mantiene) ---
             const imagePairs = [
-                ['ImCalculadoraEspecializada.png', 'ImgModeladores.png'], // Card 0
-                ['ImgModeladores.png', 'ImCalculadoraEspecializada.png'], // Card 1
-                ['LogoIngenieroIA.png', 'ImgUtilidades.png'],             // Card 2
-                ['ImgUtilidades.png', 'LogoIngenieroIA.png'],             // Card 3
-                ['ImgDocentes.png', 'ImgEstudiantes.png'],                // Card 4
-                ['ImgEstudiantes.png', 'ImgDocentes.png']                 // Card 5
+                ['ImCalculadoraEspecializada.png', 'ImgModeladores.png'],
+                ['ImgModeladores.png', 'ImCalculadoraEspecializada.png'],
+                ['LogoIngenieroIA.png', 'ImgUtilidades.png'],
+                ['ImgUtilidades.png', 'LogoIngenieroIA.png'],
+                ['ImgDocentes.png', 'ImgEstudiantes.png'],
+                ['ImgEstudiantes.png', 'ImgDocentes.png']
             ];
 
             let isAlternate = false;
 
-            // Función que se ejecuta cada 4 segundos
             setInterval(() => {
                 isAlternate = !isAlternate;
-                
-                // Seleccionamos todas las imágenes de las cards
                 const images = document.querySelectorAll('.card img');
 
                 images.forEach((img, index) => {
                     if (imagePairs[index]) {
-                        // 1. Desvanecer imagen actual
                         img.style.opacity = '0.2';
-                        
-                        // 2. Cambiar la fuente después de que la transición visual comience
                         setTimeout(() => {
                             const newSrc = isAlternate ? imagePairs[index][1] : imagePairs[index][0];
                             img.src = newSrc;
-                            
-                            // Restaurar opacidad (dejamos que el CSS controle la opacidad base de 0.6)
                             img.style.opacity = ''; 
-                        }, 300); // 300ms coincide aprox con parte de la transición
+                        }, 300);
                     }
                 });
-
-            }, 4000); // Intervalo de 4000ms (4 segundos)
+            }, 4000);
         });
     </script>
 
