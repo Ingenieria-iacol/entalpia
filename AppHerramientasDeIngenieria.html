@@ -266,8 +266,10 @@
                 <div id="nav-avatar-icon" class="nav-avatar av-gen" onclick="abrirEditorPerfil()">
                     <i class="fas fa-user"></i>
                 </div>
-                <!-- Botón Cerrar Sesión -->
-                <i class="fas fa-sign-out-alt" style="cursor:pointer; color:#ccc;" onclick="cerrarSesion()" title="Cerrar Sesión"></i>
+                <!-- Botón Cerrar Sesión (Enlace directo para mayor compatibilidad) -->
+                <a href="Index.html" onclick="limpiarSesion()" title="Cerrar Sesión" style="color:#ccc; text-decoration:none;">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
             </div>
         </nav>
 
@@ -541,9 +543,9 @@
         }
 
         // --- FUNCION CERRAR SESION ---
-        function cerrarSesion() {
+        function limpiarSesion() {
             try { localStorage.removeItem('sofia_session'); } catch(e) {}
-            window.location.href = "Index.html"; 
+            // No es necesario forzar la navegación aquí, el <a> lo hace.
         }
 
         // --- INICIALIZACIÓN ---
