@@ -109,6 +109,29 @@
             border-color: white;
         }
 
+        /* Estilos para los nuevos enlaces de texto en el header */
+        .nav-link {
+            color: var(--text-white);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+            display: inline-block;
+        }
+
+        .nav-link:hover {
+            color: var(--brand-blue); /* Resaltado azul al pasar el mouse */
+            text-decoration: underline;
+        }
+
+        /* Ajustes para móviles: ocultar o reducir estos enlaces si falta espacio, 
+           o permitir que hagan wrap (salto de línea) */
+        @media (max-width: 768px) {
+            .nav-link {
+                font-size: 0.8rem;
+                margin: 5px 0;
+            }
+        }
+
         /* --- Hero Section --- */
         .hero {
             height: 85vh; /* Mantiene altura en desktop */
@@ -342,29 +365,28 @@
             color: var(--text-gray);
             font-size: 0.9rem;
             border-top: 8px solid #222;
-            text-align: center; /* Centrado en móvil por defecto */
+            text-align: center; /* Centrado general */
         }
 
         .footer-links {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr); /* 2 columnas en móvil */
-            gap: 15px;
+            display: flex;
+            justify-content: center; /* Centra los enlaces horizontalmente */
+            flex-wrap: wrap; /* Permite que bajen si no hay espacio */
+            gap: 20px; /* Espacio entre enlaces */
             margin-top: 20px;
-            text-align: left;
         }
 
-        @media (min-width: 768px) {
-            .footer-links {
-                grid-template-columns: repeat(4, 1fr); /* 4 columnas en desktop */
-            }
-            footer { text-align: left; }
-        }
+        /* Se eliminaron las reglas de grid específicas que forzaban la alineación a la izquierda */
 
         .footer-links a {
             color: var(--text-gray);
             text-decoration: none;
-            padding: 5px 0; /* Área de toque más grande */
-            display: block;
+            padding: 5px 10px; /* Un poco más de área lateral para el clic */
+            display: inline-block;
+        }
+
+        .footer-links a:hover {
+            text-decoration: underline;
         }
 
         /* --- MEDIA QUERIES (TABLETS & MOVILES) --- */
@@ -376,31 +398,31 @@
             }
             
             .logo {
-                font-size: 1.4rem;
-                letter-spacing: 1px;
-            }
+            color: var(--brand-blue);
+            font-size: 1.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(0, 113, 235, 0.5);
+            white-space: nowrap; /* Evita que el logo se parta */
+        }
 
-            .hero {
-                height: 60vh; /* Altura más manejable en tablets */
+        .nav-items {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap; /* Permite que los elementos bajen si no caben en móviles */
+            justify-content: flex-end;
+        }
+        
+        @media (max-width: 768px) {
+            .nav-items {
+                justify-content: center;
             }
-            
-            .hero h1 { font-size: 2.5rem; }
-            .hero p { font-size: 1.2rem; }
-            
-            .feature-split { 
-                flex-direction: column; 
-                text-align: center; 
-                padding: 40px 5%;
-            }
-            
-            .feature-text { 
-                padding: 0; 
-                margin-bottom: 30px; 
-            }
-            
-            /* En móvil, revertimos el orden visual para que el texto siempre quede arriba de la imagen */
-            .feature-split[style*="row-reverse"] {
-                flex-direction: column !important;
+        }
+
+        .btn-login {
+            background-color: var(--brand-blue);
             }
         }
 
@@ -479,6 +501,12 @@
         <div class="logo">ENTALPIA</div>
         
         <div class="nav-items">
+            <!-- Enlaces reubicados (Texto simple) -->
+            <a href="#" class="nav-link">Preguntas Frecuentes</a>
+            <a href="README.md" class="nav-link">Información Corporativa</a>
+            <a href="#" class="nav-link">Términos de Uso</a>
+            
+            <!-- Botones originales -->
             <a href="ModalPrecios.html" class="btn-login btn-ghost">Planes</a>
             <a href="index.html" class="btn-login">Herramientas</a>
         </div>
@@ -491,7 +519,8 @@
         </video>
 
         <div class="hero-content">
-            <!-- Título H1 y eslogan eliminados -->
+            <h1>INGENIERIA</h1>
+            <p>Precisión que genera potencia</p>
             
             <div class="email-form">
                 <!-- Campo de correo eliminado -->
@@ -580,12 +609,10 @@
     <footer>
         <p>¿Preguntas? Llama al +57 304-221-4098</p>
         <div class="footer-links">
-            <a href="#">Preguntas Frecuentes</a>
+            <!-- Enlaces restantes en el footer -->
             <a href="#">Centro de Ayuda</a>
-            <a href="#">Términos de Uso</a>
             <a href="#">Privacidad</a>
             <a href="#">Preferencias de Cookies</a>
-            <a href="README.md">Información Corporativa</a>
         </div>
         <br>
         <p style="font-size: 0.8rem;">© 2025 Software De Inteligencia Artificial - SofI.A.</p>
