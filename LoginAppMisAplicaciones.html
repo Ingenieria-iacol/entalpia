@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Corporativos Entalpia</title>
     <style>
-        /* --- ESTILOS GENERALES (Reset & Base) --- */
+        /* --- ESTILOS GENERALES --- */
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
@@ -22,7 +22,6 @@
         }
 
         /* --- FONDO MARCA DE AGUA --- */
-        /* Usamos un pseudo-elemento para manejar la opacidad y el layering del fondo independientemente */
         body::before {
             content: '';
             position: absolute;
@@ -30,18 +29,20 @@
             left: 0;
             width: 100%; 
             height: 100%;
-            /* Imagen de fondo centrada y sin repetir */
+            /* Imagen de fondo centrada */
             background: url('LogoEntalpia.png') no-repeat center center;
-            background-size: 75%; /* Tamaño solicitado */
+            background-size: 75%; 
             z-index: -2;
         }
 
-        /* Capa de oscurecimiento (Overlay) para que el texto resalte */
+        /* Capa de oscurecimiento (Overlay) */
         body::after {
             content: '';
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85); /* Oscuro y elegante */
+            /* HE REDUCIDO ESTE VALOR: Antes 0.85 -> Ahora 0.4 */
+            /* Esto hace que el fondo se vea mucho más claro */
+            background: rgba(0, 0, 0, 0.4); 
             z-index: -1;
         }
 
@@ -51,8 +52,7 @@
             top: 25px;
             left: 50px;
             font-size: 2.2rem;
-            font-weight: 800; /* Extra bold */
-            /* Efecto Metálico Azul en el texto */
+            font-weight: 800;
             background: linear-gradient(to bottom, #a1c4fd 0%, #1c5294 50%, #082d55 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -64,22 +64,22 @@
 
         /* --- CAJA DE LOGIN --- */
         .login-box {
-            background-color: rgba(0, 0, 0, 0.6); /* Translucidez solicitada */
+            /* HE AUMENTADO LA TRANSPARENCIA: Antes 0.6 -> Ahora 0.3 */
+            background-color: rgba(0, 0, 0, 0.3); 
             width: 100%;
             max-width: 450px;
-            min-height: 550px; /* Altura mínima consistente */
+            min-height: 500px;
             padding: 60px 68px 40px;
             border-radius: 4px;
-            /* Borde sutil y sombra para profundidad */
             border: 1px solid rgba(255, 255, 255, 0.1); 
             box-shadow: 0 15px 40px rgba(0,0,0,0.5);
             
             position: relative;
             z-index: 5;
             
-            /* Efecto vidrio esmerilado (Glassmorphism sutil) */
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
+            /* Blur para garantizar que el texto se lea sobre el logo */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
         }
 
         h1 {
@@ -89,50 +89,33 @@
             margin-bottom: 28px;
         }
 
-        /* --- CAMPOS DE TEXTO (Estilo Streaming App) --- */
+        /* --- CAMPOS DE TEXTO (Limpios sin etiquetas flotantes) --- */
         .input-wrapper {
-            position: relative;
             margin-bottom: 16px;
         }
 
         .input-field {
             width: 100%;
-            background: #333;
+            background: rgba(51, 51, 51, 0.8); /* Fondo un poco más transparente también */
             border: 0;
             border-radius: 4px;
             color: #fff;
             height: 50px;
             line-height: 50px;
-            padding: 16px 20px 0; /* Espacio para el label flotante */
+            padding: 0 20px; /* Padding simple */
             font-size: 16px;
             outline: none;
             transition: background 0.2s, border-bottom 0.2s;
         }
 
-        .input-field:focus {
-            background: #454545;
-            border-bottom: 2px solid #0071eb; /* Azul corporativo brillante */
-        }
-        
-        /* Label Flotante */
-        .input-label {
-            position: absolute;
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #8c8c8c;
-            font-size: 16px;
-            transition: all 0.1s ease;
-            pointer-events: none; /* Permite clicar a través del label */
+        /* Color del placeholder (el texto de sugerencia interno) */
+        .input-field::placeholder {
+            color: #b3b3b3;
         }
 
-        /* Lógica del label: Si hay foco o texto, sube y se hace pequeño */
-        .input-field:focus ~ .input-label,
-        .input-field:not(:placeholder-shown) ~ .input-label {
-            top: 7px;
-            transform: translateY(0);
-            font-size: 11px;
-            font-weight: 700;
+        .input-field:focus {
+            background: #454545;
+            border-bottom: 2px solid #0071eb; /* Azul corporativo */
         }
 
         /* --- BOTÓN --- */
@@ -146,8 +129,6 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            
-            /* Gradiente Azul Intenso "Netflix Style" pero azul */
             background: linear-gradient(180deg, #0071eb 0%, #004182 100%);
             box-shadow: 0 1px 0 rgba(0,0,0,0.55);
             transition: all 0.2s ease;
@@ -161,7 +142,7 @@
             transform: scale(0.98);
         }
 
-        /* --- EXTRAS Y TEXTO SECUNDARIO --- */
+        /* --- EXTRAS --- */
         .form-help {
             display: flex;
             justify-content: space-between;
@@ -197,9 +178,9 @@
             text-decoration: underline;
         }
 
-        /* --- MENSAJE DE ERROR --- */
+        /* --- ERROR --- */
         .error-msg {
-            background: #e87c03; /* Naranja de advertencia estándar */
+            background: #e87c03;
             padding: 10px 15px;
             border-radius: 4px;
             font-size: 14px;
@@ -208,13 +189,6 @@
             display: none;
         }
 
-        .error-msg a {
-            color: white;
-            text-decoration: underline;
-            font-weight: bold;
-        }
-
-        /* --- ANIMACIÓN SHAKE (Error) --- */
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
             10%, 30%, 50%, 70%, 90% { transform: translateX(-6px); }
@@ -225,64 +199,54 @@
             animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
         }
 
-        /* --- RESPONSIVE MOBILE --- */
+        /* --- MOBILE --- */
         @media (max-width: 740px) {
             body {
-                background: #000; /* Fondo negro sólido base */
+                background: #000;
             }
             body::before {
-                background-size: contain; /* Ajuste logo en móvil */
-                opacity: 0.5;
+                opacity: 0.7; /* Más visible en móvil */
             }
             .login-box {
                 width: 100%;
-                height: 100vh; /* Ocupa toda la pantalla */
+                height: 100vh;
                 max-width: none;
-                background-color: black; /* Fondo sólido en móvil típico de estas apps */
+                /* En móvil también respetamos la transparencia */
+                background-color: rgba(0, 0, 0, 0.4); 
                 border: none;
                 border-radius: 0;
-                padding: 0 5% 0; /* Padding lateral */
+                padding: 0 5% 0;
                 display: flex;
                 flex-direction: column;
                 justify-content: center;
             }
             .logo {
-                position: absolute;
                 top: 20px;
                 left: 20px;
                 font-size: 1.5rem;
-            }
-            /* En móvil mantenemos el fondo transparente de la caja para ver el logo global si se desea,
-               o lo hacemos sólido. Estilo Netflix móvil suele ser negro sólido. */
-            .login-box {
-                background-color: rgba(0,0,0,0.85); /* Casi sólido */
             }
         }
     </style>
 </head>
 <body>
 
-    <!-- Logo Corporativo -->
     <div class="logo">CORPORATIVOS ENTALPIA</div>
 
     <div class="login-box" id="loginBox">
         <h1>Inicia Sesión</h1>
         
-        <!-- Mensaje de Error -->
         <div id="errorMsg" class="error-msg">
             <b>Contraseña incorrecta.</b> <a href="#">Restablecer contraseña</a>
         </div>
 
         <form id="loginForm">
             <div class="input-wrapper">
-                <!-- Placeholder vacío + espacio para activar selector CSS :placeholder-shown -->
-                <input type="text" id="username" class="input-field" placeholder=" " autocomplete="off" required>
-                <label for="username" class="input-label">Email o usuario</label>
+                <!-- Inputs limpios con placeholder tradicional -->
+                <input type="text" id="username" class="input-field" placeholder="Usuario" autocomplete="off" required>
             </div>
             
             <div class="input-wrapper">
-                <input type="password" id="password" class="input-field" placeholder=" " required>
-                <label for="password" class="input-label">Contraseña</label>
+                <input type="password" id="password" class="input-field" placeholder="Contraseña" required>
             </div>
 
             <button type="submit" class="btn-login">Iniciar Sesión</button>
@@ -304,7 +268,6 @@
     </div>
 
     <script>
-        // --- BASE DE DATOS DE ACCESOS ---
         const accessControl = {
             'comserviciosayg@gmail.com': {
                 pass: '2505',
@@ -326,28 +289,21 @@
 
         form.addEventListener('submit', function(e) {
             e.preventDefault();
-
-            // Normalización de entrada
             const user = document.getElementById('username').value.trim().toLowerCase();
             const pass = document.getElementById('password').value;
 
-            // Validación
             if (accessControl[user] && accessControl[user].pass === pass) {
-                // Redirección exitosa
                 window.location.href = accessControl[user].url;
             } else {
-                // Manejo de error visual
                 mostrarError();
             }
         });
 
         function mostrarError() {
             errorMsg.style.display = 'block';
-            loginBox.classList.remove('shake-animation'); // Reiniciar clase para permitir repetición
-            void loginBox.offsetWidth; // Forzar reflow del DOM
+            loginBox.classList.remove('shake-animation');
+            void loginBox.offsetWidth;
             loginBox.classList.add('shake-animation');
-            
-            // Limpiar password para reintento
             document.getElementById('password').value = '';
         }
     </script>
