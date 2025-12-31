@@ -34,6 +34,7 @@
             /* Evita selección de texto accidental al hacer scroll táctil */
             -webkit-user-select: none;
             user-select: none;
+            padding-bottom: 50px;
         }
 
         /* Permitir selección en inputs */
@@ -327,20 +328,19 @@
             }
         }
 
-        /* --- Features Split Section --- */
-        .feature-split {
+        /* --- Header Perfiles (Intro) --- */
+        .feature-split-intro {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 50px 5%;
-            border-bottom: 8px solid #222;
+            padding: 50px 5% 20px 5%;
             flex-wrap: wrap;
+            text-align: center;
         }
-
-        .feature-text {
-            flex: 1;
-            min-width: 300px;
-            padding-right: 20px;
+        
+        .feature-split-intro .feature-text {
+            width: 100%;
+            text-align: center;
             margin-bottom: 20px;
         }
 
@@ -352,24 +352,114 @@
         .feature-text p {
             font-size: 1.2rem;
             line-height: 1.5;
+            color: var(--text-gray);
         }
 
-        .feature-visual {
-            flex: 1;
-            min-width: 300px;
-            width: 100%;
+        /* --- CAROUSEL STYLES (Nueva Sección) --- */
+        .carousel-container {
             position: relative;
-        }
-        
-        .tech-box {
-            background: #000;
-            border: 2px solid #333;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 0 20px rgba(0, 113, 235, 0.2);
+            width: 100%;
+            height: 500px; /* Altura suficiente para tarjeta + texto */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px; /* Clave para el efecto 3D */
+            overflow: hidden;
+            margin-bottom: 40px;
+            padding: 20px 0;
+            background: linear-gradient(to bottom, var(--netflix-black), #0a0a0a);
         }
 
-        .tech-box div { font-size: 0.9rem; } /* Ajuste texto código */
+        .carousel-track {
+            position: relative;
+            width: 300px; /* Ancho base de la tarjeta central */
+            height: 450px;
+            transform-style: preserve-3d;
+        }
+
+        .carousel-item {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: var(--netflix-dark-gray);
+            border: 1px solid #333;
+            border-radius: 12px;
+            transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.8s, filter 0.8s;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            /* Centrado inicial */
+            top: 0;
+            left: 0;
+        }
+
+        /* Imagen en el carrusel */
+        .carousel-item img {
+            width: 100%;
+            height: 55%; /* La imagen ocupa la parte superior */
+            object-fit: cover;
+            border-bottom: 2px solid var(--brand-blue);
+        }
+
+        /* Texto en el carrusel */
+        .carousel-content {
+            padding: 20px;
+            text-align: left;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            background: linear-gradient(to bottom, #1f1f1f, #141414);
+        }
+
+        .carousel-content h3 {
+            color: var(--brand-blue);
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .carousel-content p {
+            font-size: 0.95rem;
+            color: #d1d1d1;
+            line-height: 1.4;
+        }
+
+        /* --- Estados del Carrusel --- */
+        
+        /* Central (Activa) */
+        .carousel-item.active {
+            transform: translate3d(0, 0, 0) scale(1.1);
+            opacity: 1;
+            z-index: 10;
+            filter: brightness(1.1);
+            border-color: var(--brand-blue);
+            box-shadow: 0 0 25px rgba(0, 113, 235, 0.3);
+        }
+
+        /* Siguiente (Derecha) */
+        .carousel-item.next {
+            transform: translate3d(110%, 0, -100px) scale(0.85) rotateY(-15deg);
+            opacity: 0.4;
+            z-index: 5;
+            filter: grayscale(80%) brightness(0.6);
+        }
+
+        /* Anterior (Izquierda) */
+        .carousel-item.prev {
+            transform: translate3d(-110%, 0, -100px) scale(0.85) rotateY(15deg);
+            opacity: 0.4;
+            z-index: 5;
+            filter: grayscale(80%) brightness(0.6);
+        }
+
+        /* Ocultos (Detrás) */
+        .carousel-item.hidden {
+            transform: translate3d(0, 0, -200px) scale(0.5);
+            opacity: 0;
+            z-index: 0;
+        }
 
         /* --- Footer --- */
         footer {
@@ -419,20 +509,18 @@
             .hero h1 { font-size: 2.5rem; }
             .hero p { font-size: 1.2rem; }
             
-            .feature-split { 
-                flex-direction: column; 
-                text-align: center; 
-                padding: 40px 5%;
+            /* Ajuste del carrusel para móviles */
+            .carousel-track {
+                width: 80%; /* Más ancho en móvil relativo a pantalla */
+                max-width: 280px; 
             }
             
-            .feature-text { 
-                padding: 0; 
-                margin-bottom: 30px; 
+            .carousel-item.next {
+                transform: translate3d(60%, 0, -150px) scale(0.8) rotateY(-10deg);
             }
             
-            /* En móvil, revertimos el orden visual para que el texto siempre quede arriba de la imagen */
-            .feature-split[style*="row-reverse"] {
-                flex-direction: column !important;
+            .carousel-item.prev {
+                transform: translate3d(-60%, 0, -150px) scale(0.8) rotateY(10deg);
             }
         }
 
@@ -488,10 +576,6 @@
                 height: 200px; /* Cards grandes estilo feed */
             }
 
-            .feature-text h2 {
-                font-size: 1.8rem;
-            }
-
             .footer-links {
                 grid-template-columns: 1fr; /* 1 sola columna en footer */
                 text-align: center;
@@ -500,6 +584,14 @@
             .footer-links a {
                 padding: 10px 0;
                 border-bottom: 1px solid #333;
+            }
+            
+            /* Carrusel en móvil vertical */
+            .carousel-container {
+                height: 480px;
+            }
+            .carousel-content p {
+                font-size: 0.85rem; /* Texto más pequeño */
             }
         }
     </style>
@@ -608,70 +700,65 @@
         </div>
     </div>
 
-    <div class="feature-split">
+    <!-- SECCIÓN DE PERFILES MODIFICADA (Carrusel) -->
+    
+    <div class="feature-split-intro">
         <div class="feature-text">
             <h2>PERFILES.</h2>
-            <p>Profesional, Academico docente, Academico formando, Corporativo, Comercial</p>
+            <p>Descubre el enfoque ideal para ti: Profesional, Docente, Académico, Corporativo y Comercial.</p>
         </div>
-        <div class="feature-visual">
-            <div class="tech-box">
-                <div class="code-line"></div>
-                <div class="code-line blue"></div>
-                <div class="code-line short"></div>
-                <div class="code-line"></div>
-                <div style="color: var(--brand-blue); font-family: monospace; margin-top: 10px;">> Crear Perfil Entalpia</div>
+    </div>
+
+    <!-- Contenedor del Carrusel -->
+    <div class="carousel-container">
+        <div class="carousel-track" id="profiles-track">
+            <!-- Los items serán renderizados aquí por JS o inyectados directamente -->
+            
+            <!-- Item 1: FORMANDO -->
+            <div class="carousel-item active" data-index="0">
+                <img src="../ImagenesPlataformas/ImgEstudiantes.png" alt="Formando" onerror="this.onerror=null;this.src='https://placehold.co/600x400/141414/white?text=Formando';">
+                <div class="carousel-content">
+                    <h3>FORMANDO</h3>
+                    <p>En la educación, la formación es lo que una persona va obteniendo a lo largo de sus estudios y su vida. Material de estudio y desarrollo de actividades con miras al "Concepto de aptitud".</p>
+                </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Se mantuvo style="flex-direction: row-reverse;" pero el CSS ahora lo sobrescribe en móvil para mantener coherencia -->
-    <div class="feature-split" style="flex-direction: row-reverse;">
-        <div class="feature-text">
-            <h2>FORMANDO.</h2>
-            <p>En la educación, la formación es lo que una persona va obteniendo a lo largo de sus estudios y su vida, es decir, una persona llega a ser un excelente profesional en consecuencia de la buena formación que obtuvo. // Material de estudio y desarrollo de actividades con miras al "Concepto de aptitud".</p>
-        </div>
-        <div class="feature-visual">
-            <img src="../ImagenesPlataformas/ImgEstudiantes.png" style="width: 100%; border-radius: 10px; border: 2px solid #333;" alt="Tablet Engineering" onerror="this.onerror=null;this.src='https://placehold.co/600x400/141414/white?text=Estudiantes';">
-        </div>
-    </div>
+            <!-- Item 2: PROFESIONAL -->
+            <div class="carousel-item next" data-index="1">
+                <img src="../ImagenesPlataformas/img_perfilprofecionale_interfazopcioninicio.png" alt="Profesional" onerror="this.onerror=null;this.src='https://placehold.co/600x400/141414/white?text=Profesional';">
+                <div class="carousel-content">
+                    <h3>PROFESIONAL</h3>
+                    <p>Los profesionales se rigen por códigos de ética y profesan un compromiso con la competencia, la integridad y el bien común. Responsables ante quienes sirven y ante la sociedad.</p>
+                </div>
+            </div>
 
-    <div class="feature-split" style="flex-direction: row-reverse;">
-        <div class="feature-text">
-            <h2>PROFESIONAL.</h2>
-            <p>Los profesionales se rigen por códigos de ética y profesan un compromiso con la competencia, la integridad y la moralidad, el altruismo y la promoción del bien común en su ámbito de especialización. Los profesionales son responsables ante quienes sirven y ante la sociedad."</p>
-        </div>
-        <div class="feature-visual">
-            <img src="../ImagenesPlataformas/img_perfilprofecionale_interfazopcioninicio.png" style="width: 100%; border-radius: 10px; border: 2px solid #333;" alt="Tablet Engineering" onerror="this.onerror=null;this.src='https://placehold.co/600x400/141414/white?text=Estudiantes';">
-        </div>
-    </div>
+            <!-- Item 3: DOCENTE -->
+            <div class="carousel-item hidden" data-index="2">
+                <img src="../ImagenesPlataformas/img_perfildocente_interfazopcioninicio.png" alt="Docente" onerror="this.onerror=null;this.src='https://placehold.co/600x400/141414/white?text=Docente';">
+                <div class="carousel-content">
+                    <h3>DOCENTE</h3>
+                    <p>Un docente es un profesional dedicado a la enseñanza y facilitación del aprendizaje, cuya función principal es transmitir conocimientos y habilidades a estudiantes en cualquier nivel.</p>
+                </div>
+            </div>
 
-<div class="feature-split" style="flex-direction: row-reverse;">
-        <div class="feature-text">
-            <h2>DOCENTE.</h2>
-            <p>Un docente es un profesional dedicado a la enseñanza y facilitación del aprendizaje, cuya función principal es transmitir conocimientos y habilidades a estudiantes en cualquier nivel educativo."</p>
-        </div>
-        <div class="feature-visual">
-            <img src="../ImagenesPlataformas/img_perfildocente_interfazopcioninicio.png" style="width: 100%; border-radius: 10px; border: 2px solid #333;" alt="Tablet Engineering" onerror="this.onerror=null;this.src='https://placehold.co/600x400/141414/white?text=Estudiantes';">
-        </div>
-    </div>
+            <!-- Item 4: CORPORATIVO -->
+            <div class="carousel-item hidden" data-index="3">
+                <img src="../ImagenesPlataformas/img_perfilcorporativo_interfazopcioninicio.png" alt="Corporativo" onerror="this.onerror=null;this.src='https://placehold.co/600x400/141414/white?text=Corporativo';">
+                <div class="carousel-content">
+                    <h3>CORPORATIVO</h3>
+                    <p>Membresía donde una empresa paga una tarifa para que sus empleados accedan a beneficios exclusivos, recursos de desarrollo y eventos de networking.</p>
+                </div>
+            </div>
 
-    <div class="feature-split" style="flex-direction: row-reverse;">
-        <div class="feature-text">
-            <h2>CORPORATIVO.</h2>
-            <p>Una membresía corporativa es un acuerdo donde una empresa paga una tarifa, ya sea mensual o anual, para que sus empleados o la organización en su conjunto accedan a beneficios exclusivos, recursos de desarrollo, eventos de networking."</p>
-        </div>
-        <div class="feature-visual">
-            <img src="../ImagenesPlataformas/img_perfilcorporativo_interfazopcioninicio.png" style="width: 100%; border-radius: 10px; border: 2px solid #333;" alt="Tablet Engineering" onerror="this.onerror=null;this.src='https://placehold.co/600x400/141414/white?text=Estudiantes';">
-        </div>
-    </div>
+            <!-- Item 5: COMERCIAL -->
+            <div class="carousel-item prev" data-index="4">
+                <img src="../ImagenesPlataformas/img_perfilcomercial_interfazopcioninicio.png" alt="Comercial" onerror="this.onerror=null;this.src='https://placehold.co/600x400/141414/white?text=Comercial';">
+                <div class="carousel-content">
+                    <h3>COMERCIAL</h3>
+                    <p>Modelo de negocio basado en un acuerdo contractual donde el cliente paga una tarifa recurrente para acceder de forma continua a beneficios exclusivos y servicios.</p>
+                </div>
+            </div>
 
-    <div class="feature-split" style="flex-direction: row-reverse;">
-        <div class="feature-text">
-            <h2>COMERCIAL.</h2>
-            <p>Una membresía comercial es un modelo de negocio basado en un acuerdo contractual donde el cliente paga una tarifa recurrente (mensual, anual) para acceder de forma continua a beneficios exclusivos, productos, servicios, descuentos o contenidos especiales."</p>
-        </div>
-        <div class="feature-visual">
-            <img src="../ImagenesPlataformas/img_perfilcomercial_interfazopcioninicio.png" style="width: 100%; border-radius: 10px; border: 2px solid #333;" alt="Tablet Engineering" onerror="this.onerror=null;this.src='https://placehold.co/600x400/141414/white?text=Estudiantes';">
         </div>
     </div>
     
@@ -691,7 +778,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             
-            // --- Cambio de color del header al hacer scroll (Efecto App) ---
+            // --- Cambio de color del header al hacer scroll ---
             const header = document.getElementById('main-header');
             window.addEventListener('scroll', () => {
                 if (window.scrollY > 50) {
@@ -706,26 +793,63 @@
             const video = document.getElementById('bg-video');
 
             if (heroSection && video) {
-                // Al tocar el banner, reiniciar el video
                 heroSection.addEventListener('click', (e) => {
-                    // Evitar que el video se reinicie si se está llenando el formulario
-                    if (e.target.closest('.email-form')) {
-                        return;
-                    }
-
-                    // Si el video terminó o está pausado, reproducir desde el inicio
+                    if (e.target.closest('.email-form')) return;
                     if (video.paused || video.ended) {
                         video.currentTime = 0;
                         video.play().catch(err => console.log("Error al reproducir video:", err));
                     }
                 });
             }
+
+            // --- Lógica del Carrusel 3D Automático ---
+            const items = document.querySelectorAll('.carousel-item');
+            const totalItems = items.length;
+            let currentIndex = 0;
+
+            function updateCarousel() {
+                items.forEach((item, index) => {
+                    // Limpiar clases
+                    item.className = 'carousel-item';
+
+                    // Calcular distancia relativa circular
+                    // (0 = active, 1 = next, -1 = prev, etc)
+                    let diff = index - currentIndex;
+                    
+                    // Ajuste para loop infinito visual
+                    if (diff > totalItems / 2) diff -= totalItems;
+                    if (diff < -totalItems / 2) diff += totalItems;
+
+                    if (diff === 0) {
+                        item.classList.add('active');
+                    } else if (diff === 1) {
+                        item.classList.add('next');
+                    } else if (diff === -1) {
+                        item.classList.add('prev');
+                    } else {
+                        item.classList.add('hidden');
+                    }
+                });
+            }
+
+            // Rotación automática
+            function rotateCarousel() {
+                currentIndex = (currentIndex + 1) % totalItems;
+                updateCarousel();
+            }
+
+            // Iniciar intervalo (3 segundos)
+            let autoRotate = setInterval(rotateCarousel, 3500);
+
+            // Opcional: Pausar al pasar el mouse por encima
+            const container = document.querySelector('.carousel-container');
+            container.addEventListener('mouseenter', () => clearInterval(autoRotate));
+            container.addEventListener('mouseleave', () => autoRotate = setInterval(rotateCarousel, 3500));
+
+            // Iniciar estado
+            updateCarousel();
         });
     </script>
 
 </body>
 </html>
-
-
-
-
