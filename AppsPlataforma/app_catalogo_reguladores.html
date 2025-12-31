@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ingeniería de Gas - Selector Pro</title>
+    <!-- Iconos FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* --- TEMA "BLUE-FLIX ENGINEERING" --- */
+        :root {
+            --bg-body: #0a0a0a;
+            --bg-nav: rgba(10, 10, 10, 0.95);
+            --bg-card: #141414;
+            --bg-input: #222;
+            --primary-blue: #0071eb; /* Azul Ingenieria */
+            --accent-cyan: #00d2ff;
+            --text-white: #f5f5f5;
+            --text-gray: #b3b3b3;
+            --border-color: #333;
+            --radius: 4px;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-white);
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* --- NAVEGACIÓN --- */
+        nav {
+            background-color: var(--bg-nav);
+            padding: 15px 4%;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+            backdrop-filter: blur(5px);
+        }
+
+        .brand {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary-blue);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* --- HERO / BANNER PATROCINADORES --- */
+        .hero-section {
+            padding: 60px 4%;
+            /* Imagen inicial por defecto, luego rota con JS */
+            background-image: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, var(--bg-body) 100%), 
+                              url('fotografias_catalogo_reguladores/banner_default.jpg');
+            background-size: cover;
+            background-position: center;
+            min-height: 45vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            transition: background-image 1s ease-in-out;
+        }
+
+        /* Fallback visual si la imagen local falla en el preview */
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to bottom, rgba(0,113,235,0.1), rgba(0,0,0,0.9));
+            z-index: 0;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        .sponsor-tag {
+            background-color: rgba(0, 113, 235, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+
+        .hero-title {
+            font-size: 2.8rem;
+            margin: 0 0 10px 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+
+        /* --- FORMULARIO DE CÁLCULO --- */
+        .calculator-box {
+            background-color: rgba(20, 20, 20, 0.85);
+            padding: 30px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            margin-top: 20px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            align-items: end;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            color: var(--text-gray);
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .input-wrapper {
+            display: flex;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            background-color: var(--bg-input);
+            overflow: hidden;
+            transition: border-color 0.3s;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: var(--primary-blue);
+        }
+
+        .input-wrapper input {
+            flex: 2;
+            background: transparent;
+            border: none;
+            color: white;
+            padding: 12px 15px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .input-wrapper select {
+            flex: 1;
+            background-color: #333;
+            border: none;
+            border-left: 1px solid var(--border-color);
+            color: white;
+            padding: 0 10px;
+            font-size: 0.9rem;
+            outline: none;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .input-wrapper select:hover {
+            background-color: #444;
+        }
+
+        .btn-search {
+            background-color: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 0 30px;
+            height: 46px; /* Altura igual a los inputs */
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            width: 100%;
+        }
+
+        .btn-search:hover {
+            background-color: #005bb5;
+            box-shadow: 0 0 15px rgba(0, 113, 235, 0.4);
+        }
+
+        /* --- BITÁCORA DE CONVERSIÓN --- */
+        .conversion-log {
+            background-color: #0f1216;
+            border: 1px solid #1f2937;
+            border-left: 4px solid var(--accent-cyan);
+            margin-top: 25px;
+            padding: 15px;
+            border-radius: var(--radius);
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.85rem;
+            color: #a3a3a3;
+            display: none; /* Oculto hasta calcular */
+        }
+        
+        .log-title {
+            color: var(--accent-cyan);
+            font-weight: bold;
+            margin-bottom: 8px;
+            display: block;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+        }
+
+        .log-item {
+            margin-bottom: 4px;
+        }
+
+        .log-arrow {
+            color: var(--primary-blue);
+            margin: 0 5px;
+        }
+
+        /* --- GRID DE RESULTADOS --- */
+        .results-section {
+            padding: 40px 4%;
+        }
+
+        .section-header {
+            color: white;
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .regulator-card {
+            background-color: var(--bg-card);
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid #2a2a2a;
+            transition: all 0.3s ease;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .regulator-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-blue);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+        }
+
+        .card-img-box {
+            height: 180px;
+            background-color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            border-bottom: 1px solid #2a2a2a;
+            position: relative;
+        }
+
+        .card-img-box img {
+            max-height: 100%;
+            max-width: 100%;
+            object-fit: contain;
+        }
+
+        .match-tag {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--primary-blue);
+            color: white;
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            font-weight: bold;
+            border-radius: 2px;
+        }
+
+        .card-content {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-title {
+            margin: 0 0 5px 0;
+            font-size: 1.2rem;
+            color: var(--text-white);
+        }
+
+        .card-ref {
+            color: var(--primary-blue);
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .specs-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: var(--text-gray);
+            margin-bottom: 15px;
+        }
+
+        .spec-row {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #222;
+            padding-bottom: 4px;
+        }
+
+        .spec-row span:last-child {
+            color: white;
+            font-weight: 500;
+        }
+
+        .desc-text {
+            font-size: 0.8rem;
+            font-style: italic;
+            color: #666;
+            margin-top: auto;
+        }
+
+        /* --- EMPTY STATE --- */
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px;
+            color: var(--text-gray);
+            background: #111;
+            border-radius: var(--radius);
+            border: 1px dashed #333;
+        }
+
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="brand">
+            <i class="fas fa-network-wired"></i> Gas•Tech Solutions
+        </div>
+        <div style="font-size: 0.85rem; color: #888;">
+            <i class="fas fa-user-circle"></i> Zona Ingenieros
+        </div>
+    </nav>
+
+    <!-- Header con Banner Rotativo -->
+    <header class="hero-section" id="heroBanner">
+        <div class="hero-content">
+            <div class="sponsor-tag">Espacio Publicitario Patrocinado</div>
+            <h1 class="hero-title">Selector de Reguladores</h1>
+            <p style="color: #ccc; font-size: 1.1rem; max-width: 600px;">
+                Herramienta de selección técnica. Ingrese sus datos en cualquier unidad y el sistema normalizará y encontrará el equipo adecuado.
+            </p>
+
+            <!-- Calculadora -->
+            <div class="calculator-box">
+                <form onsubmit="realizarCalculo(event)">
+                    <div class="form-grid">
+                        
+                        <!-- P. Entrada -->
+                        <div class="input-group">
+                            <label>Presión Entrada</label>
+                            <div class="input-wrapper">
+                                <input type="number" id="pIn" step="0.01" required placeholder="0.00">
+                                <select id="pInUnit">
+                                    <option value="bar">bar</option>
+                                    <option value="psi">psi</option>
+                                    <option value="kPa">kPa</option>
+                                    <option value="kgcm2">kg/cm²</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- P. Salida -->
+                        <div class="input-group">
+                            <label>Presión Salida</label>
+                            <div class="input-wrapper">
+                                <input type="number" id="pOut" step="0.01" required placeholder="0.00">
+                                <select id="pOutUnit">
+                                    <option value="mbar">mbar</option>
+                                    <option value="bar">bar</option>
+                                    <option value="psi">psi</option>
+                                    <option value="kPa">kPa</option>
+                                    <option value="wc">inWC</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Caudal -->
+                        <div class="input-group">
+                            <label>Caudal Requerido</label>
+                            <div class="input-wrapper">
+                                <input type="number" id="flow" step="0.1" required placeholder="0.00">
+                                <select id="flowUnit">
+                                    <option value="m3h">m³/h (std)</option>
+                                    <option value="scfh">SCFH</option>
+                                    <option value="btuh">BTU/h</option>
+                                    <option value="kw">kW (P.C.S)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-search">
+                            <i class="fas fa-search"></i> Filtrar
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Bitácora de Conversión (Log) -->
+                <div id="conversionLog" class="conversion-log">
+                    <span class="log-title"><i class="fas fa-terminal"></i> PROCESO DE NORMALIZACIÓN DE UNIDADES</span>
+                    <div id="logContent"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Resultados -->
+    <section class="results-section">
+        <div class="section-header">
+            <i class="fas fa-check-circle" style="color: var(--primary-blue);"></i>
+            Resultados Disponibles
+        </div>
+        
+        <div class="cards-grid" id="resultsGrid">
+            <!-- Estado Inicial -->
+            <div class="empty-state">
+                <i class="fas fa-calculator" style="font-size: 3rem; margin-bottom: 20px; color: #333;"></i>
+                <p>Ingrese los parámetros técnicos para iniciar la búsqueda.</p>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        /* -----------------------------------------------------
+           1. LOGICA DEL BANNER (PATROCINADORES)
+        ----------------------------------------------------- */
+        // Lista de imágenes alojadas en la carpeta solicitada
+        // NOTA: Asegúrate de que existan estas imágenes o el sistema usará el fallback.
+        const banners = [
+            'fotografias_catalogo_reguladores/banner_sponsor_1.jpg',
+            'fotografias_catalogo_reguladores/banner_sponsor_2.jpg',
+            'fotografias_catalogo_reguladores/banner_sponsor_3.jpg'
+        ];
+        
+        // Imágenes de fallback (online) por si las locales no existen en esta demo
+        const fallbacks = [
+            'https://images.unsplash.com/photo-1581093450021-4a7360e9a6b5?q=80&w=2000&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?q=80&w=2000&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1531297461136-82lw82a2b0a?q=80&w=2000&auto=format&fit=crop'
+        ];
+
+        let currentBanner = 0;
+        const heroSection = document.getElementById('heroBanner');
+
+        function rotarBanner() {
+            currentBanner = (currentBanner + 1) % banners.length;
+            
+            // Intento usar la ruta local, si falla (no podemos detectar fallo en CSS background facilmente sin JS extra),
+            // aquí simplemente configuramos la ruta.
+            // Para asegurar que se vea algo en esta demo, usaré un array mixto o un truco.
+            // *Para producción*: Usar solo la ruta local.
+            
+            // Simulación visual para el código:
+            // Intentamos cargar la imagen local, si no carga, asumimos fallback.
+            // Como no puedo validar archivos locales desde el navegador fácilmente sin <img onerror>,
+            // Alternaré usando las URLs online para que veas el efecto, pero el código apunta a tu carpeta.
+            
+            // CÓDIGO FINAL (Ajustado para que funcione en preview usando online como fallback):
+            const img = new Image();
+            img.src = banners[currentBanner];
+            
+            img.onload = () => {
+                heroSection.style.backgroundImage = `linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, var(--bg-body) 100%), url('${banners[currentBanner]}')`;
+            };
+            img.onerror = () => {
+                heroSection.style.backgroundImage = `linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, var(--bg-body) 100%), url('${fallbacks[currentBanner]}')`;
+            };
+        }
+
+        // Rotar cada 5 segundos
+        setInterval(rotarBanner, 5000);
+
+        /* -----------------------------------------------------
+           2. BASE DE DATOS (Normalizada)
+        ----------------------------------------------------- */
+        const dbReguladores = [
+            { ref: "610324", modelo: "ERG-H6", minIn: 0.3, maxIn: 20, outMbar: 50, cap: 1050, con: '2" ANSI 150', seg: "OPSO > 100mbar", img: "610324.jpg" },
+            { ref: "610325", modelo: "ERG-H6", minIn: 2, maxIn: 20, outMbar: 1400, cap: 1900, con: '2" ANSI 150', seg: "OPSO > 2 bar", img: "610325.jpg" },
+            { ref: "610305", modelo: "ERG-H7", minIn: 1, maxIn: 20, outMbar: 300, cap: 1300, con: '2" ANSI 150', seg: "OPSO > 2 bar", img: "610305.jpg" },
+            { ref: "610288", modelo: "ERG-H", minIn: 1, maxIn: 5, outMbar: 340, cap: 315, con: '2" NPT', seg: "Alivio < 1bar", img: "610288.jpg" },
+            { ref: "610265", modelo: "H1", minIn: 2, maxIn: 6.9, outMbar: 1400, cap: 305, con: '1" NPT', seg: "OPSO > 2 bar", img: "610265.jpg" },
+            { ref: "610239", modelo: "H5", minIn: 1, maxIn: 6, outMbar: 340, cap: 140, con: '1" NPT', seg: "UPSO < 700", img: "610239.jpg" }
+        ];
+
+        /* -----------------------------------------------------
+           3. LÓGICA DE CONVERSIÓN Y BÚSQUEDA
+        ----------------------------------------------------- */
+        function realizarCalculo(e) {
+            e.preventDefault();
+
+            // Inputs del DOM
+            const pInVal = parseFloat(document.getElementById('pIn').value);
+            const pInUnit = document.getElementById('pInUnit').value;
+            
+            const pOutVal = parseFloat(document.getElementById('pOut').value);
+            const pOutUnit = document.getElementById('pOutUnit').value;
+
+            const flowVal = parseFloat(document.getElementById('flow').value);
+            const flowUnit = document.getElementById('flowUnit').value;
+
+            // --- FASE 1: CONVERSIÓN A UNIDADES ESTÁNDAR (BAR, MBAR, M3/H) ---
+            
+            // A. Presión Entrada -> BAR
+            let pInBar = 0;
+            let factorIn = 1;
+            if (pInUnit === 'bar') { pInBar = pInVal; factorIn = 1; }
+            else if (pInUnit === 'psi') { pInBar = pInVal * 0.0689476; factorIn = 0.0689476; }
+            else if (pInUnit === 'kPa') { pInBar = pInVal / 100; factorIn = 0.01; }
+            else if (pInUnit === 'kgcm2') { pInBar = pInVal * 0.980665; factorIn = 0.980665; }
+
+            // B. Presión Salida -> MBAR
+            let pOutMbar = 0;
+            let factorOut = 1;
+            if (pOutUnit === 'mbar') { pOutMbar = pOutVal; }
+            else if (pOutUnit === 'bar') { pOutMbar = pOutVal * 1000; factorOut = 1000; }
+            else if (pOutUnit === 'psi') { pOutMbar = pOutVal * 68.9476; factorOut = 68.9476; }
+            else if (pOutUnit === 'kPa') { pOutMbar = pOutVal * 10; factorOut = 10; }
+            else if (pOutUnit === 'wc') { pOutMbar = pOutVal * 2.49089; factorOut = 2.49089; }
+
+            // C. Caudal -> M3/H (Gas Natural aprox)
+            // Nota: BTU y kW dependen del poder calorífico. Asumiremos GN estándar (~9300 kcal/m3 ó 37.2 MJ/m3 ó ~10.3 kWh/m3)
+            // 1 m3 ≈ 35315 BTU
+            let flowM3h = 0;
+            let flowMsg = "";
+            if (flowUnit === 'm3h') { flowM3h = flowVal; flowMsg = "Directo"; }
+            else if (flowUnit === 'scfh') { flowM3h = flowVal * 0.0283168; flowMsg = "* 0.0283"; }
+            else if (flowUnit === 'btuh') { flowM3h = flowVal / 35315; flowMsg = "/ 35315 (PC GN)"; }
+            else if (flowUnit === 'kw') { flowM3h = flowVal / 10.3; flowMsg = "/ 10.3 kWh/m³"; }
+
+            // --- FASE 2: MOSTRAR BITÁCORA ---
+            const logBox = document.getElementById('conversionLog');
+            const logContent = document.getElementById('logContent');
+            logBox.style.display = 'block';
+            
+            logContent.innerHTML = `
+                <div class="log-item">
+                    <strong>P. Entrada:</strong> ${pInVal} ${pInUnit} 
+                    <span class="log-arrow">→</span> 
+                    <span style="color:#fff">${pInBar.toFixed(3)} bar</span> 
+                    <small>(Factor: ${factorIn.toFixed(4)})</small>
+                </div>
+                <div class="log-item">
+                    <strong>P. Salida:</strong> ${pOutVal} ${pOutUnit} 
+                    <span class="log-arrow">→</span> 
+                    <span style="color:#fff">${pOutMbar.toFixed(1)} mbar</span>
+                    <small>(Factor: ${factorOut.toFixed(2)})</small>
+                </div>
+                <div class="log-item">
+                    <strong>Caudal:</strong> ${flowVal} ${flowUnit} 
+                    <span class="log-arrow">→</span> 
+                    <span style="color:#fff">${flowM3h.toFixed(1)} m³/h</span>
+                    <small>(${flowMsg})</small>
+                </div>
+            `;
+
+            // --- FASE 3: FILTRADO ---
+            const resultados = dbReguladores.filter(reg => {
+                // Rango Entrada (+/- 10% tolerancia)
+                const checkIn = (pInBar >= reg.minIn * 0.9) && (pInBar <= reg.maxIn * 1.1);
+                
+                // Set point salida (rango ajustable +/- 30% típicamente, aquí simplificado)
+                // Buscamos si el regulador puede dar esa presión
+                const checkOut = (pOutMbar >= reg.outMbar * 0.5) && (pOutMbar <= reg.outMbar * 2.0);
+                
+                // Capacidad (Regulador debe tener más capacidad que la requerida)
+                const checkFlow = reg.cap >= flowM3h;
+
+                return checkIn && checkOut && checkFlow;
+            });
+
+            // Ordenar: El que tenga la capacidad más cercana a la requerida (el más eficiente) va primero
+            resultados.sort((a, b) => a.cap - b.cap);
+
+            renderCards(resultados);
+        }
+
+        function renderCards(items) {
+            const grid = document.getElementById('resultsGrid');
+            grid.innerHTML = '';
+
+            if(items.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-times-circle" style="color: #d32f2f; font-size: 3rem; margin-bottom:15px;"></i>
+                        <h3>Sin coincidencias exactas</h3>
+                        <p>No se encontró un regulador estándar para las condiciones normalizadas.</p>
+                        <p style="color: #666; font-size:0.9rem;">Intente reducir el caudal o verificar presiones.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            items.forEach(item => {
+                // Construir ruta imagen
+                const imgPath = `fotografias_catalogo_reguladores/${item.img}`;
+                // Fallback online por si no está la carpeta local
+                const fallbackImg = `https://via.placeholder.com/400x300/141414/0071eb?text=${item.modelo}`;
+
+                const card = document.createElement('div');
+                card.className = 'regulator-card';
+                card.innerHTML = `
+                    <div class="card-img-box">
+                        <div class="match-tag">APROBADO</div>
+                        <img src="${imgPath}" onerror="this.src='${fallbackImg}'" alt="${item.modelo}">
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">${item.modelo}</h3>
+                        <span class="card-ref">REF: ${item.ref}</span>
+                        
+                        <div class="specs-grid">
+                            <div class="spec-row">
+                                <span>Capacidad:</span>
+                                <span>${item.cap} m³/h</span>
+                            </div>
+                            <div class="spec-row">
+                                <span>P. Entrada:</span>
+                                <span>${item.minIn} - ${item.maxIn} bar</span>
+                            </div>
+                            <div class="spec-row">
+                                <span>P. Salida Nom:</span>
+                                <span>${item.outMbar} mbar</span>
+                            </div>
+                            <div class="spec-row">
+                                <span>Conexión:</span>
+                                <span>${item.con}</span>
+                            </div>
+                        </div>
+
+                        <div class="desc-text">
+                            <i class="fas fa-shield-alt"></i> ${item.seg}
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>
