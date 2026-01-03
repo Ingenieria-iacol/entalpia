@@ -34,6 +34,21 @@
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
+            position: relative; /* Para posicionar la marca de agua respecto al body */
+        }
+
+        /* --- MARCA DE AGUA --- */
+        .watermark {
+            position: fixed;
+            bottom: 15px;
+            right: 20px;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.3);
+            pointer-events: none; /* Para que no interfiera con clicks */
+            z-index: 9999;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
         }
 
         /* --- CONTENEDOR TIPO MODAL NETFLIX --- */
@@ -46,6 +61,14 @@
             box-shadow: 0 0 50px rgba(0,0,0,0.8);
             animation: fadeInUp 0.5s ease-out forwards;
             position: relative;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        /* Clase para ocultar el modal al cerrar */
+        .modal-container.closed {
+            opacity: 0;
+            transform: scale(0.9);
+            pointer-events: none;
         }
 
         @keyframes fadeInUp {
@@ -58,8 +81,8 @@
             position: absolute;
             top: 15px;
             right: 15px;
-            background: #181818;
-            border: none;
+            background: rgba(24, 24, 24, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             color: white;
             border-radius: 50%;
             width: 36px;
@@ -69,18 +92,26 @@
             justify-content: center;
             cursor: pointer;
             z-index: 10;
-            transition: background 0.2s;
+            transition: all 0.2s;
+            backdrop-filter: blur(4px);
         }
-        .close-btn:hover { background: #333; }
+        .close-btn:hover { 
+            background: #fff; 
+            color: #000;
+            transform: rotate(90deg);
+        }
 
-        /* --- CABECERA (HERO) --- */
+        /* --- CABECERA (HERO) - BANNER DINÁMICO --- */
         .hero-section {
             position: relative;
             height: 400px;
             width: 100%;
+            /* Imagen inicial */
             background-image: url("../ImagenesPlataformas/img_tjtmodeladordiseñosimulado_interfazopcioninicio.png");
             background-size: cover;
             background-position: center;
+            /* Transición suave para el cambio de imagen */
+            transition: background-image 1s ease-in-out;
         }
 
         /* Gradiente oscuro sobre la imagen */
@@ -209,19 +240,53 @@
             padding-top: 20px;
         }
 
-        /* CORRECCIÓN: Se agrega text-decoration y color inherit para que el enlace <a>
-           se vea igual que el div original */
+        /* --- ESTILOS MEJORADOS PARA LAS TARJETAS (TOOL-ITEM) --- */
         .tool-item {
             display: flex;
             gap: 20px;
             padding: 15px;
-            border-radius: 5px;
+            border-radius: 8px; /* Bordes un poco más suaves */
             cursor: pointer;
-            transition: background 0.2s;
-            text-decoration: none; /* Quita el subrayado del link */
-            color: inherit;        /* Mantiene el color de texto blanco */
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            text-decoration: none; 
+            color: inherit;     
+            position: relative; /* Necesario para posicionar el botón "Ir" */
+            border: 1px solid transparent; /* Para evitar saltos al añadir borde */
         }
-        .tool-item:hover { background-color: #333; }
+
+        /* Efecto Hover en la Tarjeta */
+        .tool-item:hover { 
+            background-color: #252525;
+            transform: scale(1.02); /* Ligero aumento de tamaño */
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            border-color: rgba(37, 99, 235, 0.3); /* Borde sutil azul */
+        }
+
+        /* Botón "Ir" que aparece al hacer hover */
+        .go-btn {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%) translateX(10px);
+            background-color: #2563EB;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            opacity: 0; /* Invisible por defecto */
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        /* Mostrar botón "Ir" al hacer hover en la tarjeta */
+        .tool-item:hover .go-btn {
+            opacity: 1;
+            transform: translateY(-50%) translateX(0);
+        }
 
         .tool-thumbnail {
             width: 140px;
@@ -237,7 +302,18 @@
             height: 100%;
             object-fit: cover;
             opacity: 0.7;
+            transition: opacity 0.3s;
         }
+        
+        .tool-item:hover .tool-thumbnail img {
+            opacity: 1; /* Imagen se aclara al hacer hover */
+        }
+
+        .tool-info {
+            flex-grow: 1;
+            padding-right: 60px; /* Espacio para que el botón "Ir" no tape texto */
+        }
+
         .tool-info h4 { font-size: 1rem; margin-bottom: 5px; color: #fff; }
         .tool-info p { font-size: 0.85rem; color: #aaa; }
 
@@ -267,21 +343,43 @@
             .hero-content { padding: 20px; }
             .action-buttons { gap: 10px; }
             .btn { font-size: 1rem; padding: 10px 20px; }
+            
+            /* Ajustes para móvil en hover */
+            .go-btn {
+                position: static;
+                opacity: 1;
+                transform: none;
+                margin-top: 10px;
+                display: inline-flex;
+                width: auto;
+            }
+            .tool-item {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .tool-thumbnail {
+                width: 100%;
+                height: 120px;
+            }
+            .tool-info { padding-right: 0; }
         }
     </style>
 </head>
 <body>
 
+    <!-- Marca de Agua Fija -->
+    <div class="watermark">Entalpía © 2026</div>
+
     <!-- Contenedor Principal -->
-    <div class="modal-container">
+    <div class="modal-container" id="mainModal">
         
         <!-- Botón cerrar -->
-        <button class="close-btn">
+        <button class="close-btn" id="closeBtn" title="Cerrar vista previa">
             <i data-lucide="x"></i>
         </button>
 
-        <!-- Imagen Principal -->
-        <div class="hero-section">
+        <!-- Imagen Principal (Banner Dinámico) -->
+        <div class="hero-section" id="heroBanner">
             <div class="hero-gradient"></div>
             <div class="hero-content">
                 <h1>DISEÑO, MODELADO<br><span class="text-blue">Y SIMULACION</span></h1>
@@ -326,7 +424,7 @@
 
                 <h3 class="tools-list-title">Módulos Incluidos</h3>
 
-                <!-- Lista de herramientas CORREGIDA: Ahora usan etiquetas <a> en lugar de <div> -->
+                <!-- Lista de herramientas con Botón "Ir" integrado -->
                 
                 <!-- 1. Isoplano Mueller -->
                 <a href="../AppsPlataforma/app_cad_muellerenouard_v1_pro.html" class="tool-item">
@@ -337,6 +435,8 @@
                         <h4>1. Isoplano Mueller</h4>
                         <p>Partiendo del isoplano esta aplicacion puede estimar perdidas de carga, velocidad y deltas de presion en sistemas que conducen gas a media presion.</p>
                     </div>
+                    <!-- Botón Flotante -->
+                    <span class="go-btn">Ir <i data-lucide="arrow-right" size="16"></i></span>
                 </a>
 
                 <!-- 2. Modelador Mueller -->
@@ -348,6 +448,7 @@
                         <h4>2. Modelador Mueller</h4>
                         <p>Cargue los datos de su analisis del sistema: (Tramos, longitudes, diametros, materiales, etc...) y el software estimara perdidas de carga, velocidad y deltas de presion</p>
                     </div>
+                    <span class="go-btn">Ir <i data-lucide="arrow-right" size="16"></i></span>
                 </a>
                        
                 <!-- 3. Modelador Renoaurd -->
@@ -359,6 +460,7 @@
                         <h4>3. Modelador Renoaurd</h4>
                         <p>Partiendo del isoplano esta aplicacion puede estimar perdidas de carga, velocidad y deltas de presion en sistemas que conducen gas a media presion.</p>
                     </div>
+                    <span class="go-btn">Ir <i data-lucide="arrow-right" size="16"></i></span>
                 </a>
                   
                 <!-- 4. Isoplano Basico -->
@@ -370,6 +472,7 @@
                         <h4>4. Isoplano Basico</h4>
                         <p>Cargue los datos de su analisis del sistema: (Tramos, longitudes, diametros, materiales, etc...) y el software estimara perdidas de carga, velocidad y deltas de presion</p>
                     </div>
+                    <span class="go-btn">Ir <i data-lucide="arrow-right" size="16"></i></span>
                 </a>
 
                 <!-- 5. Sumulador CPD -->
@@ -381,6 +484,7 @@
                         <h4>5. Modelador CPD</h4>
                         <p>Simule el comportamiento de una red hidraulica caliente domestica en funcion de los parametros de alimentacion del artefacto y la carga instalada</p>
                     </div>
+                    <span class="go-btn">Ir <i data-lucide="arrow-right" size="16"></i></span>
                 </a>
 
              </div>
@@ -411,8 +515,51 @@
     </div>
 
     <script>
-        // Inicializar los iconos de Lucide
+        // 1. Inicializar iconos
         lucide.createIcons();
+
+        // 2. Funcionalidad del Botón Cerrar
+        const closeBtn = document.getElementById('closeBtn');
+        const modalContainer = document.getElementById('mainModal');
+
+        closeBtn.addEventListener('click', () => {
+            // Animación de cierre
+            modalContainer.classList.add('closed');
+            
+            // Opcional: Si quieres que realmente 'cierre' o recargue o vaya atrás:
+            // setTimeout(() => window.history.back(), 300); 
+            // Por ahora solo oculta el modal visualmente
+        });
+
+        // 3. Funcionalidad del Banner Dinámico
+        const heroBanner = document.getElementById('heroBanner');
+        
+        // CONFIGURACIÓN DE IMÁGENES:
+        // Agrega aquí los nombres de tus imágenes alojadas en la carpeta.
+        // Asumo la ruta "../ImagenesPlataformas/" como solicitaste.
+        const imageFolder = "../ImagenesPlataformas/";
+        const bannerImages = [
+            "img_tjtmodeladordiseñosimulado_interfazopcioninicio.png", // Imagen original
+            "banner_secundario.png",   // Reemplaza con tus nombres reales
+            "banner_terciario.png"     // Reemplaza con tus nombres reales
+        ];
+
+        let currentImageIndex = 0;
+
+        function rotateBanner() {
+            // Avanzar índice
+            currentImageIndex = (currentImageIndex + 1) % bannerImages.length;
+            
+            // Construir nueva URL
+            const nextImage = `url("${imageFolder}${bannerImages[currentImageIndex]}")`;
+            
+            // Aplicar cambio
+            heroBanner.style.backgroundImage = nextImage;
+        }
+
+        // Rotar cada 5 segundos (5000 ms)
+        setInterval(rotateBanner, 5000);
+
     </script>
 </body>
 </html>
