@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ENTALPIA | CAD Planner Pro</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&family=Inter:wght@400;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            overflow: hidden;
+            user-select: none; /* Evitar selección de texto al arrastrar */
+        }
+
+        .canvas-wrapper {
+            background-color: #cbd5e1; /* Fondo gris fuera del papel */
+            overflow: hidden;
+            position: relative;
+            cursor: grab;
+        }
+        .canvas-wrapper:active {
+            cursor: grabbing;
+        }
+
+        .tool-btn {
+            transition: all 0.2s;
+        }
+        .tool-btn:hover {
+            transform: translateY(-1px);
+            background-color: #f8fafc;
+        }
+        .tool-btn.active {
+            background-color: #2563eb;
+            color: white;
+            border-color: #1d4ed8;
+        }
+        .tool-btn.active:hover {
+            background-color: #1d4ed8;
+        }
+        .tool-btn.active i {
+            color: white;
+        }
+
+        .technical-font {
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        .input-tech {
+            border: 1px solid #d1d5db;
+            padding: 4px 8px;
+            font-size: 0.85rem;
+            width: 100%;
+            border-radius: 4px;
+            font-family: 'Roboto Mono', monospace;
+            background-color: white;
+        }
+        .input-tech:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+        }
+
+        /* Toolbar Superior Flotante */
+        .top-toolbar {
+            position: absolute;
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 0.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            display: flex;
+            gap: 0.5rem;
+            z-index: 20;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Estilos para secciones desplegables */
+        details > summary {
+            list-style: none;
+        }
+        details > summary::-webkit-details-marker {
+            display: none;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-slate-900 text-white h-14 flex items-center justify-between px-6 shadow-lg z-30">
+        <div class="flex items-center gap-3">
+            <i class="fa-solid fa-compass-drafting text-blue-400 text-xl"></i>
+            <div>
+                <h1 class="font-bold text-lg tracking-wide">ENTALPIA <span class="font-light text-gray-400">| CAD Pro</span></h1>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+             <!-- Selector de Unidades -->
+            <div class="flex items-center bg-slate-800 rounded px-2 py-1 gap-2 border border-slate-700">
+                <span class="text-xs text-gray-400 uppercase font-bold">Unidades:</span>
+                <select id="unitSelector" onchange="app.setUnit(this.value)" class="bg-transparent text-white text-xs technical-font border-none outline-none cursor-pointer">
+                    <option value="m">Metros (m)</option>
+                    <option value="cm">Centímetros (cm)</option>
+                    <option value="mm">Milímetros (mm)</option>
+                </select>
+            </div>
+            <div class="w-px h-6 bg-gray-700"></div>
+            <span class="text-xs text-gray-400 technical-font" id="clock">00:00:00</span>
+            <button onclick="app.exportPDF()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-1.5 rounded text-sm font-medium transition flex items-center gap-2 shadow-md border border-blue-500">
+                <i class="fa-solid fa-file-pdf"></i> Exportar PDF
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="flex-1 flex overflow-hidden">
+        
+        <!-- Sidebar Left: Libraries -->
+        <aside class="w-64 bg-white border-r border-gray-200 flex flex-col shadow-sm z-20 overflow-y-auto">
+            
+            <!-- Project Info -->
+            <div class="p-4 border-b border-gray-200 bg-gray-50">
+                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Proyecto</h3>
+                <div class="space-y-2">
+                    <input type="text" id="project-name" class="input-tech" placeholder="Nombre Proyecto" value="Residencia Moderna">
+                    <div class="flex gap-2">
+                         <input type="text" id="engineer-name" class="input-tech" placeholder="Responsable" value="Ing. Usuario">
+                         <input type="text" id="revision" class="input-tech w-20" placeholder="Rev" value="Rev. 1">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tools List -->
+            <div class="p-3 space-y-5">
+                
+                <!-- Structural -->
+                <div>
+                    <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Estructura</h3>
+                    <div class="grid grid-cols-3 gap-1 mb-2">
+                        <button class="tool-btn p-2 border rounded text-xs flex flex-col items-center gap-1 text-gray-600" onclick="app.setTool('wall')">
+                            <i class="fa-solid fa-lines-leaning text-lg"></i> Muro
+                        </button>
+                        <button class="tool-btn p-2 border rounded text-xs flex flex-col items-center gap-1 text-gray-600" onclick="app.setTool('door')">
+                            <i class="fa-solid fa-door-open text-lg"></i> Puerta
+                        </button>
+                        <button class="tool-btn p-2 border rounded text-xs flex flex-col items-center gap-1 text-gray-600" onclick="app.setTool('window')">
+                            <i class="fa-regular fa-window-maximize text-lg"></i> Ventana
+                        </button>
+                    </div>
+                    
+                    <details class="group mt-3" open>
+                        <summary class="flex items-center justify-between cursor-pointer text-[10px] font-semibold text-gray-400 uppercase mb-1 hover:text-gray-600 transition-colors select-none">
+                            <span>Espacios (Zonificación)</span>
+                            <i class="fa-solid fa-chevron-down transition-transform duration-200 group-open:rotate-180"></i>
+                        </summary>
+                        <div class="space-y-1 pb-2">
+                            <button class="tool-btn w-full text-left px-2 py-1.5 text-xs border rounded text-gray-700 flex items-center gap-2" onclick="app.setTool('room', 'Sala Comedor', '#e0f2fe')">
+                                <span class="w-3 h-3 rounded-full bg-blue-100 border border-blue-300"></span> Sala Comedor
+                            </button>
+                            <button class="tool-btn w-full text-left px-2 py-1.5 text-xs border rounded text-gray-700 flex items-center gap-2" onclick="app.setTool('room', 'Sala Estar', '#dbeafe')">
+                                <span class="w-3 h-3 rounded-full bg-blue-200 border border-blue-400"></span> Sala de Estar
+                            </button>
+                            <button class="tool-btn w-full text-left px-2 py-1.5 text-xs border rounded text-gray-700 flex items-center gap-2" onclick="app.setTool('room', 'Biblioteca', '#f1f5f9')">
+                                <span class="w-3 h-3 rounded-full bg-slate-100 border border-slate-300"></span> Biblioteca/Estudio
+                            </button>
+                            <button class="tool-btn w-full text-left px-2 py-1.5 text-xs border rounded text-gray-700 flex items-center gap-2" onclick="app.setTool('room', 'Habitación', '#f0fdf4')">
+                                <span class="w-3 h-3 rounded-full bg-green-100 border border-green-300"></span> Habitación
+                            </button>
+                            <button class="tool-btn w-full text-left px-2 py-1.5 text-xs border rounded text-gray-700 flex items-center gap-2" onclick="app.setTool('room', 'Baño', '#fdf4ff')">
+                                <span class="w-3 h-3 rounded-full bg-purple-100 border border-purple-300"></span> Baño
+                            </button>
+                            <button class="tool-btn w-full text-left px-2 py-1.5 text-xs border rounded text-gray-700 flex items-center gap-2" onclick="app.setTool('room', 'Cocina', '#fff7ed')">
+                                <span class="w-3 h-3 rounded-full bg-orange-100 border border-orange-300"></span> Cocina
+                            </button>
+                            <button class="tool-btn w-full text-left px-2 py-1.5 text-xs border rounded text-gray-700 flex items-center gap-2" onclick="app.setTool('room', 'Ropas', '#ffedd5')">
+                                <span class="w-3 h-3 rounded-full bg-orange-200 border border-orange-400"></span> Zona Ropas
+                            </button>
+                             <button class="tool-btn w-full text-left px-2 py-1.5 text-xs border rounded text-gray-700 flex items-center gap-2" onclick="app.setTool('room', 'Patio/Ext', '#ecfccb')">
+                                <span class="w-3 h-3 rounded-full bg-lime-100 border border-lime-300"></span> Patio / Exterior
+                            </button>
+                        </div>
+                    </details>
+                </div>
+
+                <!-- Furniture & Equipment -->
+                <details class="group" open>
+                    <summary class="flex items-center justify-between cursor-pointer text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 hover:text-gray-700 transition-colors select-none">
+                        <span>Mobiliario y Enseres</span>
+                        <i class="fa-solid fa-chevron-down transition-transform duration-200 group-open:rotate-180"></i>
+                    </summary>
+                    <div class="grid grid-cols-2 gap-1 text-xs pb-2">
+                        <button class="tool-btn p-2 border rounded flex items-center gap-2" onclick="app.setTool('furniture', 'stove_4')"><i class="fa-solid fa-fire-burner"></i> Estufa 4Q</button>
+                        <button class="tool-btn p-2 border rounded flex items-center gap-2" onclick="app.setTool('furniture', 'fridge')"><i class="fa-solid fa-snowflake"></i> Nevera</button>
+                        <button class="tool-btn p-2 border rounded flex items-center gap-2" onclick="app.setTool('furniture', 'sink_kitchen')"><i class="fa-solid fa-sink"></i> Lavaplatos</button>
+                        <button class="tool-btn p-2 border rounded flex items-center gap-2" onclick="app.setTool('furniture', 'washer')"><i class="fa-solid fa-soap"></i> Lavadora</button>
+                        
+                        <div class="col-span-2 border-t border-gray-100 my-1"></div>
+                        
+                        <button class="tool-btn p-2 border rounded flex items-center gap-2" onclick="app.setTool('furniture', 'bed_double')"><i class="fa-solid fa-bed"></i> Cama Doble</button>
+                        <button class="tool-btn p-2 border rounded flex items-center gap-2" onclick="app.setTool('furniture', 'bed_single')"><i class="fa-solid fa-bed"></i> Cama Senc.</button>
+                        <button class="tool-btn p-2 border rounded flex items-center gap-2" onclick="app.setTool('furniture', 'sofa')"><i class="fa-solid fa-couch"></i> Sofá</button>
+                        <button class="tool-btn p-2 border rounded flex items-center gap-2" onclick="app.setTool('furniture', 'tv_unit')"><i class="fa-solid fa-tv"></i> Mueble TV</button>
+                        <button class="tool-btn p-2 border rounded flex items-center gap-2" onclick="app.setTool('furniture', 'dining_table')"><i class="fa-solid fa-utensils"></i> Comedor 6P</button>
+                        <button class="tool-btn p-2 border rounded flex items-center gap-2" onclick="app.setTool('furniture', 'desk')"><i class="fa-solid fa-laptop"></i> Escritorio</button>
+                        <button class="tool-btn p-2 border rounded flex items-center gap-2" onclick="app.setTool('furniture', 'bookshelf')"><i class="fa-solid fa-book"></i> Biblioteca</button>
+                        
+                        <div class="col-span-2 border-t border-gray-100 my-1"></div>
+
+                        <button class="tool-btn p-2 border rounded flex items-center gap-2" onclick="app.setTool('furniture', 'toilet')"><i class="fa-solid fa-toilet"></i> Sanitario</button>
+                        <button class="tool-btn p-2 border rounded flex items-center gap-2" onclick="app.setTool('furniture', 'shower')"><i class="fa-solid fa-shower"></i> Ducha</button>
+                         <button class="tool-btn p-2 border rounded flex items-center gap-2" onclick="app.setTool('furniture', 'sink_bath')"><i class="fa-solid fa-sink"></i> Lavamanos</button>
+                         <button class="tool-btn p-2 border rounded flex items-center gap-2" onclick="app.setTool('furniture', 'plant')"><i class="fa-brands fa-envira"></i> Planta</button>
+
+                    </div>
+                </details>
+            </div>
+        </aside>
+
+        <!-- Canvas Area -->
+        <main class="flex-1 relative bg-gray-200 overflow-hidden canvas-wrapper" id="mainContainer">
+            
+            <!-- Floating Top Toolbar -->
+            <div class="top-toolbar">
+                <button class="tool-btn active w-10 h-10 rounded flex items-center justify-center text-gray-600 border border-transparent hover:border-gray-300" onclick="app.setTool('select')" title="Seleccionar y Mover">
+                    <i class="fa-solid fa-arrow-pointer"></i>
+                </button>
+                <div class="w-px bg-gray-300 mx-1"></div>
+                <button class="tool-btn w-10 h-10 rounded flex items-center justify-center text-gray-600 border border-transparent hover:border-gray-300" onclick="app.setTool('dimension')" title="Crear Cota/Medida">
+                    <i class="fa-solid fa-ruler-horizontal"></i>
+                </button>
+                <button class="tool-btn w-10 h-10 rounded flex items-center justify-center text-gray-600 border border-transparent hover:border-gray-300" onclick="app.setTool('text')" title="Agregar Texto">
+                    <i class="fa-solid fa-font"></i>
+                </button>
+                 <div class="w-px bg-gray-300 mx-1"></div>
+                 <button class="tool-btn w-10 h-10 rounded flex items-center justify-center text-gray-600 border border-transparent hover:border-gray-300" onclick="app.resetView()" title="Centrar Vista">
+                    <i class="fa-solid fa-compress-arrows-alt"></i>
+                </button>
+                 <button class="tool-btn w-10 h-10 rounded flex items-center justify-center text-gray-600 border border-transparent hover:border-gray-300" onclick="app.undo()" title="Deshacer (Ctrl+Z)">
+                    <i class="fa-solid fa-rotate-left"></i>
+                </button>
+                <button class="tool-btn w-10 h-10 rounded flex items-center justify-center text-red-500 hover:bg-red-50 hover:border-red-200 border border-transparent" onclick="app.clearCanvas()" title="Borrar Todo">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </div>
+
+            <canvas id="blueprintCanvas" class="block origin-top-left"></canvas>
+            
+            <!-- Zoom Controls -->
+            <div class="absolute bottom-4 left-4 flex gap-2">
+                 <button class="bg-white p-2 rounded shadow text-gray-600 hover:text-blue-600" onclick="app.adjustZoom(0.1)" title="Acercar (Rueda Arriba)"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                 <button class="bg-white p-2 rounded shadow text-gray-600 hover:text-blue-600" onclick="app.adjustZoom(-0.1)" title="Alejar (Rueda Abajo)"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                 <span class="bg-white/90 px-3 py-2 rounded shadow text-xs technical-font border border-gray-300 text-gray-600" id="zoomLevel">100%</span>
+            </div>
+
+            <!-- Helper Scale -->
+            <div class="absolute bottom-4 right-4 bg-white/90 px-3 py-2 rounded text-xs technical-font border border-gray-300 pointer-events-none shadow-sm text-gray-600">
+                Escala: 1 cuadro = 1m
+            </div>
+        </main>
+        
+        <!-- Properties Panel (Right) -->
+        <aside class="w-72 bg-white border-l border-gray-200 p-4 hidden flex flex-col shadow-lg z-20" id="propertiesPanel">
+            <div class="mb-4 flex items-center justify-between border-b pb-2">
+                <h3 class="font-bold text-gray-800"><i class="fa-solid fa-sliders"></i> Propiedades</h3>
+                <button onclick="app.closeProperties()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div id="prop-content" class="text-sm text-gray-600 space-y-4 flex-1 overflow-y-auto">
+                <!-- Dynamic Content Here -->
+            </div>
+
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <button onclick="app.deleteSelected()" class="w-full bg-red-50 text-red-600 border border-red-200 py-2 rounded text-sm hover:bg-red-100 flex items-center justify-center gap-2 font-medium transition">
+                    <i class="fa-solid fa-trash-can"></i> Eliminar Selección
+                </button>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        class BlueprintApp {
+            constructor() {
+                this.container = document.getElementById('mainContainer');
+                this.canvas = document.getElementById('blueprintCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                
+                // State
+                this.elements = [];
+                this.currentTool = 'select';
+                this.currentSubtype = null; 
+                this.currentSettings = { 
+                    label: '', 
+                    color: '#ffffff', 
+                    textColor: '#000000',
+                    isDark: false 
+                };
+                
+                this.currentUnit = 'm'; // m, cm, mm
+                
+                // Interaction State
+                this.isDrawing = false;
+                this.isDraggingElement = false;
+                this.isPanning = false;
+                
+                this.startPos = { x: 0, y: 0 }; 
+                this.currentPos = { x: 0, y: 0 }; 
+                this.panStart = { x: 0, y: 0 }; 
+                
+                this.selectedElementIndex = -1;
+                this.dragOffset = { x: 0, y: 0 };
+                this.activeSnapLines = []; // For visualization
+
+                // Viewport (Camera)
+                this.scale = 1;
+                this.offsetX = 0;
+                this.offsetY = 0;
+
+                this.initCanvasSize();
+                this.addEventListeners();
+                this.startClock();
+                this.resetView(); 
+                this.draw(); 
+            }
+
+            initCanvasSize() {
+                this.canvas.width = 2000; 
+                this.canvas.height = 1500;
+            }
+
+            setUnit(unit) {
+                this.currentUnit = unit;
+                this.renderProperties(); // Update if open
+                this.draw(); // Update dimensions/labels
+            }
+
+            // --- Units Helpers ---
+            // Internal storage is always CM (centimeters) roughly
+            // 1 unit in code = 1 cm in real life (approx scale for logic)
+            formatValue(valInCm, decimals = 2) {
+                if (this.currentUnit === 'm') return (valInCm / 100).toFixed(decimals) + 'm';
+                if (this.currentUnit === 'cm') return Math.round(valInCm) + 'cm';
+                if (this.currentUnit === 'mm') return Math.round(valInCm * 10) + 'mm';
+                return valInCm;
+            }
+
+            toInternal(val) {
+                // Input comes from user based on current unit, convert to CM
+                const v = parseFloat(val);
+                if (isNaN(v)) return 0;
+                if (this.currentUnit === 'm') return v * 100;
+                if (this.currentUnit === 'cm') return v;
+                if (this.currentUnit === 'mm') return v / 10;
+                return v;
+            }
+
+            fromInternal(valInCm) {
+                // Convert internal CM to user value number
+                if (this.currentUnit === 'm') return (valInCm / 100);
+                if (this.currentUnit === 'cm') return Math.round(valInCm);
+                if (this.currentUnit === 'mm') return Math.round(valInCm * 10);
+                return valInCm;
+            }
+
+            resetView() {
+                this.scale = 0.8;
+                const rect = this.container.getBoundingClientRect();
+                this.offsetX = (rect.width - this.canvas.width * this.scale) / 2;
+                this.offsetY = (rect.height - this.canvas.height * this.scale) / 2;
+                this.updateZoomDisplay();
+                this.draw();
+            }
+
+            adjustZoom(delta) {
+                const oldScale = this.scale;
+                const newScale = Math.max(0.1, Math.min(5, oldScale + delta));
+                if (newScale === oldScale) return;
+
+                // Determine Focus Point (World Coords)
+                let targetX, targetY;
+                
+                if (this.selectedElementIndex !== -1) {
+                    // Focus on selection
+                    const el = this.elements[this.selectedElementIndex];
+                    if(el.type === 'wall' || el.type === 'dimension') {
+                        targetX = (el.x + (el.ex || el.x2)) / 2;
+                        targetY = (el.y + (el.ey || el.y2)) / 2;
+                    } else {
+                        targetX = el.x + el.w/2;
+                        targetY = el.y + el.h/2;
+                    }
+                } else {
+                    // Focus on center of all elements (bounding box)
+                    if (this.elements.length > 0) {
+                        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                        this.elements.forEach(el => {
+                            if (el.x !== undefined) { minX = Math.min(minX, el.x); maxX = Math.max(maxX, el.x + (el.w || 0)); }
+                            if (el.y !== undefined) { minY = Math.min(minY, el.y); maxY = Math.max(maxY, el.y + (el.h || 0)); }
+                        });
+                        targetX = (minX + maxX) / 2;
+                        targetY = (minY + maxY) / 2;
+                        // Safety if bounds are weird
+                        if(!isFinite(targetX)) { targetX = this.canvas.width/2; targetY = this.canvas.height/2; }
+                    } else {
+                        // Default center canvas
+                        targetX = this.canvas.width / 2;
+                        targetY = this.canvas.height / 2;
+                    }
+                }
+
+                // Math to keep target stationary in screen center
+                const containerRect = this.container.getBoundingClientRect();
+                const screenCenterX = containerRect.width / 2;
+                const screenCenterY = containerRect.height / 2;
+
+                // New Offset = ScreenCenter - (TargetWorld * NewScale)
+                this.offsetX = screenCenterX - (targetX * newScale);
+                this.offsetY = screenCenterY - (targetY * newScale);
+                
+                this.scale = newScale;
+                this.updateZoomDisplay();
+                this.draw();
+            }
+
+            updateZoomDisplay() {
+                document.getElementById('zoomLevel').innerText = Math.round(this.scale * 100) + '%';
+            }
+
+            toWorld(screenX, screenY) {
+                const containerRect = this.container.getBoundingClientRect();
+                const relX = screenX - containerRect.left;
+                const relY = screenY - containerRect.top;
+                return {
+                    x: (relX - this.offsetX) / this.scale,
+                    y: (relY - this.offsetY) / this.scale
+                };
+            }
+
+            setTool(tool, subtypeOrLabel = '', color = '#ffffff') {
+                this.currentTool = tool;
+                if(tool === 'room') {
+                    this.currentSettings = { label: subtypeOrLabel, color: color, textColor: '#000000' };
+                    this.currentSubtype = null;
+                } else if (tool === 'furniture') {
+                    this.currentSubtype = subtypeOrLabel;
+                } else {
+                    this.currentSubtype = null;
+                }
+                
+                this.selectedElementIndex = -1;
+                this.updateUI();
+                const cursor = tool === 'select' ? 'default' : 'crosshair';
+                this.container.style.cursor = cursor;
+            }
+
+            updateUI() {
+                document.querySelectorAll('.tool-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    const clickAttr = btn.getAttribute('onclick');
+                    if(clickAttr && clickAttr.includes(`'${this.currentTool}'`)) {
+                        if(this.currentTool === 'room' && !clickAttr.includes(this.currentSettings.label)) return;
+                        if(this.currentTool === 'furniture' && !clickAttr.includes(this.currentSubtype)) return;
+                        btn.classList.add('active');
+                    }
+                });
+
+                const panel = document.getElementById('propertiesPanel');
+                if (this.selectedElementIndex !== -1) {
+                    panel.classList.remove('hidden');
+                    this.renderProperties();
+                } else {
+                    panel.classList.add('hidden');
+                }
+            }
+
+            renderProperties() {
+                const el = this.elements[this.selectedElementIndex];
+                if (!el) return;
+                const content = document.getElementById('prop-content');
+                let typeLabel = el.type === 'furniture' ? (el.subtype || 'Mueble') : el.type;
+                typeLabel = typeLabel.replace('_', ' ').toUpperCase();
+
+                let html = `
+                    <div class="space-y-4">
+                        <div class="bg-blue-50 p-2 rounded border border-blue-100">
+                            <span class="text-xs font-bold text-blue-500 uppercase block">Elemento</span>
+                            <span class="text-gray-900 font-bold text-lg">${typeLabel}</span>
+                        </div>
+                `;
+
+                if (['room', 'furniture', 'door', 'window'].includes(el.type)) {
+                    html += `
+                        <div>
+                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Geometría (${this.currentUnit})</h4>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="text-xs text-gray-500 block mb-1">Ancho</label>
+                                    <input type="number" step="0.1" class="input-tech" value="${this.fromInternal(el.w)}" onchange="app.updateSelectedProperty('w', this.value)">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-500 block mb-1">Largo</label>
+                                    <input type="number" step="0.1" class="input-tech" value="${this.fromInternal(el.h)}" onchange="app.updateSelectedProperty('h', this.value)">
+                                </div>
+                                <div class="col-span-2">
+                                    <label class="text-xs text-gray-500 block mb-1">Rotación (°)</label>
+                                    <div class="flex gap-2">
+                                        <input type="number" class="input-tech" value="${el.rotation || 0}" onchange="app.updateSelectedProperty('rotation', this.value)">
+                                        <button class="bg-gray-100 border hover:bg-gray-200 rounded px-2" onclick="app.rotateSelected(45)"><i class="fa-solid fa-rotate-right"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                if (el.type === 'room') {
+                     html += `
+                        <div class="border-t border-gray-100 pt-3">
+                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Estilo & Datos</h4>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="text-xs text-gray-500 block mb-1">Nombre</label>
+                                    <input type="text" class="input-tech" value="${el.label}" onchange="app.updateSelectedProperty('label', this.value)">
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="text-xs text-gray-500 block mb-1">Fondo</label>
+                                        <input type="color" class="w-full h-8 cursor-pointer border rounded" value="${el.color}" oninput="app.updateSelectedProperty('color', this.value)">
+                                    </div>
+                                     <div>
+                                        <label class="text-xs text-gray-500 block mb-1">Texto</label>
+                                        <input type="color" class="w-full h-8 cursor-pointer border rounded" value="${el.textColor || '#000000'}" oninput="app.updateSelectedProperty('textColor', this.value)">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                if (el.type === 'text') {
+                     html += `
+                        <div>
+                             <label class="text-xs text-gray-500 block mb-1">Color</label>
+                            <input type="color" class="w-full h-8 cursor-pointer" value="${el.color || '#000000'}" oninput="app.updateSelectedProperty('color', this.value)">
+                        </div>
+                    `;
+                }
+
+                if (el.type === 'dimension') {
+                     html += `
+                        <div>
+                            <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Cota</h4>
+                            <div class="space-y-2">
+                                <div>
+                                    <label class="text-xs text-gray-500 block mb-1">Texto (Auto si vacío)</label>
+                                    <input type="text" class="input-tech" value="${el.text || ''}" placeholder="Auto" onchange="app.updateSelectedProperty('text', this.value)">
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                html += `</div>`;
+                content.innerHTML = html;
+            }
+
+            updateSelectedProperty(prop, value) {
+                if(this.selectedElementIndex === -1) return;
+                const el = this.elements[this.selectedElementIndex];
+                
+                if (prop === 'w' || prop === 'h') {
+                    el[prop] = this.toInternal(value);
+                } else if (prop === 'rotation') {
+                    el[prop] = parseFloat(value);
+                } else {
+                    el[prop] = value;
+                }
+                this.draw();
+            }
+
+            rotateSelected(deg = 90) {
+                if(this.selectedElementIndex === -1) return;
+                const el = this.elements[this.selectedElementIndex];
+                el.rotation = (el.rotation || 0) + deg;
+                this.updateSelectedProperty('rotation', el.rotation);
+                this.renderProperties();
+            }
+
+            closeProperties() {
+                this.selectedElementIndex = -1;
+                this.updateUI();
+                this.draw();
+            }
+
+            addEventListeners() {
+                this.container.addEventListener('mousedown', (e) => this.onMouseDown(e));
+                window.addEventListener('mousemove', (e) => this.onMouseMove(e));
+                window.addEventListener('mouseup', (e) => this.onMouseUp(e));
+                
+                this.container.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+                    this.adjustZoom(delta);
+                }, { passive: false });
+
+                window.addEventListener('keydown', (e) => {
+                    if ((e.key === 'Delete' || e.key === 'Backspace') && document.activeElement.tagName !== 'INPUT') {
+                        this.deleteSelected();
+                    }
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'z') this.undo();
+                });
+            }
+
+            onMouseDown(e) {
+                if (e.button === 1 || (this.currentTool === 'select' && e.target === this.container)) {
+                    // Middle click or bg click logic below
+                }
+
+                const screenX = e.clientX;
+                const screenY = e.clientY;
+                const pos = this.toWorld(screenX, screenY);
+                this.startPos = pos;
+                
+                let hitIndex = -1;
+                for (let i = this.elements.length - 1; i >= 0; i--) {
+                    if (this.hitTest(pos, this.elements[i])) {
+                        hitIndex = i;
+                        break;
+                    }
+                }
+
+                if (this.currentTool === 'select') {
+                    if (hitIndex !== -1) {
+                        this.selectedElementIndex = hitIndex;
+                        this.isDraggingElement = true;
+                        const el = this.elements[hitIndex];
+                        if(el.type === 'wall') {
+                            this.dragOffset = { x: pos.x, y: pos.y };
+                        } else if(el.type === 'dimension') {
+                             this.dragOffset = { x: pos.x - el.x1, y: pos.y - el.y1 };
+                        } else {
+                            this.dragOffset = { x: pos.x - el.x, y: pos.y - el.y };
+                        }
+                    } else {
+                        this.isPanning = true;
+                        this.panStart = { x: screenX, y: screenY };
+                        this.selectedElementIndex = -1;
+                        this.container.style.cursor = 'grabbing';
+                    }
+                    this.updateUI();
+                    this.draw();
+                } else {
+                    this.isDrawing = true;
+                    if (['furniture', 'door', 'window'].includes(this.currentTool)) {
+                        this.placeItem(pos);
+                        this.isDrawing = false; 
+                    } else if (this.currentTool === 'text') {
+                        const text = prompt("Ingrese texto:", "");
+                        if(text) {
+                            this.elements.push({ type: 'text', x: pos.x, y: pos.y, label: text, color: '#000' });
+                        }
+                        this.isDrawing = false;
+                        this.setTool('select');
+                    }
+                }
+            }
+
+            // --- Snapping / Magnetism Logic ---
+            applyMagnetism(x, y, ignoreIndex = -1) {
+                const threshold = 15; // px snap distance
+                let snappedX = x;
+                let snappedY = y;
+                this.activeSnapLines = []; // Clear previous guidelines
+
+                // We want to snap X to other's X or X+W
+                // We want to snap Y to other's Y or Y+H
+                
+                let snapXFound = false;
+                let snapYFound = false;
+
+                for (let i = 0; i < this.elements.length; i++) {
+                    if (i === ignoreIndex) continue;
+                    const el = this.elements[i];
+                    // Only snap to box-like objects for simplicity
+                    if (!['room', 'furniture'].includes(el.type)) continue;
+
+                    // Targets: Left, Right, Center X
+                    const targetsX = [el.x, el.x + el.w, el.x + el.w/2];
+                    // Targets: Top, Bottom, Center Y
+                    const targetsY = [el.y, el.y + el.h, el.y + el.h/2];
+
+                    if (!snapXFound) {
+                        for (let tx of targetsX) {
+                            if (Math.abs(x - tx) < threshold) {
+                                snappedX = tx;
+                                snapXFound = true;
+                                this.activeSnapLines.push({type:'v', x: tx}); // Vertical Guide
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!snapYFound) {
+                        for (let ty of targetsY) {
+                            if (Math.abs(y - ty) < threshold) {
+                                snappedY = ty;
+                                snapYFound = true;
+                                this.activeSnapLines.push({type:'h', y: ty}); // Horizontal Guide
+                                break;
+                            }
+                        }
+                    }
+                }
+                return { x: snappedX, y: snappedY };
+            }
+
+            onMouseMove(e) {
+                const pos = this.toWorld(e.clientX, e.clientY);
+                this.currentPos = pos;
+
+                if (this.isPanning) {
+                    const dx = e.clientX - this.panStart.x;
+                    const dy = e.clientY - this.panStart.y;
+                    this.offsetX += dx;
+                    this.offsetY += dy;
+                    this.panStart = { x: e.clientX, y: e.clientY };
+                    this.draw();
+                    return;
+                }
+                
+                // Dragging or Drawing
+                if (this.currentTool === 'select' && this.isDraggingElement && this.selectedElementIndex !== -1) {
+                    const el = this.elements[this.selectedElementIndex];
+                    
+                    if (['room', 'furniture', 'door', 'window'].includes(el.type)) {
+                        let newX = this.currentPos.x - this.dragOffset.x;
+                        let newY = this.currentPos.y - this.dragOffset.y;
+                        
+                        // Apply Magnetism
+                        const snapped = this.applyMagnetism(newX, newY, this.selectedElementIndex);
+                        el.x = snapped.x;
+                        el.y = snapped.y;
+                        
+                    } else if (el.type === 'wall') {
+                        // Wall moving is relative, tricky to snap perfectly without anchor points logic
+                        const dx = this.currentPos.x - this.dragOffset.x;
+                        const dy = this.currentPos.y - this.dragOffset.y;
+                        el.x += dx; el.y += dy; el.ex += dx; el.ey += dy;
+                        this.dragOffset = this.currentPos;
+                    } else if (el.type === 'dimension') {
+                        // ... dim move ...
+                    } else {
+                        el.x = this.currentPos.x - this.dragOffset.x;
+                        el.y = this.currentPos.y - this.dragOffset.y;
+                    }
+                    this.draw();
+                } else if (this.isDrawing) {
+                    // Apply magnetism to currentPos if drawing room
+                    if (this.currentTool === 'room') {
+                         const snapped = this.applyMagnetism(this.currentPos.x, this.currentPos.y);
+                         this.currentPos = snapped;
+                    }
+                    this.draw(); 
+                }
+            }
+
+            onMouseUp(e) {
+                this.isPanning = false;
+                this.isDraggingElement = false;
+                this.activeSnapLines = []; // Clear guidelines
+                this.container.style.cursor = this.currentTool === 'select' ? 'default' : 'crosshair';
+
+                if (!this.isDrawing) return;
+                this.isDrawing = false;
+
+                const w = this.currentPos.x - this.startPos.x;
+                const h = this.currentPos.y - this.startPos.y;
+
+                if (Math.abs(w) < 5 && Math.abs(h) < 5 && this.currentTool !== 'dimension') return;
+
+                if (this.currentTool === 'room') {
+                    const x = w < 0 ? this.currentPos.x : this.startPos.x;
+                    const y = h < 0 ? this.currentPos.y : this.startPos.y;
+                    this.elements.push({
+                        type: 'room',
+                        x: x, y: y, w: Math.abs(w), h: Math.abs(h),
+                        label: this.currentSettings.label,
+                        color: this.currentSettings.color,
+                        textColor: this.currentSettings.textColor,
+                        rotation: 0
+                    });
+                } else if (this.currentTool === 'wall') {
+                    this.elements.push({
+                        type: 'wall',
+                        x: this.startPos.x, y: this.startPos.y,
+                        ex: this.currentPos.x, ey: this.currentPos.y,
+                        width: 10
+                    });
+                } else if (this.currentTool === 'dimension') {
+                    this.elements.push({
+                        type: 'dimension',
+                        x1: this.startPos.x, y1: this.startPos.y,
+                        x2: this.currentPos.x, y2: this.currentPos.y,
+                        rotation: 0
+                    });
+                }
+                
+                this.draw();
+                if(this.currentTool === 'dimension') this.setTool('select');
+            }
+
+            placeItem(pos) {
+                let w=50, h=50; 
+                let type = this.currentTool;
+                let subtype = this.currentSubtype;
+
+                const sizes = {
+                    'door': {w:90, h:90}, 'window': {w:120, h:15},
+                    'stove_4': {w:60, h:60}, 'fridge': {w:70, h:70},
+                    'bed_double': {w:140, h:190}, 'bed_single': {w:90, h:190},
+                    'sofa': {w:200, h:80}, 'tv_unit': {w:150, h:40},
+                    'dining_table': {w:160, h:90}, 'desk': {w:120, h:60},
+                    'bookshelf': {w:100, h:30}, 'toilet': {w:50, h:70},
+                    'shower': {w:90, h:90}, 'sink_bath': {w:60, h:45},
+                    'sink_kitchen': {w:80, h:50}, 'washer': {w:60, h:60},
+                    'plant': {w:40, h:40}
+                };
+
+                if (sizes[subtype] || sizes[type]) {
+                    const s = sizes[subtype] || sizes[type];
+                    w = s.w; h = s.h;
+                }
+
+                // Snap Placement too
+                const snapped = this.applyMagnetism(pos.x - w/2, pos.y - h/2);
+
+                this.elements.push({
+                    type: type,
+                    subtype: subtype,
+                    x: snapped.x, // snapped pos
+                    y: snapped.y,
+                    w: w, h: h,
+                    rotation: 0
+                });
+                this.draw();
+                this.setTool('select');
+            }
+
+            draw() {
+                this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                this.ctx.fillStyle = '#ffffff';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                this.drawGrid();
+
+                this.ctx.setTransform(this.scale, 0, 0, this.scale, this.offsetX, this.offsetY);
+
+                // Draw Elements
+                this.elements.filter(e => e.type === 'room').forEach(e => this.drawElement(e, e === this.elements[this.selectedElementIndex]));
+                this.elements.filter(e => e.type === 'wall').forEach(e => this.drawElement(e, e === this.elements[this.selectedElementIndex]));
+                this.elements.filter(e => e.type === 'door' || e.type === 'window').forEach(e => this.drawElement(e, e === this.elements[this.selectedElementIndex]));
+                this.elements.filter(e => e.type === 'furniture').forEach(e => this.drawElement(e, e === this.elements[this.selectedElementIndex]));
+                this.elements.filter(e => e.type === 'text' || e.type === 'dimension').forEach(e => this.drawElement(e, e === this.elements[this.selectedElementIndex]));
+
+                // Ghosting
+                if (this.isDrawing) {
+                    this.drawGhost();
+                }
+
+                // Snap Guidelines
+                if (this.activeSnapLines.length > 0) {
+                    this.ctx.save();
+                    this.ctx.strokeStyle = '#06b6d4'; // Cyan
+                    this.ctx.lineWidth = 1;
+                    this.ctx.setLineDash([4, 4]);
+                    this.activeSnapLines.forEach(line => {
+                        this.ctx.beginPath();
+                        if (line.type === 'v') {
+                            this.ctx.moveTo(line.x, -10000); this.ctx.lineTo(line.x, 10000);
+                        } else {
+                            this.ctx.moveTo(-10000, line.y); this.ctx.lineTo(10000, line.y);
+                        }
+                        this.ctx.stroke();
+                    });
+                    this.ctx.restore();
+                }
+            }
+
+            drawElement(el, isSelected) {
+                this.ctx.save();
+                
+                if (el.type === 'wall') {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(el.x, el.y);
+                    this.ctx.lineTo(el.ex, el.ey);
+                    this.ctx.strokeStyle = isSelected ? '#2563eb' : '#0f172a';
+                    this.ctx.lineWidth = isSelected ? (el.width + 4) : el.width; 
+                    this.ctx.lineCap = 'butt'; 
+                    this.ctx.stroke();
+                    this.ctx.restore();
+                    return;
+                }
+
+                if (el.type === 'dimension') {
+                    this.ctx.strokeStyle = isSelected ? '#2563eb' : '#64748b';
+                    this.ctx.fillStyle = isSelected ? '#2563eb' : '#000000';
+                    this.ctx.lineWidth = 1;
+                    
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(el.x1, el.y1);
+                    this.ctx.lineTo(el.x2, el.y2);
+                    this.ctx.stroke();
+
+                    const drawTick = (x, y) => { this.ctx.beginPath(); this.ctx.arc(x, y, 3, 0, Math.PI*2); this.ctx.fill(); };
+                    drawTick(el.x1, el.y1);
+                    drawTick(el.x2, el.y2);
+
+                    const mx = (el.x1 + el.x2) / 2;
+                    const my = (el.y1 + el.y2) / 2;
+                    const dist = Math.sqrt(Math.pow(el.x2 - el.x1, 2) + Math.pow(el.y2 - el.y1, 2));
+                    // Format Dimension based on units
+                    const distUser = this.formatValue(dist);
+                    
+                    this.ctx.save();
+                    this.ctx.translate(mx, my);
+                    let angle = Math.atan2(el.y2 - el.y1, el.x2 - el.x1);
+                    if (el.rotation) angle += (el.rotation * Math.PI / 180);
+
+                    this.ctx.rotate(angle);
+                    this.ctx.font = '12px "Roboto Mono"';
+                    this.ctx.textAlign = 'center';
+                    const txt = el.text || distUser;
+                    const tw = this.ctx.measureText(txt).width;
+                    this.ctx.fillStyle = 'rgba(255,255,255,0.8)';
+                    this.ctx.fillRect(-tw/2 - 2, -15, tw + 4, 14);
+                    this.ctx.fillStyle = '#000';
+                    this.ctx.fillText(txt, 0, -5);
+                    this.ctx.restore();
+                    this.ctx.restore();
+                    return;
+                }
+
+                // Rotated objects
+                const cx = el.x + el.w/2;
+                const cy = el.y + el.h/2;
+                this.ctx.translate(cx, cy);
+                this.ctx.rotate((el.rotation || 0) * Math.PI / 180);
+                this.ctx.translate(-el.w/2, -el.h/2);
+
+                if (isSelected) {
+                    this.ctx.shadowColor = 'rgba(37, 99, 235, 0.5)';
+                    this.ctx.shadowBlur = 15;
+                    this.ctx.strokeStyle = '#2563eb';
+                    this.ctx.lineWidth = 2;
+                } else {
+                    this.ctx.strokeStyle = '#334155';
+                    this.ctx.lineWidth = 1;
+                }
+
+                if (el.type === 'room') {
+                    this.ctx.fillStyle = el.color;
+                    this.ctx.fillRect(0, 0, el.w, el.h);
+                    this.ctx.strokeRect(0, 0, el.w, el.h);
+                    
+                    this.ctx.fillStyle = el.textColor || '#000';
+                    this.ctx.font = 'bold 14px "Roboto Mono"';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.textBaseline = 'middle';
+                    this.ctx.shadowBlur = 0; 
+                    this.ctx.fillText(el.label, el.w/2, el.h/2);
+                    this.ctx.font = '12px "Inter"';
+                    // Area calc (always m2 for engineering standard or adaptable?)
+                    // Let's keep m2 but formatted
+                    const areaM2 = ((el.w * el.h) / 10000).toFixed(2);
+                    this.ctx.fillText(`${areaM2}m²`, el.w/2, el.h/2 + 20);
+                } 
+                else if (el.type === 'door') {
+                    this.ctx.fillStyle = '#ffffff'; 
+                    this.ctx.fillRect(-2, -2, el.w + 4, el.h + 4); 
+                    this.ctx.beginPath();
+                    this.ctx.rect(0, el.h-5, 5, 5);
+                    this.ctx.rect(el.w-5, el.h-5, 5, 5); 
+                    this.ctx.moveTo(0, el.h);
+                    this.ctx.lineTo(0, 0); 
+                    this.ctx.moveTo(0, el.h);
+                    this.ctx.arc(0, el.h, el.w, 1.5 * Math.PI, 0); 
+                    this.ctx.stroke();
+                }
+                else if (el.type === 'window') {
+                    this.ctx.fillStyle = '#ffffff';
+                    this.ctx.fillRect(-1, 0, el.w+2, el.h);
+                    this.ctx.fillStyle = '#e0f2fe';
+                    this.ctx.fillRect(0, 0, el.w, el.h);
+                    this.ctx.strokeRect(0, 0, el.w, el.h);
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(0, el.h/2); this.ctx.lineTo(el.w, el.h/2);
+                    this.ctx.moveTo(el.w/3, 0); this.ctx.lineTo(el.w/3, el.h);
+                    this.ctx.moveTo(el.w*2/3, 0); this.ctx.lineTo(el.w*2/3, el.h);
+                    this.ctx.stroke();
+                }
+                else if (el.type === 'furniture') {
+                    this.drawFurnitureSymbol(el);
+                }
+                else if (el.type === 'text') {
+                    this.ctx.fillStyle = el.color || '#000';
+                    this.ctx.font = '16px "Inter"';
+                    this.ctx.fillText(el.label, 0, 0);
+                }
+
+                this.ctx.restore();
+            }
+
+            drawFurnitureSymbol(el) {
+                // ... (mismo código de muebles, sin cambios lógicos)
+                const sub = el.subtype;
+                this.ctx.fillStyle = '#fff';
+                this.ctx.fillRect(0, 0, el.w, el.h); 
+                this.ctx.strokeRect(0, 0, el.w, el.h); 
+
+                this.ctx.fillStyle = '#cbd5e1'; 
+                
+                if (sub.includes('bed')) {
+                    this.ctx.strokeRect(0, 0, el.w, 35);
+                    const pw = el.w / (sub === 'bed_double' ? 2 : 1) - 10;
+                    this.ctx.strokeRect(5, 5, pw, 25);
+                    if(sub === 'bed_double') this.ctx.strokeRect(el.w/2 + 5, 5, pw, 25);
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(0, 45);
+                    this.ctx.quadraticCurveTo(el.w/2, 55, el.w, 45);
+                    this.ctx.stroke();
+                }
+                else if (sub === 'dining_table') {
+                    this.ctx.fillRect(10, -10, 40, 10); this.ctx.strokeRect(10, -10, 40, 10);
+                    this.ctx.fillRect(el.w-50, -10, 40, 10); this.ctx.strokeRect(el.w-50, -10, 40, 10);
+                    this.ctx.fillRect(10, el.h, 40, 10); this.ctx.strokeRect(10, el.h, 40, 10);
+                    this.ctx.fillRect(el.w-50, el.h, 40, 10); this.ctx.strokeRect(el.w-50, el.h, 40, 10);
+                    this.ctx.fillRect(-10, el.h/2-20, 10, 40); this.ctx.strokeRect(-10, el.h/2-20, 10, 40);
+                    this.ctx.fillRect(el.w, el.h/2-20, 10, 40); this.ctx.strokeRect(el.w, el.h/2-20, 10, 40);
+                }
+                else if (sub === 'sofa') {
+                    this.ctx.strokeRect(0, 0, el.w, 20); 
+                    this.ctx.strokeRect(0, 0, 15, el.h); 
+                    this.ctx.strokeRect(el.w-15, 0, 15, el.h); 
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(15, 20); this.ctx.lineTo(15, el.h);
+                    this.ctx.moveTo(el.w/2, 20); this.ctx.lineTo(el.w/2, el.h);
+                    this.ctx.moveTo(el.w-15, 20); this.ctx.lineTo(el.w-15, el.h);
+                    this.ctx.stroke();
+                }
+                else if (sub.includes('stove')) {
+                    const burners = sub === 'stove_4' ? 4 : 2;
+                    const r = 5;
+                    this.ctx.fillStyle = '#000';
+                    if (burners === 4) {
+                        this.ctx.beginPath(); this.ctx.arc(el.w*0.25, el.h*0.25, r, 0, 2*Math.PI); this.ctx.fill();
+                        this.ctx.beginPath(); this.ctx.arc(el.w*0.75, el.h*0.25, r, 0, 2*Math.PI); this.ctx.fill();
+                        this.ctx.beginPath(); this.ctx.arc(el.w*0.25, el.h*0.75, r, 0, 2*Math.PI); this.ctx.fill();
+                        this.ctx.beginPath(); this.ctx.arc(el.w*0.75, el.h*0.75, r, 0, 2*Math.PI); this.ctx.fill();
+                    }
+                }
+                else if (sub === 'sink_kitchen' || sub === 'sink_bath') {
+                    this.ctx.beginPath();
+                    this.ctx.ellipse(el.w/2, el.h/2, el.w/2 - 5, el.h/2 - 5, 0, 0, 2*Math.PI);
+                    this.ctx.stroke();
+                    this.ctx.beginPath(); this.ctx.arc(el.w/2, el.h/2, 3, 0, 2*Math.PI); this.ctx.stroke();
+                }
+                 else if (sub === 'toilet') {
+                    this.ctx.strokeRect(0, 0, el.w, 15); 
+                    this.ctx.beginPath();
+                    this.ctx.ellipse(el.w/2, el.h/2 + 5, el.w/2 - 2, (el.h-20)/2, 0, 0, 2*Math.PI);
+                    this.ctx.stroke();
+                }
+                else if (sub === 'plant') {
+                    this.ctx.fillStyle = '#86efac';
+                    this.ctx.beginPath();
+                    this.ctx.arc(el.w/2, el.h/2, el.w/2, 0, 2*Math.PI);
+                    this.ctx.fill(); this.ctx.stroke();
+                    this.ctx.beginPath(); this.ctx.moveTo(el.w/2, el.h/2); this.ctx.lineTo(el.w, 0); this.ctx.stroke();
+                    this.ctx.beginPath(); this.ctx.moveTo(el.w/2, el.h/2); this.ctx.lineTo(0, 0); this.ctx.stroke();
+                    this.ctx.beginPath(); this.ctx.moveTo(el.w/2, el.h/2); this.ctx.lineTo(el.w/2, el.h); this.ctx.stroke();
+                }
+            }
+
+            drawGhost() {
+                this.ctx.save();
+                this.ctx.setTransform(this.scale, 0, 0, this.scale, this.offsetX, this.offsetY);
+                this.ctx.strokeStyle = '#2563eb';
+                this.ctx.setLineDash([5, 5]);
+                
+                if (this.currentTool === 'room') {
+                    const w = this.currentPos.x - this.startPos.x;
+                    const h = this.currentPos.y - this.startPos.y;
+                    this.ctx.strokeRect(this.startPos.x, this.startPos.y, w, h);
+                } else if (this.currentTool === 'wall' || this.currentTool === 'dimension') {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(this.startPos.x, this.startPos.y);
+                    this.ctx.lineTo(this.currentPos.x, this.currentPos.y);
+                    this.ctx.stroke();
+                }
+                this.ctx.restore();
+            }
+
+            drawGrid() {
+                this.ctx.save();
+                this.ctx.setTransform(this.scale, 0, 0, this.scale, this.offsetX, this.offsetY);
+                this.ctx.strokeStyle = '#e2e8f0';
+                this.ctx.lineWidth = 1;
+                const step = 100; // 100cm = 1m grid
+                
+                const startX = -2000; const endX = 4000;
+                const startY = -2000; const endY = 4000;
+
+                for (let x = startX; x <= endX; x += step) {
+                    this.ctx.beginPath(); this.ctx.moveTo(x, startY); this.ctx.lineTo(x, endY); this.ctx.stroke();
+                }
+                for (let y = startY; y <= endY; y += step) {
+                    this.ctx.beginPath(); this.ctx.moveTo(startX, y); this.ctx.lineTo(endX, y); this.ctx.stroke();
+                }
+                this.ctx.restore();
+            }
+
+            hitTest(pos, el) {
+                if (['room', 'furniture', 'door', 'window'].includes(el.type)) {
+                    const cx = el.x + el.w/2;
+                    const cy = el.y + el.h/2;
+                    const angle = -(el.rotation || 0) * Math.PI / 180;
+                    const dx = pos.x - cx;
+                    const dy = pos.y - cy;
+                    const rx = dx * Math.cos(angle) - dy * Math.sin(angle);
+                    const ry = dx * Math.sin(angle) + dy * Math.cos(angle);
+                    
+                    return Math.abs(rx) <= el.w/2 && Math.abs(ry) <= el.h/2;
+
+                } else if (el.type === 'wall' || el.type === 'dimension') {
+                    const dist = this.pointLineDist(pos, el.x || el.x1, el.y || el.y1, el.ex || el.x2, el.ey || el.y2);
+                    return dist < 15;
+                } else if (el.type === 'text') {
+                    return pos.x >= el.x && pos.x <= el.x + 100 && pos.y >= el.y - 20 && pos.y <= el.y + 10;
+                }
+                return false;
+            }
+
+            pointLineDist(p, x1, y1, x2, y2) {
+                const A = p.x - x1;
+                const B = p.y - y1;
+                const C = x2 - x1;
+                const D = y2 - y1;
+                const dot = A * C + B * D;
+                const len_sq = C * C + D * D;
+                let param = -1;
+                if (len_sq !== 0) param = dot / len_sq;
+                let xx, yy;
+                if (param < 0) { xx = x1; yy = y1; }
+                else if (param > 1) { xx = x2; yy = y2; }
+                else { xx = x1 + param * C; yy = y1 + param * D; }
+                const dx = p.x - xx;
+                const dy = p.y - yy;
+                return Math.sqrt(dx * dx + dy * dy);
+            }
+
+            startClock() {
+                setInterval(() => {
+                    document.getElementById('clock').innerText = new Date().toLocaleTimeString();
+                }, 1000);
+            }
+
+            deleteSelected() {
+                if(this.selectedElementIndex !== -1) {
+                    this.elements.splice(this.selectedElementIndex, 1);
+                    this.selectedElementIndex = -1;
+                    this.updateUI();
+                    this.draw();
+                }
+            }
+
+            undo() {
+                this.elements.pop();
+                this.draw();
+            }
+            
+            clearCanvas() {
+                if(confirm("¿Estás seguro de borrar todo el diseño?")) {
+                    this.elements = [];
+                    this.resetView();
+                }
+            }
+
+            exportPDF() {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('l', 'mm', 'a3'); 
+                const width = doc.internal.pageSize.getWidth();
+                const height = doc.internal.pageSize.getHeight();
+
+                const oldScale = this.scale;
+                const oldOffX = this.offsetX;
+                const oldOffY = this.offsetY;
+                const oldSel = this.selectedElementIndex;
+                
+                this.selectedElementIndex = -1;
+                
+                this.ctx.clearRect(0,0,this.canvas.width, this.canvas.height);
+                this.ctx.fillStyle = '#ffffff'; this.ctx.fillRect(0,0,this.canvas.width, this.canvas.height);
+                this.drawGrid();
+                
+                this.ctx.setTransform(1, 0, 0, 1, 100, 100); 
+                
+                this.scale = oldScale; this.offsetX = oldOffX; this.offsetY = oldOffY;
+                this.draw(); 
+
+                const imgData = this.canvas.toDataURL('image/png');
+                
+                this.selectedElementIndex = oldSel;
+                this.draw();
+
+                doc.setLineWidth(0.5);
+                doc.rect(5, 5, width - 10, height - 10); 
+                
+                doc.addImage(imgData, 'PNG', 10, 10, width - 20, height - 40);
+
+                const footerY = height - 30;
+                doc.setFillColor(255, 255, 255);
+                doc.rect(10, footerY, width - 20, 20, 'FD');
+                
+                doc.setFontSize(10);
+                doc.text("ENTALPIA CAD PRO", 15, footerY + 8);
+                
+                const proj = document.getElementById('project-name').value;
+                const eng = document.getElementById('engineer-name').value;
+                
+                doc.setFont("helvetica", "bold");
+                doc.text(proj.toUpperCase(), 15, footerY + 15);
+                
+                doc.setFont("helvetica", "normal");
+                doc.text(`Ingeniero: ${eng}`, width/2, footerY + 15, {align:'center'});
+                doc.text(`Fecha: ${new Date().toLocaleDateString()}`, width - 15, footerY + 15, {align:'right'});
+
+                doc.save(`Plano_Entalpia_${proj}.pdf`);
+            }
+        }
+
+        const app = new BlueprintApp();
+    </script>
+</body>
+</html>
