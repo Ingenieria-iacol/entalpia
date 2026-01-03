@@ -27,7 +27,7 @@
             overflow: hidden;
             position: relative;
             cursor: grab;
-            touch-action: none; /* CRITICO: Previene zoom/scroll del navegador */
+            touch-action: none;
         }
         .canvas-wrapper:active {
             cursor: grabbing;
@@ -58,7 +58,7 @@
 
         .input-tech {
             border: 1px solid #d1d5db;
-            padding: 6px 8px; /* Más padding para touch */
+            padding: 6px 8px;
             font-size: 0.9rem;
             width: 100%;
             border-radius: 4px;
@@ -71,7 +71,6 @@
             box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
         }
 
-        /* Toolbar Superior Flotante con Scroll Horizontal */
         .top-toolbar {
             position: absolute;
             top: 1rem;
@@ -90,7 +89,6 @@
             white-space: nowrap;
         }
 
-        /* Estilos para secciones desplegables */
         details > summary {
             list-style: none;
         }
@@ -98,7 +96,6 @@
             display: none;
         }
 
-        /* Sidebar Overlay en Mobile */
         .sidebar-overlay {
             background-color: rgba(0,0,0,0.5);
             position: fixed;
@@ -110,12 +107,9 @@
             display: block;
         }
         
-        /* Animaciones Sidebar */
         #toolsSidebar {
             transition: transform 0.3s ease-in-out;
         }
-        /* Mobile: cerrado por defecto (-translate-x-full) */
-        /* Desktop: estático (translate-x-0) manejado por clases Tailwind md: */
     </style>
 </head>
 <body class="h-screen flex flex-col">
@@ -123,18 +117,15 @@
     <!-- Header -->
     <header class="bg-slate-900 text-white h-14 flex items-center justify-between px-4 shadow-lg z-50">
         <div class="flex items-center gap-3">
-            <!-- Botón Hamburguesa (Solo Móvil) -->
             <button class="md:hidden text-white text-xl p-1" onclick="app.toggleSidebar()">
                 <i class="fa-solid fa-bars"></i>
             </button>
-            
             <i class="fa-solid fa-compass-drafting text-blue-400 text-xl hidden sm:block"></i>
             <div>
                 <h1 class="font-bold text-lg tracking-wide truncate max-w-[150px] sm:max-w-none">ENTALPIA <span class="font-light text-gray-400 hidden sm:inline">| CAD Pro</span></h1>
             </div>
         </div>
         <div class="flex items-center gap-3">
-             <!-- Selector de Unidades -->
             <div class="hidden sm:flex items-center bg-slate-800 rounded px-2 py-1 gap-2 border border-slate-700">
                 <span class="text-xs text-gray-400 uppercase font-bold">Unid:</span>
                 <select id="unitSelector" onchange="app.setUnit(this.value)" class="bg-transparent text-white text-xs technical-font border-none outline-none cursor-pointer">
@@ -143,7 +134,6 @@
                     <option value="mm">mm</option>
                 </select>
             </div>
-            
             <span class="text-xs text-gray-400 technical-font hidden md:block" id="clock">00:00</span>
             <button onclick="app.exportPDF()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded text-sm font-medium transition flex items-center gap-2 shadow-md border border-blue-500">
                 <i class="fa-solid fa-file-pdf"></i> <span class="hidden sm:inline">PDF</span>
@@ -154,20 +144,15 @@
     <!-- Main Container -->
     <div class="flex-1 flex overflow-hidden relative">
         
-        <!-- Overlay para cerrar sidebar en móvil -->
         <div id="sidebarOverlay" class="sidebar-overlay md:hidden" onclick="app.toggleSidebar(false)"></div>
 
-        <!-- Sidebar Left: Libraries -->
-        <!-- Fixed en móvil, Relative en Desktop -->
         <aside id="toolsSidebar" class="fixed inset-y-0 left-0 bg-white border-r border-gray-200 flex flex-col shadow-2xl z-40 w-72 transform -translate-x-full md:relative md:translate-x-0 md:shadow-none md:z-20 overflow-y-auto h-full pt-14 md:pt-0">
             
-            <!-- Mobile Header inside Sidebar -->
             <div class="md:hidden flex justify-between items-center p-4 border-b bg-gray-50">
                 <h2 class="font-bold text-gray-700">Herramientas</h2>
                 <button onclick="app.toggleSidebar(false)" class="text-gray-500"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
 
-            <!-- Project Info -->
             <div class="p-4 border-b border-gray-200 bg-gray-50">
                 <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Proyecto</h3>
                 <div class="space-y-3">
@@ -179,10 +164,8 @@
                 </div>
             </div>
 
-            <!-- Tools List -->
-            <div class="p-3 space-y-5 pb-20"> <!-- Padding bottom extra para scroll en móvil -->
+            <div class="p-3 space-y-5 pb-20">
                 
-                <!-- Structural -->
                 <div>
                     <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Estructura</h3>
                     <div class="grid grid-cols-3 gap-2 mb-2">
@@ -228,14 +211,12 @@
                     </details>
                 </div>
 
-                <!-- Furniture -->
                 <details class="group" open>
                     <summary class="flex items-center justify-between cursor-pointer p-2 bg-gray-50 rounded hover:bg-gray-100 select-none">
                         <span class="text-xs font-bold text-gray-600 uppercase">Mobiliario</span>
                         <i class="fa-solid fa-chevron-down text-gray-400 text-xs transition-transform duration-200 group-open:rotate-180"></i>
                     </summary>
                     <div class="grid grid-cols-2 gap-2 pt-2 text-xs">
-                        <!-- Botones más grandes para touch -->
                         <button class="tool-btn p-2 border rounded flex flex-col items-center gap-1 text-center" onclick="app.setTool('furniture', 'stove_4')"><i class="fa-solid fa-fire-burner text-lg"></i> Estufa</button>
                         <button class="tool-btn p-2 border rounded flex flex-col items-center gap-1 text-center" onclick="app.setTool('furniture', 'fridge')"><i class="fa-solid fa-snowflake text-lg"></i> Nevera</button>
                         <button class="tool-btn p-2 border rounded flex flex-col items-center gap-1 text-center" onclick="app.setTool('furniture', 'bed_double')"><i class="fa-solid fa-bed text-lg"></i> Cama Doble</button>
@@ -251,10 +232,8 @@
             </div>
         </aside>
 
-        <!-- Canvas Area -->
         <main class="flex-1 relative bg-gray-200 overflow-hidden canvas-wrapper" id="mainContainer">
             
-            <!-- Floating Top Toolbar -->
             <div class="top-toolbar">
                 <button class="tool-btn active min-w-[40px] h-10 rounded flex items-center justify-center text-gray-600 border border-transparent hover:border-gray-300" onclick="app.setTool('select')" title="Seleccionar">
                     <i class="fa-solid fa-arrow-pointer"></i>
@@ -280,7 +259,6 @@
 
             <canvas id="blueprintCanvas" class="block origin-top-left"></canvas>
             
-            <!-- Zoom Controls & Scale -->
             <div class="absolute bottom-4 left-4 right-4 flex justify-between items-end pointer-events-none">
                  <div class="flex gap-2 pointer-events-auto">
                      <button class="bg-white p-3 rounded-full shadow-lg text-gray-600 hover:text-blue-600 active:bg-gray-100" onclick="app.adjustZoom(0.1)"><i class="fa-solid fa-plus"></i></button>
@@ -294,8 +272,6 @@
             </div>
         </main>
         
-        <!-- Properties Panel (Right) -->
-        <!-- Fixed Overlay en Mobile para que no quite espacio -->
         <aside class="fixed inset-y-0 right-0 w-80 max-w-[90vw] bg-white border-l border-gray-200 p-4 hidden flex-col shadow-2xl z-50 overflow-y-auto" id="propertiesPanel">
             <div class="mb-4 flex items-center justify-between border-b pb-2">
                 <h3 class="font-bold text-gray-800"><i class="fa-solid fa-sliders"></i> Propiedades</h3>
@@ -314,7 +290,6 @@
         </aside>
     </div>
 
-    <!-- Application Script -->
     <script>
         class BlueprintApp {
             constructor() {
@@ -335,7 +310,6 @@
                 
                 this.currentUnit = 'm'; 
                 
-                // Interaction State
                 this.isDrawing = false;
                 this.isDraggingElement = false;
                 this.isPanning = false;
@@ -344,7 +318,6 @@
                 this.currentPos = { x: 0, y: 0 }; 
                 this.panStart = { x: 0, y: 0 }; 
                 
-                // Pinch Zoom State
                 this.isPinching = false;
                 this.lastPinchDist = 0;
 
@@ -352,7 +325,6 @@
                 this.dragOffset = { x: 0, y: 0 };
                 this.activeSnapLines = []; 
 
-                // Viewport
                 this.scale = 1;
                 this.offsetX = 0;
                 this.offsetY = 0;
@@ -414,8 +386,7 @@
             }
 
             resetView() {
-                this.scale = 0.5; // Start zoomed out a bit more for mobile
-                // Center in container
+                this.scale = 0.5; 
                 const rect = this.container.getBoundingClientRect();
                 this.offsetX = (rect.width - this.canvas.width * this.scale) / 2;
                 this.offsetY = (rect.height - this.canvas.height * this.scale) / 2;
@@ -481,7 +452,6 @@
                 this.selectedElementIndex = -1;
                 this.updateUI();
                 
-                // Auto close sidebar on mobile when selecting a tool
                 if (window.innerWidth < 768) {
                     this.toggleSidebar(false);
                 }
@@ -635,7 +605,6 @@
             }
 
             addEventListeners() {
-                // Mouse Events
                 this.container.addEventListener('mousedown', (e) => this.onMouseDown(e));
                 window.addEventListener('mousemove', (e) => this.onMouseMove(e));
                 window.addEventListener('mouseup', (e) => this.onMouseUp(e));
@@ -645,7 +614,6 @@
                     this.adjustZoom(delta);
                 }, { passive: false });
 
-                // Touch Events
                 this.container.addEventListener('touchstart', (e) => this.onTouchStart(e), {passive: false});
                 this.container.addEventListener('touchmove', (e) => this.onTouchMove(e), {passive: false});
                 this.container.addEventListener('touchend', (e) => this.onTouchEnd(e), {passive: false});
@@ -658,7 +626,6 @@
                 });
             }
 
-            // --- TOUCH HANDLERS ---
             getDistance(t1, t2) {
                 const dx = t1.clientX - t2.clientX;
                 const dy = t1.clientY - t2.clientY;
@@ -671,8 +638,7 @@
                     this.isPinching = true;
                     this.lastPinchDist = this.getDistance(e.touches[0], e.touches[1]);
                 } else if (e.touches.length === 1) {
-                    e.preventDefault(); // Prevent scrolling
-                    // Create simulated mouse event
+                    e.preventDefault(); 
                     const touch = e.touches[0];
                     const simulatedEvent = {
                         clientX: touch.clientX,
@@ -691,7 +657,6 @@
                     const dist = this.getDistance(e.touches[0], e.touches[1]);
                     const diff = dist - this.lastPinchDist;
                     
-                    // Throttle zoom speed
                     if (Math.abs(diff) > 2) {
                         this.adjustZoom(diff * 0.005);
                         this.lastPinchDist = dist;
@@ -713,7 +678,6 @@
                     this.isPinching = false;
                 }
                 
-                // Always fire mouse up logic if not pinching
                 if (!this.isPinching) {
                      const simulatedEvent = {
                         preventDefault: () => {}
@@ -722,9 +686,7 @@
                 }
             }
 
-            // --- MOUSE HANDLERS ---
             onMouseDown(e) {
-                // Ignore if clicking UI buttons that might bubble up (unlikely due to structure but safe)
                 if (e.target !== this.container && e.target !== this.canvas) return;
 
                 const screenX = e.clientX;
@@ -733,7 +695,6 @@
                 this.startPos = pos;
                 
                 let hitIndex = -1;
-                // Reverse iterate for Z-order selection
                 for (let i = this.elements.length - 1; i >= 0; i--) {
                     if (this.hitTest(pos, this.elements[i])) {
                         hitIndex = i;
@@ -754,7 +715,6 @@
                             this.dragOffset = { x: pos.x - el.x, y: pos.y - el.y };
                         }
                     } else {
-                        // Pan Mode on Empty space
                         this.isPanning = true;
                         this.panStart = { x: screenX, y: screenY };
                         this.selectedElementIndex = -1;
@@ -763,9 +723,8 @@
                     this.updateUI();
                     this.draw();
                 } else {
-                    // Create new item
                     this.isDrawing = true;
-                    this.currentPos = pos; // Init current pos immediately
+                    this.currentPos = pos; 
                     if (['furniture', 'door', 'window'].includes(this.currentTool)) {
                         this.placeItem(pos);
                         this.isDrawing = false; 
@@ -780,7 +739,6 @@
                 }
             }
 
-            // ... applyMagnetism, onMouseMove, etc same as previous but integrated
              applyMagnetism(x, y, ignoreIndex = -1) {
                 const threshold = 15; 
                 let snappedX = x;
@@ -823,7 +781,6 @@
             }
 
             onMouseMove(e) {
-                // If mouse move not triggered by touch, ensure we have coords
                 if (!e.clientX) return;
 
                 const pos = this.toWorld(e.clientX, e.clientY);
@@ -952,14 +909,14 @@
                 this.setTool('select');
             }
 
-            // --- DRAWING ---
-            draw() {
+            draw(hideGrid = false) {
                 this.ctx.setTransform(1, 0, 0, 1, 0, 0);
                 this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
                 
                 this.ctx.fillStyle = '#ffffff';
                 this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-                this.drawGrid();
+                
+                if(!hideGrid) this.drawGrid();
 
                 this.ctx.setTransform(this.scale, 0, 0, this.scale, this.offsetX, this.offsetY);
 
@@ -975,7 +932,7 @@
                 if (this.activeSnapLines.length > 0) {
                     this.ctx.save();
                     this.ctx.strokeStyle = '#06b6d4'; 
-                    this.ctx.lineWidth = 1/this.scale; // Keep line thin regardless of zoom
+                    this.ctx.lineWidth = 1/this.scale;
                     this.ctx.setLineDash([4/this.scale, 4/this.scale]);
                     this.activeSnapLines.forEach(line => {
                         this.ctx.beginPath();
@@ -1075,8 +1032,11 @@
                     this.ctx.fillText(`${areaM2}m²`, el.w/2, el.h/2 + 20);
                 } 
                 else if (el.type === 'door') {
+                    // Mask only the threshold to hide wall, not the whole door area
                     this.ctx.fillStyle = '#ffffff'; 
-                    this.ctx.fillRect(-2, -2, el.w + 4, el.h + 4); 
+                    // Assuming wall thickness is around 15px, we mask a strip at the bottom of the bounding box where the wall usually sits
+                    this.ctx.fillRect(0, el.h - 7.5, el.w, 15); 
+
                     this.ctx.beginPath();
                     this.ctx.rect(0, el.h-5, 5, 5);
                     this.ctx.rect(el.w-5, el.h-5, 5, 5); 
@@ -1087,9 +1047,8 @@
                     this.ctx.stroke();
                 }
                 else if (el.type === 'window') {
-                    this.ctx.fillStyle = '#ffffff';
-                    this.ctx.fillRect(-1, 0, el.w+2, el.h);
-                    this.ctx.fillStyle = '#e0f2fe';
+                    // Solid fill to hide the wall, but with a color that suggests window
+                    this.ctx.fillStyle = '#e0f2fe'; // Light blue glass color
                     this.ctx.fillRect(0, 0, el.w, el.h);
                     this.ctx.strokeRect(0, 0, el.w, el.h);
                     this.ctx.beginPath();
@@ -1289,38 +1248,110 @@
             exportPDF() {
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF('l', 'mm', 'a3'); 
-                const width = doc.internal.pageSize.getWidth();
-                const height = doc.internal.pageSize.getHeight();
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+                
+                // Configuración de márgenes
+                const margin = 10;
+                const footerHeight = 25; // Altura del footer
+                const contentWidth = pageWidth - (margin * 2);
+                const contentHeight = pageHeight - (margin * 2) - footerHeight;
 
+                // 1. Calcular Bounding Box (Límites del dibujo)
+                let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                if (this.elements.length === 0) {
+                     // Default si está vacío
+                     minX = 0; minY = 0; maxX = 2000; maxY = 1500;
+                } else {
+                    this.elements.forEach(el => {
+                         let ex = el.x, ey = el.y, ew = el.w || 0, eh = el.h || 0;
+                        if (el.type === 'wall' || el.type === 'dimension') {
+                             const x2 = el.ex !== undefined ? el.ex : (el.x2 !== undefined ? el.x2 : el.x);
+                             const y2 = el.ey !== undefined ? el.ey : (el.y2 !== undefined ? el.y2 : el.y);
+                             ex = Math.min(el.x, x2);
+                             ey = Math.min(el.y, y2);
+                             ew = Math.abs(x2 - el.x);
+                             eh = Math.abs(y2 - el.y);
+                        }
+                        // Padding para asegurar que grosores de línea y textos no se corten
+                        const p = 50; 
+                        minX = Math.min(minX, ex - p);
+                        minY = Math.min(minY, ey - p);
+                        maxX = Math.max(maxX, ex + ew + p);
+                        maxY = Math.max(maxY, ey + eh + p);
+                    });
+                }
+                
+                const bbW = maxX - minX;
+                const bbH = maxY - minY;
+
+                // 2. Guardar estado actual de la vista
                 const oldScale = this.scale;
                 const oldOffX = this.offsetX;
                 const oldOffY = this.offsetY;
                 const oldSel = this.selectedElementIndex;
-                
-                this.selectedElementIndex = -1;
-                
-                this.ctx.clearRect(0,0,this.canvas.width, this.canvas.height);
-                this.ctx.fillStyle = '#ffffff'; this.ctx.fillRect(0,0,this.canvas.width, this.canvas.height);
-                this.drawGrid();
-                
-                this.ctx.setTransform(1, 0, 0, 1, 100, 100); 
-                
-                this.scale = oldScale; this.offsetX = oldOffX; this.offsetY = oldOffY;
-                this.draw(); 
+                this.selectedElementIndex = -1; // Deseleccionar para la foto
 
+                // 3. Auto-Fit: Calcular transformación para encajar BB en el Canvas de captura
+                // Usamos el tamaño interno del canvas (2000x1500) como buffer de alta resolución
+                const canvasW = this.canvas.width;
+                const canvasH = this.canvas.height;
+                
+                const scaleX = canvasW / bbW;
+                const scaleY = canvasH / bbH;
+                const fitScale = Math.min(scaleX, scaleY); // Escala para llenar sin deformar
+                
+                // Centrar el BB en el canvas
+                const fitOffX = (canvasW - bbW * fitScale) / 2 - minX * fitScale;
+                const fitOffY = (canvasH - bbH * fitScale) / 2 - minY * fitScale;
+
+                // Aplicar transformación temporal
+                this.scale = fitScale;
+                this.offsetX = fitOffX;
+                this.offsetY = fitOffY;
+
+                // 4. Dibujar y Capturar (Sin Grid para profesionalismo)
+                this.draw(true); // true = hideGrid
                 const imgData = this.canvas.toDataURL('image/png');
-                
+
+                // 5. Restaurar vista original
+                this.scale = oldScale;
+                this.offsetX = oldOffX;
+                this.offsetY = oldOffY;
                 this.selectedElementIndex = oldSel;
-                this.draw();
+                this.draw(false); // Grid visible en pantalla
 
+                // 6. Colocar imagen en PDF centrada
+                // Dibujar borde de página
                 doc.setLineWidth(0.5);
-                doc.rect(5, 5, width - 10, height - 10); 
+                doc.rect(5, 5, pageWidth - 10, pageHeight - 10); 
                 
-                doc.addImage(imgData, 'PNG', 10, 10, width - 20, height - 40);
+                // Calcular relación de aspecto
+                const imgRatio = canvasW / canvasH;
+                const contentRatio = contentWidth / contentHeight;
+                
+                let finalImgW, finalImgH;
+                
+                if (imgRatio > contentRatio) {
+                    // Imagen es más ancha que el área -> Ajustar por ancho
+                    finalImgW = contentWidth;
+                    finalImgH = contentWidth / imgRatio;
+                } else {
+                    // Imagen es más alta -> Ajustar por alto
+                    finalImgH = contentHeight;
+                    finalImgW = contentHeight * imgRatio;
+                }
+                
+                // Coordenadas para centrar
+                const finalX = margin + (contentWidth - finalImgW) / 2;
+                const finalY = margin + (contentHeight - finalImgH) / 2;
 
-                const footerY = height - 30;
+                doc.addImage(imgData, 'PNG', finalX, finalY, finalImgW, finalImgH);
+
+                // Footer
+                const footerY = pageHeight - 30; // Posición Y del footer
                 doc.setFillColor(255, 255, 255);
-                doc.rect(10, footerY, width - 20, 20, 'FD');
+                doc.rect(10, footerY, pageWidth - 20, 20, 'FD');
                 
                 doc.setFontSize(10);
                 doc.text("ENTALPIA CAD PRO", 15, footerY + 8);
@@ -1332,8 +1363,8 @@
                 doc.text(proj.toUpperCase(), 15, footerY + 15);
                 
                 doc.setFont("helvetica", "normal");
-                doc.text(`Ingeniero: ${eng}`, width/2, footerY + 15, {align:'center'});
-                doc.text(`Fecha: ${new Date().toLocaleDateString()}`, width - 15, footerY + 15, {align:'right'});
+                doc.text(`Ingeniero: ${eng}`, pageWidth/2, footerY + 15, {align:'center'});
+                doc.text(`Fecha: ${new Date().toLocaleDateString()}`, pageWidth - 15, footerY + 15, {align:'right'});
 
                 doc.save(`Plano_Entalpia_${proj}.pdf`);
             }
