@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechGuard - Red de Vigilancia</title>
+    <!-- Usamos Tailwind CSS para estilos rápidos y sofisticados -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Iconos para la interfaz -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        // Configuración de colores personalizados para Tailwind
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        netDark: '#141414',
+                        netLight: '#1f1f1f',
+                        techBlue: '#0071eb', // Azul estilo Netflix reemplazando al rojo
+                        techGlow: '#00c3ff', // Azul cian para efectos de luz
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Estilos base para la apariencia sofisticada */
+        body {
+            background-color: #141414;
+            color: #e5e5e5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Efecto de cristal para la barra de navegación */
+        .glass-panel {
+            background: rgba(31, 31, 31, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Animación suave para el botón de WhatsApp */
+        .whatsapp-float {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+        .whatsapp-float:hover {
+            transform: scale(1.1);
+            filter: drop-shadow(0 0 10px rgba(0, 255, 100, 0.6));
+        }
+
+        /* Scrollbar personalizado oscuro */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #141414; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #0071eb; 
+        }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <!-- 1. BARRA LATERAL (Navegación) -->
+    <aside class="hidden md:flex flex-col w-64 glass-panel h-full p-6 space-y-8 border-r border-gray-800">
+        <!-- Logo -->
+        <div class="flex items-center gap-3 text-techBlue font-bold text-2xl tracking-wider">
+            <i class="fa-solid fa-eye"></i> TECHGUARD
+        </div>
+
+        <!-- Menú -->
+        <nav class="flex-1 space-y-4">
+            <a href="#" class="flex items-center gap-4 text-white bg-blue-900/30 p-3 rounded-lg border-l-4 border-techBlue transition hover:bg-blue-900/50">
+                <i class="fa-solid fa-house"></i> Inicio
+            </a>
+            <a href="#" class="flex items-center gap-4 text-gray-400 p-3 rounded-lg hover:bg-gray-800 transition hover:text-white">
+                <i class="fa-solid fa-video"></i> Cámaras IP
+            </a>
+            <a href="#" class="flex items-center gap-4 text-gray-400 p-3 rounded-lg hover:bg-gray-800 transition hover:text-white">
+                <i class="fa-solid fa-drone"></i> Drones
+            </a>
+            <a href="#" class="flex items-center gap-4 text-gray-400 p-3 rounded-lg hover:bg-gray-800 transition hover:text-white">
+                <i class="fa-solid fa-shield-halved"></i> Ciberseguridad
+            </a>
+        </nav>
+
+        <!-- Perfil Usuario -->
+        <div class="flex items-center gap-3 pt-6 border-t border-gray-700">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-cyan-400 flex items-center justify-center font-bold">A</div>
+            <div>
+                <p class="text-sm font-semibold">Admin</p>
+                <p class="text-xs text-gray-500">Online</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- 2. CONTENIDO PRINCIPAL (Feed) -->
+    <main class="flex-1 h-full overflow-y-auto relative">
+        <!-- Header Móvil -->
+        <header class="md:hidden glass-panel p-4 flex justify-between items-center sticky top-0 z-50">
+            <span class="text-techBlue font-bold text-xl"><i class="fa-solid fa-eye"></i> TG</span>
+            <button class="text-white"><i class="fa-solid fa-bars"></i></button>
+        </header>
+
+        <div class="max-w-3xl mx-auto p-4 md:p-8 pb-24">
+            
+            <!-- Crear Publicación -->
+            <div class="glass-panel p-4 rounded-xl mb-8">
+                <div class="flex gap-4">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-cyan-400 flex-shrink-0 flex items-center justify-center font-bold">A</div>
+                    <div class="flex-1">
+                        <textarea id="postInput" class="w-full bg-transparent border-none text-white focus:ring-0 placeholder-gray-500 resize-none text-lg" rows="2" placeholder="¿Qué novedad tecnológica hay hoy?"></textarea>
+                        <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-700">
+                            <div class="flex gap-4 text-techBlue">
+                                <button class="hover:text-cyan-400"><i class="fa-solid fa-image"></i> Foto</button>
+                                <button class="hover:text-cyan-400"><i class="fa-solid fa-video"></i> Video</button>
+                            </div>
+                            <button onclick="createPost()" class="bg-techBlue hover:bg-blue-600 text-white px-6 py-2 rounded-full font-semibold transition shadow-[0_0_15px_rgba(0,113,235,0.4)]">
+                                Publicar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feed de Publicaciones (Contenedor Dinámico) -->
+            <div id="feedContainer" class="space-y-6">
+                <!-- Las publicaciones se insertarán aquí con JS -->
+            </div>
+            
+            <!-- Mensaje de fin de feed -->
+            <div class="text-center py-8 text-gray-600">
+                <p>Estás al día con la vigilancia tecnológica.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- 3. INTEGRACIÓN WHATSAPP (Chat Simulado) -->
+    
+    <!-- Ventana de Chat (Oculta por defecto) -->
+    <div id="whatsappWindow" class="fixed bottom-24 right-8 w-80 md:w-96 bg-gray-900 rounded-xl shadow-2xl border border-gray-700 transform scale-0 origin-bottom-right transition-transform duration-300 z-50 flex flex-col overflow-hidden" style="height: 500px;">
+        <!-- Cabecera Chat -->
+        <div class="bg-green-700 p-4 flex items-center gap-3">
+            <i class="fa-brands fa-whatsapp text-2xl text-white"></i>
+            <div>
+                <h3 class="font-bold text-white">Soporte TechGuard</h3>
+                <p class="text-xs text-green-100">Responde habitualmente en 1h</p>
+            </div>
+            <button onclick="toggleChat()" class="ml-auto text-white hover:text-gray-200">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+        </div>
+        
+        <!-- Cuerpo Chat -->
+        <div id="chatBody" class="flex-1 bg-black/50 p-4 overflow-y-auto space-y-4" style="background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-blend-mode: overlay;">
+            <!-- Mensaje del sistema -->
+            <div class="bg-gray-800 p-3 rounded-lg rounded-tl-none max-w-[80%] text-sm border border-gray-700">
+                <p>Hola 👋, bienvenido a TechGuard. ¿Te interesa cotizar algún equipo de vigilancia?</p>
+                <span class="text-[10px] text-gray-400 block text-right mt-1">10:00 AM</span>
+            </div>
+        </div>
+
+        <!-- Input Chat -->
+        <div class="p-3 bg-gray-800 flex gap-2">
+            <input type="text" id="chatInput" placeholder="Escribe un mensaje..." class="flex-1 bg-gray-700 text-white rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-green-500">
+            <button onclick="sendMessage()" class="bg-green-600 w-10 h-10 rounded-full text-white flex items-center justify-center hover:bg-green-500">
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Botón Flotante (FAB) -->
+    <button onclick="toggleChat()" class="whatsapp-float w-16 h-16 bg-green-500 rounded-full flex items-center justify-center text-white text-3xl shadow-lg hover:bg-green-400 transition cursor-pointer" title="Contactar por WhatsApp">
+        <i class="fa-brands fa-whatsapp"></i>
+    </button>
+
+    <!-- SCRIPTS LÓGICOS -->
+    <script>
+        // Datos iniciales simulados
+        const posts = [
+            {
+                author: "TechGuard Oficial",
+                time: "Hace 2 horas",
+                content: "La nueva tecnología de reconocimiento facial con IA permite identificar sujetos incluso en condiciones de baja luminosidad. Ideal para perímetros industriales.",
+                image: "https://images.unsplash.com/photo-1557597774-9d273605dfa9?q=80&w=800&auto=format&fit=crop",
+                likes: 124,
+                comments: 15
+            },
+            {
+                author: "Ciberseguridad Total",
+                time: "Hace 5 horas",
+                content: "¡Alerta! Se ha detectado un nuevo malware que afecta a sistemas DVR antiguos. Asegúrate de actualizar el firmware de tus equipos de grabación.",
+                image: null, // Post solo texto
+                likes: 89,
+                comments: 42
+            }
+        ];
+
+        const feedContainer = document.getElementById('feedContainer');
+        const postInput = document.getElementById('postInput');
+        const chatBody = document.getElementById('chatBody');
+        const chatInput = document.getElementById('chatInput');
+
+        // Función para renderizar posts
+        function renderPosts() {
+            feedContainer.innerHTML = "";
+            posts.forEach(post => {
+                const postHTML = `
+                <div class="glass-panel rounded-xl overflow-hidden animate-fade-in mb-6">
+                    <div class="p-4 flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-techBlue"><i class="fa-solid fa-robot"></i></div>
+                        <div>
+                            <h4 class="font-bold text-white">${post.author}</h4>
+                            <p class="text-xs text-gray-400">${post.time}</p>
+                        </div>
+                        <button class="ml-auto text-gray-400 hover:text-white"><i class="fa-solid fa-ellipsis"></i></button>
+                    </div>
+                    
+                    <div class="px-4 pb-3">
+                        <p class="text-gray-300 leading-relaxed">${post.content}</p>
+                    </div>
+
+                    ${post.image ? `
+                    <div class="w-full h-64 bg-black relative">
+                        <img src="${post.image}" class="w-full h-full object-cover opacity-90 hover:opacity-100 transition" alt="Imagen post">
+                    </div>
+                    ` : ''}
+
+                    <div class="p-4 border-t border-gray-700 flex justify-between text-gray-400 text-sm">
+                        <button class="flex items-center gap-2 hover:text-techBlue transition group">
+                            <i class="fa-regular fa-thumbs-up group-hover:scale-110 transition"></i> ${post.likes} Me gusta
+                        </button>
+                        <button class="flex items-center gap-2 hover:text-white transition">
+                            <i class="fa-regular fa-comment"></i> ${post.comments} Comentarios
+                        </button>
+                        <button class="flex items-center gap-2 hover:text-green-400 transition">
+                            <i class="fa-brands fa-whatsapp"></i> Compartir
+                        </button>
+                    </div>
+                </div>
+                `;
+                feedContainer.innerHTML += postHTML;
+            });
+        }
+
+        // Crear nuevo post
+        function createPost() {
+            const content = postInput.value;
+            if(!content.trim()) return alert("Escribe algo para publicar");
+
+            const newPost = {
+                author: "Usuario Admin",
+                time: "Justo ahora",
+                content: content,
+                image: null,
+                likes: 0,
+                comments: 0
+            };
+
+            posts.unshift(newPost); // Añadir al principio
+            renderPosts();
+            postInput.value = ""; // Limpiar input
+        }
+
+        // Lógica del Chat de WhatsApp
+        let isChatOpen = false;
+
+        function toggleChat() {
+            const window = document.getElementById('whatsappWindow');
+            if (isChatOpen) {
+                window.classList.remove('scale-100');
+                window.classList.add('scale-0');
+            } else {
+                window.classList.remove('scale-0');
+                window.classList.add('scale-100');
+            }
+            isChatOpen = !isChatOpen;
+        }
+
+        function sendMessage() {
+            const text = chatInput.value;
+            if (!text.trim()) return;
+
+            // Mensaje usuario
+            const userMsg = `
+            <div class="flex justify-end">
+                <div class="bg-green-900 text-white p-2 rounded-lg rounded-tr-none max-w-[80%] text-sm border border-green-800">
+                    <p>${text}</p>
+                    <span class="text-[10px] text-green-300 block text-right mt-1">Ahora</span>
+                </div>
+            </div>`;
+            chatBody.insertAdjacentHTML('beforeend', userMsg);
+            chatInput.value = "";
+            chatBody.scrollTop = chatBody.scrollHeight;
+
+            // Respuesta automática
+            setTimeout(() => {
+                const botMsg = `
+                <div class="flex justify-start">
+                    <div class="bg-gray-800 p-3 rounded-lg rounded-tl-none max-w-[80%] text-sm border border-gray-700">
+                        <p>Gracias por tu mensaje. Un asesor te contactará pronto al WhatsApp oficial.</p>
+                        <span class="text-[10px] text-gray-400 block text-right mt-1">Bot</span>
+                    </div>
+                </div>`;
+                chatBody.insertAdjacentHTML('beforeend', botMsg);
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }, 1500);
+        }
+
+        // Permitir enviar con Enter
+        chatInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        // Inicializar
+        renderPosts();
+
+    </script>
+</body>
+</html>
