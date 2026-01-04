@@ -3,432 +3,327 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebMall - Tu Centro Comercial Virtual</title>
-    <!-- Tailwind CSS -->
+    <title>TechGuard - Red de Vigilancia</title>
+    <!-- Usamos Tailwind CSS para estilos rápidos y sofisticados -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Iconos para la interfaz -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        // Configuración de colores personalizados para Tailwind
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        netDark: '#141414',
+                        netLight: '#1f1f1f',
+                        techBlue: '#0071eb', // Azul estilo Netflix reemplazando al rojo
+                        techGlow: '#00c3ff', // Azul cian para efectos de luz
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        /* Personalizaciones y utilidades extra */
+        /* Estilos base para la apariencia sofisticada */
         body {
+            background-color: #141414;
+            color: #e5e5e5;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #0f0f0f;
-            color: white;
-            overflow-x: hidden;
-        }
-        
-        /* Ocultar scrollbar pero permitir scroll */
-        .scrollbar-hide::-webkit-scrollbar {
-            display: none;
-        }
-        .scrollbar-hide {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
         }
 
-        /* Animaciones */
-        .fade-in {
-            animation: fadeIn 0.3s ease-in-out;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        /* Efecto de cristal para la barra de navegación */
+        .glass-panel {
+            background: rgba(31, 31, 31, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .slide-in-right {
-            animation: slideInRight 0.3s ease-out forwards;
+        /* Animación suave para el botón de WhatsApp */
+        .whatsapp-float {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+        .whatsapp-float:hover {
+            transform: scale(1.1);
+            filter: drop-shadow(0 0 10px rgba(0, 255, 100, 0.6));
         }
 
-        @keyframes slideInRight {
-            from { transform: translateX(100%); }
-            to { transform: translateX(0); }
+        /* Scrollbar personalizado oscuro */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #141414; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #0071eb; 
         }
     </style>
 </head>
-<body class="bg-[#0f0f0f] text-white selection:bg-blue-600 selection:text-white">
+<body class="flex h-screen overflow-hidden">
 
-    <!-- NAVBAR -->
-    <nav id="navbar" class="fixed w-full z-50 transition-colors duration-300 bg-gradient-to-b from-black/90 to-transparent">
-        <div class="px-4 md:px-12 py-4 flex items-center justify-between">
-            <div class="flex items-center gap-8">
-                <div class="flex items-center gap-2 cursor-pointer" onclick="window.scrollTo(0,0)">
-                    <i data-lucide="grid" class="text-blue-600 w-8 h-8"></i>
-                    <h1 class="text-xl md:text-2xl font-bold tracking-tighter uppercase">
-                        Web<span class="text-blue-600">Mall</span>
-                    </h1>
-                </div>
-                <ul class="hidden md:flex gap-6 text-sm text-gray-300 font-medium">
-                    <li class="hover:text-blue-500 cursor-pointer transition">Mapa del Mall</li>
-                    <li class="hover:text-blue-500 cursor-pointer transition">Eventos</li>
-                    <li class="hover:text-blue-500 cursor-pointer transition">Cine</li>
-                    <li class="hover:text-blue-500 cursor-pointer transition">Ofertas</li>
-                </ul>
-            </div>
-            
-            <div class="flex items-center gap-6 text-white">
-                <i data-lucide="search" class="w-5 h-5 cursor-pointer hover:text-blue-500 transition"></i>
-                <div class="relative cursor-pointer group" onclick="toggleCart()">
-                    <i data-lucide="shopping-cart" class="w-5 h-5 group-hover:text-blue-500 transition-colors"></i>
-                    <span id="cart-count" class="absolute -top-2 -right-2 bg-blue-600 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center hidden">0</span>
-                </div>
-                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-700 to-blue-500 cursor-pointer border border-gray-600"></div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- HERO SECTION -->
-    <div class="relative h-[70vh] w-full">
-        <div class="absolute inset-0">
-            <img src="https://images.unsplash.com/photo-1519567241046-7f570eee3d9f?w=1200&q=80" alt="Event" class="w-full h-full object-cover">
-            <div class="absolute inset-0 bg-gradient-to-r from-[#141414] via-[#141414]/70 to-transparent"></div>
-            <div class="absolute inset-0 bg-gradient-to-t from-[#141414] via-transparent to-transparent"></div>
+    <!-- 1. BARRA LATERAL (Navegación) -->
+    <aside class="hidden md:flex flex-col w-64 glass-panel h-full p-6 space-y-8 border-r border-gray-800">
+        <!-- Logo -->
+        <div class="flex items-center gap-3 text-techBlue font-bold text-2xl tracking-wider">
+            <i class="fa-solid fa-eye"></i> TECHGUARD
         </div>
 
-        <div class="absolute top-[35%] left-4 md:left-12 max-w-2xl text-white">
-            <div class="flex items-center gap-2 mb-4">
-                <span class="bg-blue-600/90 backdrop-blur text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">Evento Especial</span>
-            </div>
-            <h1 class="text-4xl md:text-6xl font-bold mb-4 leading-tight">Gran Apertura: Ala Norte</h1>
-            <h2 class="text-xl md:text-2xl text-blue-400 font-light mb-4">Nuevas tiendas, nuevas experiencias</h2>
-            <p class="text-base text-gray-300 mb-8 max-w-lg leading-relaxed drop-shadow-md">
-                Visita el nuevo sector tecnológico con descuentos de hasta el 50% en todas las tiendas participantes. ¡Solo por este fin de semana!
-            </p>
-            
-            <div class="flex gap-4">
-                <button class="bg-white text-black px-8 py-3 rounded-md font-bold flex items-center gap-2 hover:bg-gray-200 transition">
-                    <i data-lucide="map-pin" class="w-5 h-5"></i> Ver Mapa
-                </button>
-                <button onclick="scrollToSectors()" class="bg-blue-600/80 backdrop-blur-sm text-white px-8 py-3 rounded-md font-bold flex items-center gap-2 hover:bg-blue-600 transition">
-                   Explorar Tiendas
-                </button>
-            </div>
-        </div>
-    </div>
+        <!-- Menú -->
+        <nav class="flex-1 space-y-4">
+            <a href="#" class="flex items-center gap-4 text-white bg-blue-900/30 p-3 rounded-lg border-l-4 border-techBlue transition hover:bg-blue-900/50">
+                <i class="fa-solid fa-house"></i> Inicio
+            </a>
+            <a href="#" class="flex items-center gap-4 text-gray-400 p-3 rounded-lg hover:bg-gray-800 transition hover:text-white">
+                <i class="fa-solid fa-video"></i> Cámaras IP
+            </a>
+            <a href="#" class="flex items-center gap-4 text-gray-400 p-3 rounded-lg hover:bg-gray-800 transition hover:text-white">
+                <i class="fa-solid fa-drone"></i> Drones
+            </a>
+            <a href="#" class="flex items-center gap-4 text-gray-400 p-3 rounded-lg hover:bg-gray-800 transition hover:text-white">
+                <i class="fa-solid fa-shield-halved"></i> Ciberseguridad
+            </a>
+        </nav>
 
-    <!-- MAIN CONTENT (Sectors) -->
-    <div id="sectors-container" class="relative z-10 -mt-20 md:-mt-32 pb-20 space-y-6">
-        <!-- Rendered by JS -->
-    </div>
-
-    <!-- FOOTER -->
-    <footer class="px-4 md:px-12 py-12 text-gray-500 text-sm bg-[#0a0a0a] border-t border-gray-900">
-        <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
+        <!-- Perfil Usuario -->
+        <div class="flex items-center gap-3 pt-6 border-t border-gray-700">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-cyan-400 flex items-center justify-center font-bold">A</div>
             <div>
-                <h3 class="text-white font-bold mb-4 flex items-center gap-2"><i data-lucide="grid" class="w-5 h-5 text-blue-600"></i> WebMall</h3>
-                <p class="text-gray-600 text-xs leading-relaxed">
-                    La experiencia definitiva de compras en línea. Simulamos la comodidad de tu centro comercial favorito desde la comodidad de tu hogar.
-                </p>
+                <p class="text-sm font-semibold">Admin</p>
+                <p class="text-xs text-gray-500">Online</p>
             </div>
-            <div class="space-y-3">
-                <h4 class="text-white font-medium mb-2">Sectores</h4>
-                <p class="hover:text-blue-500 cursor-pointer transition">Tecnología</p>
-                <p class="hover:text-blue-500 cursor-pointer transition">Moda</p>
-                <p class="hover:text-blue-500 cursor-pointer transition">Hogar</p>
-            </div>
-            <div class="space-y-3">
-                <h4 class="text-white font-medium mb-2">Contacto</h4>
+        </div>
+    </aside>
+
+    <!-- 2. CONTENIDO PRINCIPAL (Feed) -->
+    <main class="flex-1 h-full overflow-y-auto relative">
+        <!-- Header Móvil -->
+        <header class="md:hidden glass-panel p-4 flex justify-between items-center sticky top-0 z-50">
+            <span class="text-techBlue font-bold text-xl"><i class="fa-solid fa-eye"></i> TG</span>
+            <button class="text-white"><i class="fa-solid fa-bars"></i></button>
+        </header>
+
+        <div class="max-w-3xl mx-auto p-4 md:p-8 pb-24">
+            
+            <!-- Crear Publicación -->
+            <div class="glass-panel p-4 rounded-xl mb-8">
                 <div class="flex gap-4">
-                    <div class="w-8 h-8 bg-gray-800 rounded flex items-center justify-center hover:bg-blue-600 hover:text-white transition cursor-pointer"><i data-lucide="message-circle" class="w-4 h-4"></i></div>
-                    <div class="w-8 h-8 bg-gray-800 rounded flex items-center justify-center hover:bg-blue-600 hover:text-white transition cursor-pointer"><i data-lucide="phone" class="w-4 h-4"></i></div>
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-cyan-400 flex-shrink-0 flex items-center justify-center font-bold">A</div>
+                    <div class="flex-1">
+                        <textarea id="postInput" class="w-full bg-transparent border-none text-white focus:ring-0 placeholder-gray-500 resize-none text-lg" rows="2" placeholder="¿Qué novedad tecnológica hay hoy?"></textarea>
+                        <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-700">
+                            <div class="flex gap-4 text-techBlue">
+                                <button class="hover:text-cyan-400"><i class="fa-solid fa-image"></i> Foto</button>
+                                <button class="hover:text-cyan-400"><i class="fa-solid fa-video"></i> Video</button>
+                            </div>
+                            <button onclick="createPost()" class="bg-techBlue hover:bg-blue-600 text-white px-6 py-2 rounded-full font-semibold transition shadow-[0_0_15px_rgba(0,113,235,0.4)]">
+                                Publicar
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="max-w-6xl mx-auto mt-12 pt-8 border-t border-gray-900 flex justify-between items-center text-xs text-gray-700">
-            <p>© 2024 WebMall Inc.</p>
-            <p>HTML & JS Vanilla</p>
-        </div>
-    </footer>
 
-    <!-- STORE MODAL -->
-    <div id="store-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
-        <div class="relative bg-[#1a1a1a] w-full max-w-5xl rounded-xl overflow-hidden shadow-2xl border border-gray-800 flex flex-col max-h-[90vh] fade-in">
-            <!-- Modal Content Populated by JS -->
-            <div id="modal-content" class="w-full h-full overflow-y-auto custom-scrollbar"></div>
+            <!-- Feed de Publicaciones (Contenedor Dinámico) -->
+            <div id="feedContainer" class="space-y-6">
+                <!-- Las publicaciones se insertarán aquí con JS -->
+            </div>
+            
+            <!-- Mensaje de fin de feed -->
+            <div class="text-center py-8 text-gray-600">
+                <p>Estás al día con la vigilancia tecnológica.</p>
+            </div>
         </div>
-    </div>
+    </main>
 
-    <!-- CART SIDEBAR -->
-    <div id="cart-sidebar" class="fixed inset-y-0 right-0 z-[70] w-full md:w-96 bg-[#1a1a1a] shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out border-l border-gray-800 flex flex-col">
-        <div class="p-6 border-b border-gray-800 flex justify-between items-center bg-[#141414]">
-            <h2 class="text-xl font-bold text-white flex items-center gap-2">
-                <i data-lucide="shopping-cart" class="w-5 h-5 text-blue-500"></i> Bolsa
-            </h2>
-            <button onclick="toggleCart()" class="p-2 hover:bg-gray-800 rounded-full transition">
-                <i data-lucide="x" class="w-6 h-6 text-gray-400"></i>
+    <!-- 3. INTEGRACIÓN WHATSAPP (Chat Simulado) -->
+    
+    <!-- Ventana de Chat (Oculta por defecto) -->
+    <div id="whatsappWindow" class="fixed bottom-24 right-8 w-80 md:w-96 bg-gray-900 rounded-xl shadow-2xl border border-gray-700 transform scale-0 origin-bottom-right transition-transform duration-300 z-50 flex flex-col overflow-hidden" style="height: 500px;">
+        <!-- Cabecera Chat -->
+        <div class="bg-green-700 p-4 flex items-center gap-3">
+            <i class="fa-brands fa-whatsapp text-2xl text-white"></i>
+            <div>
+                <h3 class="font-bold text-white">Soporte TechGuard</h3>
+                <p class="text-xs text-green-100">Responde habitualmente en 1h</p>
+            </div>
+            <button onclick="toggleChat()" class="ml-auto text-white hover:text-gray-200">
+                <i class="fa-solid fa-xmark text-xl"></i>
             </button>
         </div>
         
-        <div id="cart-items" class="flex-1 overflow-y-auto p-6 space-y-4">
-            <!-- Cart Items rendered here -->
-            <div class="text-center text-gray-500 mt-20 flex flex-col items-center">
-                <p>Tu bolsa está vacía.</p>
+        <!-- Cuerpo Chat -->
+        <div id="chatBody" class="flex-1 bg-black/50 p-4 overflow-y-auto space-y-4" style="background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-blend-mode: overlay;">
+            <!-- Mensaje del sistema -->
+            <div class="bg-gray-800 p-3 rounded-lg rounded-tl-none max-w-[80%] text-sm border border-gray-700">
+                <p>Hola 👋, bienvenido a TechGuard. ¿Te interesa cotizar algún equipo de vigilancia?</p>
+                <span class="text-[10px] text-gray-400 block text-right mt-1">10:00 AM</span>
             </div>
         </div>
 
-        <div class="p-6 border-t border-gray-800 bg-[#141414]">
-            <div class="flex justify-between items-center mb-4 text-white">
-                <span class="text-gray-400 text-sm">Subtotal</span>
-                <span id="cart-total" class="text-xl font-bold">$0.00</span>
-            </div>
-            <button onclick="alert('Funcionalidad de pago en desarrollo')" class="w-full bg-gradient-to-r from-blue-700 to-blue-600 text-white py-4 rounded-lg font-bold hover:shadow-lg transition uppercase text-sm tracking-widest">
-                Ir a Pagar
+        <!-- Input Chat -->
+        <div class="p-3 bg-gray-800 flex gap-2">
+            <input type="text" id="chatInput" placeholder="Escribe un mensaje..." class="flex-1 bg-gray-700 text-white rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-green-500">
+            <button onclick="sendMessage()" class="bg-green-600 w-10 h-10 rounded-full text-white flex items-center justify-center hover:bg-green-500">
+                <i class="fa-solid fa-paper-plane"></i>
             </button>
         </div>
     </div>
 
-    <!-- JAVASCRIPT LOGIC -->
+    <!-- Botón Flotante (FAB) -->
+    <button onclick="toggleChat()" class="whatsapp-float w-16 h-16 bg-green-500 rounded-full flex items-center justify-center text-white text-3xl shadow-lg hover:bg-green-400 transition cursor-pointer" title="Contactar por WhatsApp">
+        <i class="fa-brands fa-whatsapp"></i>
+    </button>
+
+    <!-- SCRIPTS LÓGICOS -->
     <script>
-        // --- DATA ---
-        const MALL_SECTORS = [
+        // Datos iniciales simulados
+        const posts = [
             {
-                id: 'sec_tech', title: 'Distrito Tecnológico', stores: [
-                    { id: 'st_t1', name: 'CyberCore', image: 'https://images.unsplash.com/photo-1531297461136-82lwDe854333?w=500&q=80', rating: 4.9, description: 'Hardware de alto nivel.', products: [{id:'p1', title:'RTX 4090', price:1599, image:'https://images.unsplash.com/photo-1591488320449-011701bb6704?w=500&q=80'}, {id:'p2', title:'Monitor 49"', price:1200, image:'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=500&q=80'}] },
-                    { id: 'st_t2', name: 'AudioHeaven', image: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=500&q=80', rating: 4.7, description: 'Sonido Hi-Fi.', products: [{id:'p3', title:'Headphones', price:350, image:'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&q=80'}] },
-                    { id: 'st_t3', name: 'MobileWorld', image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&q=80', rating: 4.5, description: 'Smartphones y más.', products: [{id:'p5', title:'Phone 15', price:999, image:'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&q=80'}] },
-                    { id: 'st_t4', name: 'GameStation', image: 'https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=500&q=80', rating: 4.8, description: 'Para gamers.', products: [{id:'p7', title:'Consola X', price:499, image:'https://images.unsplash.com/photo-1486401899868-0e435ed85128?w=500&q=80'}] }
-                ]
+                author: "TechGuard Oficial",
+                time: "Hace 2 horas",
+                content: "La nueva tecnología de reconocimiento facial con IA permite identificar sujetos incluso en condiciones de baja luminosidad. Ideal para perímetros industriales.",
+                image: "https://images.unsplash.com/photo-1557597774-9d273605dfa9?q=80&w=800&auto=format&fit=crop",
+                likes: 124,
+                comments: 15
             },
             {
-                id: 'sec_fash', title: 'Boulevard de Moda', stores: [
-                    { id: 'st_f1', name: 'ZaraStyle', image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=500&q=80', rating: 4.6, description: 'Moda global.', products: [{id:'p9', title:'Abrigo', price:120, image:'https://images.unsplash.com/photo-1539533018447-63fcce2678e3?w=500&q=80'}] },
-                    { id: 'st_f2', name: 'SneakerHead', image: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?w=500&q=80', rating: 4.9, description: 'Ediciones limitadas.', products: [{id:'p11', title:'Jordan Retro', price:250, image:'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&q=80'}] },
-                    { id: 'st_f3', name: 'LuxeBags', image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=500&q=80', rating: 4.8, description: 'Bolsos de lujo.', products: [{id:'p13', title:'Bolso Tote', price:180, image:'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=500&q=80'}] }
-                ]
-            },
-            {
-                id: 'sec_home', title: 'Hogar & Deco', stores: [
-                    { id: 'st_h1', name: 'Minimal', image: 'https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?w=500&q=80', rating: 4.5, description: 'Diseño escandinavo.', products: [{id:'p17', title:'Sofá', price:800, image:'https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?w=500&q=80'}] },
-                    { id: 'st_h2', name: 'GreenHouse', image: 'https://images.unsplash.com/photo-1463320726281-696a485928c7?w=500&q=80', rating: 4.8, description: 'Vida verde.', products: [{id:'p19', title:'Monstera', price:40, image:'https://images.unsplash.com/photo-1614594975525-e45190c55d0b?w=500&q=80'}] }
-                ]
+                author: "Ciberseguridad Total",
+                time: "Hace 5 horas",
+                content: "¡Alerta! Se ha detectado un nuevo malware que afecta a sistemas DVR antiguos. Asegúrate de actualizar el firmware de tus equipos de grabación.",
+                image: null, // Post solo texto
+                likes: 89,
+                comments: 42
             }
         ];
 
-        let cart = [];
+        const feedContainer = document.getElementById('feedContainer');
+        const postInput = document.getElementById('postInput');
+        const chatBody = document.getElementById('chatBody');
+        const chatInput = document.getElementById('chatInput');
 
-        // --- RENDER APP ---
-        function initApp() {
-            renderSectors();
-            renderCart();
-            lucide.createIcons();
-            
-            // Navbar Scroll Effect
-            window.addEventListener('scroll', () => {
-                const nav = document.getElementById('navbar');
-                if (window.scrollY > 50) {
-                    nav.classList.add('bg-[#141414]', 'shadow-lg');
-                    nav.classList.remove('bg-gradient-to-b');
-                } else {
-                    nav.classList.remove('bg-[#141414]', 'shadow-lg');
-                    nav.classList.add('bg-gradient-to-b');
-                }
-            });
-        }
-
-        function scrollToSectors() {
-            document.getElementById('sectors-container').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        // --- SECTORS & STORES ---
-        function renderSectors() {
-            const container = document.getElementById('sectors-container');
-            container.innerHTML = MALL_SECTORS.map(sector => `
-                <div class="mb-10 group relative z-10 pl-4 md:pl-12">
-                    <h2 class="text-white text-xl font-semibold mb-3 flex items-center gap-2">
-                        <span class="w-1 h-6 bg-blue-600 rounded-full block"></span>
-                        ${sector.title}
-                    </h2>
-                    
-                    <div class="group/row relative -ml-4 md:-ml-12">
-                        <button onclick="scrollRow('${sector.id}', 'left')" class="absolute top-0 bottom-0 left-4 z-40 m-auto h-12 w-12 bg-black/50 hover:bg-blue-600/80 rounded-full p-2 text-white hidden md:block opacity-0 group-hover/row:opacity-100 transition flex items-center justify-center">
-                            <i data-lucide="chevron-left"></i>
-                        </button>
-                        
-                        <div id="row-${sector.id}" class="flex items-center gap-4 overflow-x-scroll scrollbar-hide px-4 md:px-12 pb-4 scroll-smooth">
-                            ${sector.stores.map(store => `
-                                <div onclick="openStoreModal('${store.id}')" class="relative h-48 min-w-[300px] cursor-pointer transition-all duration-300 hover:scale-105 hover:z-20 group/card">
-                                    <img src="${store.image}" class="rounded-lg object-cover w-full h-full shadow-lg border border-gray-800 group-hover/card:border-blue-500/50">
-                                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent rounded-lg opacity-90"></div>
-                                    <div class="absolute bottom-0 left-0 w-full p-4">
-                                        <h3 class="text-white font-bold text-lg drop-shadow-md">${store.name}</h3>
-                                        <div class="flex items-center gap-1 text-xs text-blue-300">
-                                            <i data-lucide="star" class="w-3 h-3 fill-blue-300 text-blue-300"></i> ${store.rating}
-                                        </div>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-
-                        <button onclick="scrollRow('${sector.id}', 'right')" class="absolute top-0 bottom-0 right-4 z-40 m-auto h-12 w-12 bg-black/50 hover:bg-blue-600/80 rounded-full p-2 text-white hidden md:block opacity-0 group-hover/row:opacity-100 transition flex items-center justify-center">
-                            <i data-lucide="chevron-right"></i>
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function scrollRow(id, direction) {
-            const row = document.getElementById(`row-${id}`);
-            const scrollAmount = direction === 'left' ? -row.clientWidth : row.clientWidth;
-            row.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-        }
-
-        // --- MODAL ---
-        function openStoreModal(storeId) {
-            let store = null;
-            // Find store
-            MALL_SECTORS.forEach(sec => {
-                const found = sec.stores.find(s => s.id === storeId);
-                if (found) store = found;
-            });
-
-            if (!store) return;
-
-            const modal = document.getElementById('store-modal');
-            const content = document.getElementById('modal-content');
-            
-            content.innerHTML = `
-                <div class="relative h-64 w-full shrink-0">
-                    <img src="${store.image}" class="w-full h-full object-cover">
-                    <div class="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-[#1a1a1a]/40 to-transparent"></div>
-                    <button onclick="closeModal()" class="absolute top-4 right-4 bg-black/50 backdrop-blur rounded-full p-2 hover:bg-red-500/80 text-white transition">
-                        <i data-lucide="x" class="w-6 h-6"></i>
-                    </button>
-                    <div class="absolute bottom-6 left-8 right-8 flex flex-col md:flex-row justify-between items-end md:items-center gap-4">
+        // Función para renderizar posts
+        function renderPosts() {
+            feedContainer.innerHTML = "";
+            posts.forEach(post => {
+                const postHTML = `
+                <div class="glass-panel rounded-xl overflow-hidden animate-fade-in mb-6">
+                    <div class="p-4 flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-techBlue"><i class="fa-solid fa-robot"></i></div>
                         <div>
-                            <h2 class="text-4xl font-bold text-white mb-2">${store.name}</h2>
-                            <p class="text-gray-300 text-sm">${store.description}</p>
+                            <h4 class="font-bold text-white">${post.author}</h4>
+                            <p class="text-xs text-gray-400">${post.time}</p>
                         </div>
-                        <div class="flex gap-3">
-                             <button onclick="alert('Abriendo chat...')" class="bg-white text-black px-6 py-2 rounded-full font-bold text-sm flex items-center gap-2 hover:bg-gray-200 transition">
-                                <i data-lucide="message-circle" class="w-4 h-4"></i> Contactar
-                             </button>
-                        </div>
+                        <button class="ml-auto text-gray-400 hover:text-white"><i class="fa-solid fa-ellipsis"></i></button>
+                    </div>
+                    
+                    <div class="px-4 pb-3">
+                        <p class="text-gray-300 leading-relaxed">${post.content}</p>
+                    </div>
+
+                    ${post.image ? `
+                    <div class="w-full h-64 bg-black relative">
+                        <img src="${post.image}" class="w-full h-full object-cover opacity-90 hover:opacity-100 transition" alt="Imagen post">
+                    </div>
+                    ` : ''}
+
+                    <div class="p-4 border-t border-gray-700 flex justify-between text-gray-400 text-sm">
+                        <button class="flex items-center gap-2 hover:text-techBlue transition group">
+                            <i class="fa-regular fa-thumbs-up group-hover:scale-110 transition"></i> ${post.likes} Me gusta
+                        </button>
+                        <button class="flex items-center gap-2 hover:text-white transition">
+                            <i class="fa-regular fa-comment"></i> ${post.comments} Comentarios
+                        </button>
+                        <button class="flex items-center gap-2 hover:text-green-400 transition">
+                            <i class="fa-brands fa-whatsapp"></i> Compartir
+                        </button>
                     </div>
                 </div>
-                <div class="p-8">
-                    <h3 class="text-xl font-bold text-white mb-6 border-b border-gray-700 pb-2">Productos Destacados</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        ${store.products.map(product => `
-                            <div class="bg-[#252525] rounded-lg overflow-hidden group hover:ring-2 hover:ring-blue-600 transition-all">
-                                <div class="h-40 overflow-hidden relative">
-                                     <img src="${product.image}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                                </div>
-                                <div class="p-4">
-                                    <h4 class="text-white font-medium truncate">${product.title}</h4>
-                                    <div class="flex justify-between items-center mt-3">
-                                        <span class="text-blue-400 font-bold">$${product.price}</span>
-                                        <button onclick="addToCart('${product.id}', '${store.name}')" class="bg-blue-600 p-2 rounded-full text-white hover:bg-blue-500 transition shadow-lg">
-                                            <i data-lucide="shopping-cart" class="w-4 h-4"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-            
-            modal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-            lucide.createIcons();
-        }
-
-        function closeModal() {
-            document.getElementById('store-modal').classList.add('hidden');
-            document.body.style.overflow = 'auto';
-        }
-
-        // --- CART ---
-        function toggleCart() {
-            const sidebar = document.getElementById('cart-sidebar');
-            if (sidebar.classList.contains('translate-x-full')) {
-                sidebar.classList.remove('translate-x-full');
-            } else {
-                sidebar.classList.add('translate-x-full');
-            }
-        }
-
-        function addToCart(productId, storeName) {
-            // Find product in data (flat search)
-            let product = null;
-            MALL_SECTORS.forEach(sec => {
-                sec.stores.forEach(st => {
-                    const p = st.products.find(pr => pr.id === productId);
-                    if (p) product = p;
-                });
+                `;
+                feedContainer.innerHTML += postHTML;
             });
-
-            if(product) {
-                cart.push({...product, storeName});
-                renderCart();
-                // Simple toast
-                const btn = event.currentTarget;
-                const originalContent = btn.innerHTML;
-                btn.classList.add('bg-green-600');
-                btn.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i>`;
-                lucide.createIcons();
-                setTimeout(() => {
-                    btn.classList.remove('bg-green-600');
-                    btn.innerHTML = originalContent;
-                    lucide.createIcons();
-                }, 1000);
-            }
         }
 
-        function removeFromCart(index) {
-            cart.splice(index, 1);
-            renderCart();
+        // Crear nuevo post
+        function createPost() {
+            const content = postInput.value;
+            if(!content.trim()) return alert("Escribe algo para publicar");
+
+            const newPost = {
+                author: "Usuario Admin",
+                time: "Justo ahora",
+                content: content,
+                image: null,
+                likes: 0,
+                comments: 0
+            };
+
+            posts.unshift(newPost); // Añadir al principio
+            renderPosts();
+            postInput.value = ""; // Limpiar input
         }
 
-        function renderCart() {
-            const cartItemsContainer = document.getElementById('cart-items');
-            const cartCountBadge = document.getElementById('cart-count');
-            const cartTotalEl = document.getElementById('cart-total');
-            
-            // Badge
-            if (cart.length > 0) {
-                cartCountBadge.classList.remove('hidden');
-                cartCountBadge.innerText = cart.length;
+        // Lógica del Chat de WhatsApp
+        let isChatOpen = false;
+
+        function toggleChat() {
+            const window = document.getElementById('whatsappWindow');
+            if (isChatOpen) {
+                window.classList.remove('scale-100');
+                window.classList.add('scale-0');
             } else {
-                cartCountBadge.classList.add('hidden');
+                window.classList.remove('scale-0');
+                window.classList.add('scale-100');
             }
+            isChatOpen = !isChatOpen;
+        }
 
-            // Total
-            const total = cart.reduce((sum, item) => sum + item.price, 0);
-            cartTotalEl.innerText = `$${total.toFixed(2)}`;
+        function sendMessage() {
+            const text = chatInput.value;
+            if (!text.trim()) return;
 
-            // Items
-            if (cart.length === 0) {
-                cartItemsContainer.innerHTML = `
-                    <div class="text-center text-gray-500 mt-20 flex flex-col items-center">
-                        <i data-lucide="shopping-cart" class="w-12 h-12 opacity-50 mb-2"></i>
-                        <p>Tu bolsa está vacía.</p>
-                    </div>`;
-            } else {
-                cartItemsContainer.innerHTML = cart.map((item, index) => `
-                    <div class="flex gap-4 bg-[#252525] p-3 rounded-lg border border-gray-800">
-                        <img src="${item.image}" class="w-16 h-16 object-cover rounded bg-gray-800">
-                        <div class="flex-1 flex flex-col justify-between">
-                            <div>
-                                <h3 class="text-white font-medium text-sm line-clamp-1">${item.title}</h3>
-                                <p class="text-blue-400 text-[10px]">${item.storeName}</p>
-                            </div>
-                            <div class="flex justify-between items-end">
-                                <span class="text-white font-bold text-sm">$${item.price}</span>
-                                <button onclick="removeFromCart(${index})" class="text-gray-500 hover:text-red-500 transition p-1">
-                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                </button>
-                            </div>
-                        </div>
+            // Mensaje usuario
+            const userMsg = `
+            <div class="flex justify-end">
+                <div class="bg-green-900 text-white p-2 rounded-lg rounded-tr-none max-w-[80%] text-sm border border-green-800">
+                    <p>${text}</p>
+                    <span class="text-[10px] text-green-300 block text-right mt-1">Ahora</span>
+                </div>
+            </div>`;
+            chatBody.insertAdjacentHTML('beforeend', userMsg);
+            chatInput.value = "";
+            chatBody.scrollTop = chatBody.scrollHeight;
+
+            // Respuesta automática
+            setTimeout(() => {
+                const botMsg = `
+                <div class="flex justify-start">
+                    <div class="bg-gray-800 p-3 rounded-lg rounded-tl-none max-w-[80%] text-sm border border-gray-700">
+                        <p>Gracias por tu mensaje. Un asesor te contactará pronto al WhatsApp oficial.</p>
+                        <span class="text-[10px] text-gray-400 block text-right mt-1">Bot</span>
                     </div>
-                `).join('');
-            }
-            lucide.createIcons();
+                </div>`;
+                chatBody.insertAdjacentHTML('beforeend', botMsg);
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }, 1500);
         }
 
-        // Initialize
-        initApp();
+        // Permitir enviar con Enter
+        chatInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        // Inicializar
+        renderPosts();
 
     </script>
 </body>
