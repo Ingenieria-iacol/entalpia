@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>CAD Gas v10.6 - Alturas Precisas</title>
+<title>CAD Gas v10.7 - Control de Etiquetas</title>
 <style>
     /* --- ESTILOS CORE --- */
     :root { --bg: #1e1e1e; --panel: #252526; --border: #333; --accent: #0078d7; --text: #ccc; --snap: #00ff00; }
@@ -122,6 +122,7 @@
     .sp-top { flex: 1; overflow-y:auto; } 
     .prop-section-title { font-size: 0.7rem; font-weight: bold; color: var(--accent); margin: 15px 15px 5px 15px; text-transform: uppercase; border-bottom: 1px solid #444; padding-bottom: 2px;}
     .prop-row { margin: 8px 15px; display: flex; flex-direction: column; gap: 4px; }
+    .prop-row.row-h { flex-direction: row; align-items: center; justify-content: space-between; }
     .prop-row label { color: #aaa; font-size: 0.75rem; }
     .prop-row input[type="text"], .prop-row input[type="number"], .prop-row select { width: 100%; background: #181818; border: 1px solid #444; color: #eee; padding: 6px; border-radius: 3px; font-size: 0.85rem; box-sizing: border-box; }
     .prop-row input[type="color"] { width: 100%; height: 30px; border: 1px solid #444; background: #181818; padding: 2px; cursor: pointer; }
@@ -145,7 +146,7 @@
 <body>
 
 <header>
-    <div class="brand"><span>CAD</span> GAS v10.6</div>
+    <div class="brand"><span>CAD</span> GAS v10.7</div>
     <button class="btn" onclick="guardarProyecto()">💾 Guardar</button>
     <button class="btn" onclick="document.getElementById('file-input').click()">📂 Abrir</button>
     <button class="btn danger" onclick="limpiarTodo()">🗑️ Nuevo</button>
@@ -277,6 +278,12 @@
             
             <div id="prop-form" class="sp-top" style="display:none;">
                 <div class="prop-section-title">Información</div>
+                
+                <div class="prop-row row-h">
+                    <label style="color:#fff;">Mostrar Etiqueta Siempre</label>
+                    <input type="checkbox" id="p-show-label" onchange="updateBooleanProp('mostrarEtiqueta', this.checked)" style="width:auto; cursor:pointer;">
+                </div>
+
                 <div class="prop-row">
                     <label>Tag (Etiqueta)</label>
                     <input type="text" id="p-tag" onchange="updateStyleProp('tag', this.value)">
@@ -534,6 +541,10 @@ function renderScene() {
         if(el.tipo === 'tuberia' && el.props.diametroNominal) width = parseDiameterToScale(el.props.diametroNominal);
         else width = el.props.grosor || 2; 
         
+        // --- LOGICA VISIBILIDAD ETIQUETAS ---
+        // Se muestra si Global está activo O si la propiedad "Mostrar Siempre" del elemento es true
+        const showLabel = CONFIG.showTags || (el.props.mostrarEtiqueta === true);
+
         if(el.tipo === 'tuberia') {
             const e = isoToScreen(el.x+el.dx, el.y+el.dy, el.z+el.dz);
             const body = document.createElementNS("http://www.w3.org/2000/svg", "line");
@@ -550,16 +561,15 @@ function renderScene() {
             let hasTechLabel = false;
             const lenRaw = Math.sqrt(el.dx**2 + el.dy**2 + el.dz**2);
             
-            if(CONFIG.showTags && (el.props.diametroNominal || el.props.material)) {
+            // --- ETIQUETA TECNICA (Diametro, Material, Longitud, Altura) ---
+            if(showLabel && (el.props.diametroNominal || el.props.material)) {
                 hasTechLabel = true;
                 const matRaw = el.props.material || '';
                 const matDisplay = matRaw.charAt(0).toUpperCase() + matRaw.slice(1);
                 const diamDisplay = el.props.diametroNominal ? `Ø${el.props.diametroNominal}` : '';
                 const lenDisplay = `L=${formatLength(lenRaw)}`;
                 
-                // MEJORA: INCLUIR ALTURA EN LA ETIQUETA
                 let hDisplay = `H=${formatLength(el.z)}`;
-                // Si la tubería tiene pendiente (diferencia de altura), mostrar rango
                 if (Math.abs(el.dz) > 0.05) {
                     hDisplay = `H=${formatLength(el.z)}⮕${formatLength(el.z + el.dz)}`;
                 }
@@ -573,7 +583,8 @@ function renderScene() {
                 tTech.textContent = labelText;
                 g.appendChild(tTech);
             }
-            if(CONFIG.showTags && el.props.tag) {
+            // --- ETIQUETA USUARIO (TAG) ---
+            if(showLabel && el.props.tag) {
                 const tt = document.createElementNS("http://www.w3.org/2000/svg", "text");
                 const offset = hasTechLabel ? 14 : -5;
                 tt.setAttribute("x", midX); tt.setAttribute("y", midY + offset); 
@@ -595,7 +606,7 @@ function renderScene() {
             let angDeg = Math.atan2(e.y - s.y, e.x - s.x) * (180 / Math.PI);
             if (angDeg > 90 || angDeg < -90) { angDeg += 180; }
             
-            if(CONFIG.showTags) {
+            if(showLabel) {
                 const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
                 t.setAttribute("x", midX); t.setAttribute("y", midY); t.setAttribute("class","dim-text");
                 t.setAttribute("transform", `rotate(${angDeg}, ${midX}, ${midY}) translate(0, -5)`);
@@ -641,7 +652,7 @@ function renderScene() {
                 g.appendChild(r); g.appendChild(tx);
             }
             
-            if(CONFIG.showTags && el.props.tag) {
+            if(showLabel && el.props.tag) {
                  const tt = document.createElementNS("http://www.w3.org/2000/svg", "text");
                  tt.setAttribute("x",s.x); tt.setAttribute("y",s.y - halfS - 5); tt.setAttribute("text-anchor","middle");
                  tt.setAttribute("fill","#fff"); tt.setAttribute("font-size","10px"); tt.textContent = el.props.tag;
@@ -1091,10 +1102,13 @@ window.updatePropsPanel = function() {
     document.getElementById('p-linestyle').value = el.props.tipoLinea || 'solid';
     document.getElementById('p-capa').value = el.layerId;
     
+    // --- ACTUALIZAR CHECKBOX DE ETIQUETA ---
+    const cbLabel = document.getElementById('p-show-label');
+    cbLabel.checked = el.props.mostrarEtiqueta === true;
+
     // --- NUEVO: ACTUALIZAR CAMPO Z ---
     const u = UNITS[CONFIG.unit];
     document.getElementById('lbl-unit-z').innerText = u.label;
-    // Multiplicamos el valor interno (siempre metros) por el factor (ej: 100 para cm)
     document.getElementById('p-altura').value = (el.z * u.factor).toFixed(u.precision);
     
     const divGrosor = document.getElementById('row-grosor');
@@ -1160,6 +1174,10 @@ window.updateStyleProp = function(k,v) {
         renderScene(); 
     } 
 }
+window.updateBooleanProp = function(k, val) {
+    const el = elementos.find(x=>x.id===estado.selID);
+    if(el){ el.props[k] = val; renderScene(); }
+}
 window.updateLongitud = function(valUser) {
     const el = elementos.find(x=>x.id===estado.selID);
     if(!el || el.tipo !== 'tuberia') return;
@@ -1172,21 +1190,15 @@ window.updateLongitud = function(valUser) {
     renderScene();
 }
 
-// --- NUEVA FUNCIÓN PARA ACTUALIZAR ALTURA ---
 window.updateAltura = function(valUser) {
     const el = elementos.find(x=>x.id===estado.selID);
     if(!el) return;
-    
-    // Parseamos permitiendo coma o punto
     const num = parseInputFloat(valUser);
     if(isNaN(num)) return;
-
-    // Convertimos la unidad del usuario (cm/mm) a metros internos
     const u = UNITS[CONFIG.unit];
     el.z = num / u.factor;
-    
     renderScene();
-    renderEffects(); // Actualizar halo de selección
+    renderEffects(); 
 }
 
 function ensureHex(c){ if(c.startsWith('#') && c.length===7) return c; return '#cccccc'; }
