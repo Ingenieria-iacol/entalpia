@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>CAD Gas v10.10 - Etiqueta Ajustada</title>
+<title>CAD Gas v10.11 - Z-Tracker 2 Decimales</title>
 <style>
     /* --- ESTILOS CORE --- */
     :root { --bg: #1e1e1e; --panel: #252526; --border: #333; --accent: #0078d7; --text: #ccc; --snap: #00ff00; }
@@ -180,7 +180,8 @@
         font-family: monospace;
         font-weight: bold;
         font-size: 0.85rem;
-        width: 45px;
+        /* Aumentado a 55px para que quepan 2 decimales comodamente */
+        width: 55px;
         outline: none;
         border-bottom: 1px solid transparent;
         text-align: right;
@@ -199,7 +200,7 @@
 <body>
 
 <header>
-    <div class="brand"><span>CAD</span> GAS v10.10</div>
+    <div class="brand"><span>CAD</span> GAS v10.11</div>
     <button class="btn" onclick="guardarProyecto()">💾 Guardar</button>
     <button class="btn" onclick="document.getElementById('file-input').click()">📂 Abrir</button>
     <button class="btn danger" onclick="limpiarTodo()">🗑️ Nuevo</button>
@@ -1030,7 +1031,7 @@ function renderGizmo() {
     });
 }
 
-// --- FUNCIÓN renderInterface CORREGIDA (Z-TRACKER AL LADO) ---
+// --- FUNCIÓN renderInterface CORREGIDA (Z-TRACKER AL LADO + 2 DECIMALES) ---
 function renderInterface(pSVG) {
     const g = document.getElementById('capa-interfaz'); 
     g.innerHTML='';
@@ -1092,7 +1093,11 @@ function renderInterface(pSVG) {
 
     if(!isEditingZ) {
         zUnit.innerText = UNITS[CONFIG.unit].label;
-        zInput.value = formatLength(tz).split(' ')[0];
+        
+        // --- CAMBIO: FORZAR 2 DECIMALES SIEMPRE ---
+        const u = UNITS[CONFIG.unit];
+        const val = tz * u.factor;
+        zInput.value = val.toFixed(2); // Esto asegura "2.50" en lugar de "2.5"
         
         if(estado.snapped) {
             zTracker.classList.add('snapped'); // Activa borde verde
