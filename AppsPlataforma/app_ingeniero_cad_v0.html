@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>CAD Gas v10.12 - Objetos Ajustables</title>
+<title>CAD Gas v11.0 - Pro + Undo/Redo + Reductores</title>
 <style>
     /* --- ESTILOS CORE --- */
     :root { --bg: #1e1e1e; --panel: #252526; --border: #333; --accent: #0078d7; --text: #ccc; --snap: #00ff00; }
@@ -22,6 +22,7 @@
     button.primary { background: var(--accent); border-color: #005a9e; font-weight:600; }
     button.primary:hover { background: #1084e3; }
     button.danger { background: #822; border-color: #600; }
+    button.btn:disabled { opacity: 0.5; cursor: default; pointer-events: none; }
     
     /* Botones Activos (Header y Herramientas) */
     button.active, .tool-item.active { background: #444; border-color: var(--accent); color: #fff; box-shadow: inset 0 0 5px rgba(0,0,0,0.5); }
@@ -112,7 +113,7 @@
     
     .label-tech { fill: #777; font-size: 9px; font-family: 'Segoe UI', sans-serif; pointer-events: none; text-anchor: middle; text-shadow: 1px 1px 2px #000; font-weight: 500; }
     .z-ref-line { stroke: #666; stroke-dasharray: 2,2; vector-effect: non-scaling-stroke; opacity: 0.5; }
-    .cursor-crosshair { stroke: #fff; stroke-width: 1; vector-effect: non-scaling-stroke; opacity: 0.9; }
+    .cursor-crosshair { stroke: #fff; stroke-width: 1.5; vector-effect: non-scaling-stroke; opacity: 1; filter: drop-shadow(0 0 2px black); }
     .snap-marker { fill: none; stroke: var(--snap); stroke-width: 2; vector-effect: non-scaling-stroke; filter: drop-shadow(0 0 2px var(--snap)); }
     .hover-halo { stroke: #fff; stroke-width: 6; opacity: 0.3; fill: none; pointer-events: none; stroke-linecap: round; }
     .sel-halo { stroke: var(--accent); stroke-width: 4; opacity: 0.8; fill: none; pointer-events: none; stroke-linecap: round; }
@@ -151,61 +152,48 @@
     #ins-select optgroup { background: #333; color: var(--accent); font-style: normal; font-weight: bold; }
     #ins-select option { background: var(--panel); color: #eee; padding: 5px; }
 
-    /* --- Z-TRACKER (Etiqueta Ajustada) --- */
+    /* --- Z-TRACKER AJUSTADO (FIXED TO CURSOR) --- */
     #z-tracker {
         position: absolute;
         display: none; 
         flex-direction: row;
         align-items: center;
-        background: rgba(20, 20, 20, 0.9);
+        background: rgba(10, 10, 10, 0.85); /* Fondo más oscuro */
         border: 1px solid #444; 
         border-radius: 4px;
-        padding: 1px 5px;
+        padding: 0px 4px;
         z-index: 1500; 
         pointer-events: auto;
-        box-shadow: 2px 2px 8px rgba(0,0,0,0.6);
+        box-shadow: 2px 2px 5px rgba(0,0,0,0.8);
         backdrop-filter: blur(2px);
         transition: border-color 0.1s;
+        /* IMPORTANTE: Transformación para centrar respecto al punto */
+        transform: translate(15px, -15px); 
     }
     #z-tracker.snapped {
-        border-color: #00ff00; /* Borde verde al tocar objeto */
-        background: rgba(0, 30, 0, 0.9);
+        border-color: #00ff00; 
+        background: rgba(0, 40, 0, 0.9);
     }
-    .z-label-title {
-        color: #888;
-        font-weight: bold;
-        font-size: 0.75rem;
-        margin-right: 3px;
-        cursor: pointer;
-    }
+    .z-label-title { color: #888; font-weight: bold; font-size: 0.75rem; margin-right: 3px; cursor: pointer; }
     #z-input-val {
-        background: transparent;
-        border: none;
-        color: #ccc;
-        font-family: monospace;
-        font-weight: bold;
-        font-size: 0.85rem;
-        /* Aumentado a 55px para que quepan 2 decimales comodamente */
-        width: 55px;
-        outline: none;
-        border-bottom: 1px solid transparent;
-        text-align: right;
+        background: transparent; border: none; color: #fff; font-family: monospace; font-weight: bold; font-size: 0.85rem; width: 55px; outline: none; border-bottom: 1px solid transparent; text-align: right;
     }
     #z-tracker.snapped #z-input-val { color: #00ff00; } 
-    
-    #z-input-val:focus {
-        border-bottom: 1px solid var(--accent);
-        background: rgba(255,255,255,0.1);
-        color: #fff;
-    }
-    .z-unit { color: #666; font-size: 0.7rem; margin-left: 2px; margin-right: 2px;}
+    #z-input-val:focus { border-bottom: 1px solid var(--accent); background: rgba(255,255,255,0.1); color: #fff; }
+    .z-unit { color: #888; font-size: 0.7rem; margin-left: 2px; margin-right: 2px;}
 
 </style>
 </head>
 <body>
 
 <header>
-    <div class="brand"><span>CAD</span> GAS v10.12</div>
+    <div class="brand"><span>CAD</span> GAS v11.0</div>
+    
+    <div class="toolbar-sep"></div>
+    <button class="btn" id="btn-undo" onclick="undo()" title="Deshacer (Ctrl+Z)">↩</button>
+    <button class="btn" id="btn-redo" onclick="redo()" title="Rehacer (Ctrl+Y)">↪</button>
+    <div class="toolbar-sep"></div>
+
     <button class="btn" onclick="guardarProyecto()">💾 Guardar</button>
     <button class="btn" onclick="document.getElementById('file-input').click()">📂 Abrir</button>
     <button class="btn danger" onclick="limpiarTodo()">🗑️ Nuevo</button>
@@ -438,7 +426,10 @@
         <h3>Listado de Materiales</h3>
         <table id="tabla-res" style="width:100%; font-size:0.9rem; border-collapse: collapse; color:#ccc;"></table>
         <br>
-        <button class="btn" onclick="document.getElementById('modal-reporte').style.display='none'" style="float:right;">Cerrar</button>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+             <button class="btn primary" onclick="exportarCSV()">📊 Exportar CSV</button>
+             <button class="btn" onclick="document.getElementById('modal-reporte').style.display='none'">Cerrar</button>
+        </div>
     </div>
 </div>
 
@@ -485,11 +476,57 @@
 </div>
 
 <script>
+// --- HISTORIAL UNDO/REDO ---
+let historyStack = [];
+let historyIndex = -1;
+const MAX_HISTORY = 50;
+
+function saveState() {
+    // Eliminar estados futuros si estamos en medio del historial
+    if (historyIndex < historyStack.length - 1) {
+        historyStack = historyStack.slice(0, historyIndex + 1);
+    }
+    // Guardar copia profunda de elementos
+    const state = JSON.stringify(elementos);
+    historyStack.push(state);
+    if (historyStack.length > MAX_HISTORY) historyStack.shift();
+    historyIndex = historyStack.length - 1;
+    updateUndoRedoUI();
+}
+
+function undo() {
+    if (historyIndex > 0) {
+        historyIndex--;
+        restaurarEstado(historyStack[historyIndex]);
+        updateUndoRedoUI();
+    }
+}
+
+function redo() {
+    if (historyIndex < historyStack.length - 1) {
+        historyIndex++;
+        restaurarEstado(historyStack[historyIndex]);
+        updateUndoRedoUI();
+    }
+}
+
+function restaurarEstado(jsonState) {
+    elementos = JSON.parse(jsonState);
+    estado.selID = null; // Limpiar selección al deshacer
+    renderScene();
+    updatePropsPanel();
+    document.getElementById('right-panel').classList.add('closed');
+}
+
+function updateUndoRedoUI() {
+    document.getElementById('btn-undo').disabled = (historyIndex <= 0);
+    document.getElementById('btn-redo').disabled = (historyIndex >= historyStack.length - 1);
+}
+
 // --- HELPER PARA INPUTS CON COMA ---
 function parseInputFloat(val) {
     if (typeof val === 'number') return val;
     if (!val) return 0;
-    // Reemplaza coma por punto y parsea
     return parseFloat(val.toString().replace(',', '.'));
 }
 
@@ -567,7 +604,6 @@ let estado = {
     action: null, startAction: {x:0, y:0}, snapDir: null, tempVector: null 
 };
 
-// --- ESTADO PARA Z-TRACKER ---
 let isEditingZ = false; 
 
 const svg = document.getElementById('lienzo-cad');
@@ -607,11 +643,12 @@ function updateZoomInput(val) {
 function updateRotInput(val) {
     let v = parseInputFloat(val); if(!isNaN(v)) { estado.view.angle = v * Math.PI / 180; updateTransform(); renderGrid(); renderScene(); renderEffects(); }
 }
-// --- ANALIZADOR DE RED ---
+
+// --- ANALIZADOR DE RED MEJORADO (CON REDUCTORES) ---
 function analizarRed() {
     const nodos = {}; 
     elementos.forEach(el => {
-        if (el.tipo === 'tuberia' && (el.visible !== false)) { // Considerar visibilidad
+        if (el.tipo === 'tuberia' && (el.visible !== false)) { 
             const k1 = `${el.x.toFixed(3)},${el.y.toFixed(3)},${el.z.toFixed(3)}`; 
             const k2 = `${(el.x + el.dx).toFixed(3)},${(el.y + el.dy).toFixed(3)},${(el.z + el.dz).toFixed(3)}`;
             const len = Math.sqrt(el.dx**2 + el.dy**2 + el.dz**2);
@@ -628,9 +665,19 @@ function analizarRed() {
         const conns = nodos[k]; const coords = k.split(',').map(Number);
         const x=coords[0], y=coords[1], z=coords[2];
         const color = conns[0].color; const width = conns[0].width;
+        
         if (conns.length === 2) {
             const v1 = conns[0].dir; const v2 = conns[1].dir;
-            if (Math.abs(v1.x*v2.x + v1.y*v2.y + v1.z*v2.z) < 0.1) accesorios.push({ tipo: 'codo_auto', x, y, z, dirs: [v1, v2], color, width });
+            const dot = v1.x*v2.x + v1.y*v2.y + v1.z*v2.z;
+            
+            // Si son colineales (angulo aprox 180, dot ~ -1) pero ancho diferente -> REDUCTOR
+            if (dot < -0.99 && Math.abs(conns[0].width - conns[1].width) > 0.5) {
+                 accesorios.push({ tipo: 'reductor_auto', x, y, z, dirs: [v1, v2], color, width: Math.max(conns[0].width, conns[1].width) });
+            }
+            // Si son perpendiculares -> CODO
+            else if (Math.abs(dot) < 0.1) {
+                 accesorios.push({ tipo: 'codo_auto', x, y, z, dirs: [v1, v2], color, width });
+            }
         }
         else if (conns.length === 3) accesorios.push({ tipo: 'tee_auto', x, y, z, dirs: conns.map(c=>c.dir), color, width });
         else if (conns.length === 4) accesorios.push({ tipo: 'cruz_auto', x, y, z, dirs: conns.map(c=>c.dir), color, width });
@@ -661,10 +708,9 @@ function renderScene() {
     capFit.innerHTML = ''; 
     
     elementos.forEach(el => {
-        // --- VISIBILIDAD DE CAPA Y OBJETO INDIVIDUAL ---
         const lay = layers.find(l=>l.id===el.layerId); 
         if(!lay || !lay.visible) return;
-        if(el.visible === false) return; // Si el objeto está oculto manualmente
+        if(el.visible === false) return; 
 
         const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
         const s = isoToScreen(el.x, el.y, el.z);
@@ -673,7 +719,6 @@ function renderScene() {
         if(el.tipo === 'tuberia' && el.props.diametroNominal) width = parseDiameterToScale(el.props.diametroNominal);
         else width = el.props.grosor || 2; 
         
-        // --- LOGICA VISIBILIDAD ETIQUETAS ---
         const showLabel = CONFIG.showTags || (el.props.mostrarEtiqueta === true);
 
         if(el.tipo === 'tuberia') {
@@ -692,7 +737,6 @@ function renderScene() {
             let hasTechLabel = false;
             const lenRaw = Math.sqrt(el.dx**2 + el.dy**2 + el.dz**2);
             
-            // --- ETIQUETA TECNICA (Diametro, Material, Longitud, Altura) ---
             if(showLabel && (el.props.diametroNominal || el.props.material)) {
                 hasTechLabel = true;
                 const matRaw = el.props.material || '';
@@ -714,7 +758,6 @@ function renderScene() {
                 tTech.textContent = labelText;
                 g.appendChild(tTech);
             }
-            // --- ETIQUETA USUARIO (TAG) ---
             if(showLabel && el.props.tag) {
                 const tt = document.createElementNS("http://www.w3.org/2000/svg", "text");
                 const offset = hasTechLabel ? 14 : -5;
@@ -752,7 +795,6 @@ function renderScene() {
             t.setAttribute("fill", col); t.setAttribute("font-size", "14px"); t.textContent = el.props.text;
             g.appendChild(t);
         } else {
-            // --- OBJETOS (VÁLVULAS, EQUIPOS) ---
             let rot = 0;
             if (el.props.dirVector) {
                 const p1 = isoToScreen(0, 0, 0); const p2 = isoToScreen(el.props.dirVector.dx, el.props.dirVector.dy, el.props.dirVector.dz);
@@ -762,36 +804,24 @@ function renderScene() {
             }
             g.setAttribute("transform", `translate(${s.x},${s.y}) rotate(${rot}) translate(${-s.x},${-s.y})`);
             
-            // --- CÁLCULO DE TAMAÑO Y ACOPLE ---
-            // 1. Tamaño automático modificable
             const scaleFactor = el.props.scaleFactor || 1.0; 
             const baseSize = (CONFIG.tileW * 0.25) * scaleFactor; 
             const halfS = baseSize / 2;
             
-            // 2. Lógica de Punto de Acople (Anchor)
-            // Calculamos el offset de dibujo relativo al punto central s.x, s.y
             let drawOffsetX = 0;
             const anchor = el.props.anchor || 'center';
             
-            // En SVG 2D transformado, ajustamos la posición del dibujo (rectángulo)
-            // Por defecto, dibujamos en x-halfS.
             if (anchor === 'start') {
-                // Si el punto es el Inicio (Izquierda), el dibujo empieza en 0 y va hacia derecha
-                // Offset visual: mover dibujo a la derecha +halfS para que el borde izq quede en el centro
                 drawOffsetX = halfS;
             } else if (anchor === 'end') {
-                // Si el punto es el Fin (Derecha), el dibujo termina en 0
-                // Offset visual: mover dibujo a la izquierda -halfS
                 drawOffsetX = -halfS;
             }
-            // Center es 0 (default)
 
             const drawX = s.x - halfS + drawOffsetX;
             const drawY = s.y - halfS;
             
             if(el.tipo === 'valvula') {
                     const p = document.createElementNS("http://www.w3.org/2000/svg","path");
-                    // Ajustamos las coordenadas del path manualmente según el offset
                     const cx = s.x + drawOffsetX; const cy = s.y;
                     p.setAttribute("d", `M${cx-halfS},${cy-halfS/2} L${cx+halfS},${cy+halfS/2} L${cx+halfS},${cy-halfS/2} L${cx-halfS},${cy+halfS/2} Z`);
                     p.setAttribute("fill", "#222"); p.setAttribute("stroke", col); p.setAttribute("stroke-width", width);
@@ -804,7 +834,6 @@ function renderScene() {
                 r.setAttribute("height", baseSize);
                 r.setAttribute("fill", "#222"); r.setAttribute("stroke", col);
                 const tx = document.createElementNS("http://www.w3.org/2000/svg","text");
-                // Ajustar texto al centro del nuevo dibujo
                 tx.setAttribute("x", s.x + drawOffsetX); 
                 tx.setAttribute("y", s.y + 4); 
                 tx.setAttribute("text-anchor","middle");
@@ -847,6 +876,16 @@ function renderScene() {
             c.setAttribute("r", fit.width * 0.6); 
             c.setAttribute("fill", fit.color);
             g.appendChild(c);
+        } else if (fit.tipo === 'reductor_auto') {
+             // Dibujar triangulo de reducción
+             const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
+             const r = fit.width * 1.5;
+             // Un triángulo simple apuntando en la dirección del flujo no es fácil sin saber flujo, 
+             // así que dibujamos un "reloj de arena" o cono simbólico
+             const d = `M${s.x-r},${s.y-r/2} L${s.x+r},${s.y} L${s.x-r},${s.y+r/2} Z`;
+             p.setAttribute("d", d);
+             p.setAttribute("fill", "#444"); p.setAttribute("stroke", fit.color); p.setAttribute("stroke-width", 1);
+             g.appendChild(p);
         } else {
             const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
             c.setAttribute("cx", s.x); c.setAttribute("cy", s.y); 
@@ -863,7 +902,7 @@ function renderEffects() {
     const ch = document.getElementById('capa-hover'); ch.innerHTML='';
     const cs = document.getElementById('capa-seleccion'); cs.innerHTML='';
     const draw = (id, root, cls) => {
-        const el = elementos.find(x=>x.id===id); if(!el || el.visible === false) return; // Chequeo visibilidad
+        const el = elementos.find(x=>x.id===id); if(!el || el.visible === false) return; 
         const s = isoToScreen(el.x, el.y, el.z);
         if(el.tipo === 'tuberia' || el.tipo === 'cota') {
             const e = isoToScreen(el.x+el.dx, el.y+el.dy, el.z+el.dz);
@@ -879,9 +918,10 @@ function renderEffects() {
     if(estado.hoverID && estado.tool==='select') draw(estado.hoverID, ch, 'hover-halo');
     if(estado.selID) draw(estado.selID, cs, 'sel-halo');
 }
+
 // --- SNAP & EVENTS ---
 function getSnapPoints(el) {
-    if(el.visible === false) return []; // No hacer snap si está oculto
+    if(el.visible === false) return []; 
     const pts = [{x: el.x, y: el.y, z: el.z}]; 
     if(el.tipo === 'tuberia' || el.tipo === 'cota') {
         pts.push({x: el.x + el.dx, y: el.y + el.dy, z: el.z + el.dz});
@@ -934,12 +974,16 @@ svg.addEventListener('mousemove', e => {
         }
     } else if (estado.action === 'potential_drag') {
             const distDrag = Math.hypot(e.clientX - estado.startAction.x, e.clientY - estado.startAction.y);
-            if(distDrag > 5) { estado.action = 'dragging'; if(!estado.selID) { estado.selID = estado.hoverID; updatePropsPanel(); } }
+            if(distDrag > 5) { 
+                estado.action = 'dragging'; 
+                if(!estado.selID) { estado.selID = estado.hoverID; updatePropsPanel(); } 
+                saveState(); // Guardar estado antes de arrastrar
+            }
     }
     if(estado.tool === 'select' && !estado.action && !estado.snapped) {
         const tol = 8 / estado.view.scale; let h = null; let minD = tol; 
         elementos.forEach(el => {
-            if(el.visible === false) return; // Ignorar ocultos en hover
+            if(el.visible === false) return; 
             const s = isoToScreen(el.x, el.y, el.z); let d = 10000;
             if(el.tipo==='tuberia') {
                 const en = isoToScreen(el.x+el.dx, el.y+el.dy, el.z+el.dz); const L2 = (en.x-s.x)**2 + (en.y-s.y)**2;
@@ -955,8 +999,11 @@ window.addEventListener('mouseup', (e) => {
     const dist = Math.abs(e.clientX - estado.startAction.x) + Math.abs(e.clientY - estado.startAction.y);
     const isClick = dist < 5;
     if (isClick && (estado.action === 'rotate' || estado.action === 'potential_drag')) { handleCanvasClick(e); }
+    // Guardar estado si terminamos un arrastre
+    if (estado.action === 'dragging') saveState();
     estado.action = null; svg.style.cursor = 'crosshair';
 });
+
 // --- INPUT DINAMICO ---
 function mostrarInputDinámico(xScreen, yScreen, distActual, vectorData) {
     const box = document.getElementById('dynamic-input-container');
@@ -1012,7 +1059,14 @@ function handleCanvasClick(e) {
     const tx = estado.snapped ? estado.snapped.x : estado.mouseIso.x;
     const ty = estado.snapped ? estado.snapped.y : estado.mouseIso.y;
     const tz = estado.snapped ? estado.snapped.z : estado.currentZ;
-    if(estado.tool === 'texto') { const txt = prompt("Texto:", "Etiqueta"); if(txt) addEl({tipo:'texto', x:tx, y:ty, z:tz, props:{text:txt}}); return; }
+    
+    if(estado.tool === 'texto') { 
+        const txt = prompt("Texto:", "Etiqueta"); 
+        if(txt) {
+            addEl({tipo:'texto', x:tx, y:ty, z:tz, props:{text:txt}}); 
+        }
+        return; 
+    }
     
     if(estado.activeItem?.type === 'tuberia' || estado.tool === 'cota') {
         if(!estado.drawing) { estado.drawing = true; estado.inicio = {x:tx, y:ty, z:tz}; } 
@@ -1057,20 +1111,18 @@ svg.addEventListener('wheel', e => {
     }
     updateTransform(); renderEffects(); 
 }, { passive: false });
+
 // --- MANEJO DE TECLAS ---
 window.addEventListener('keydown', e=>{
-    // ATENCIÓN: Si estamos editando el Input Z, no disparamos atajos
     if(document.activeElement && document.activeElement.id === 'z-input-val') return;
+
+    if(e.ctrlKey && e.key.toLowerCase() === 'z') { e.preventDefault(); undo(); return; }
+    if(e.ctrlKey && e.key.toLowerCase() === 'y') { e.preventDefault(); redo(); return; }
 
     if(e.key.toLowerCase()==='q') { estado.currentZ+=1; renderInterface(); } 
     if(e.key.toLowerCase()==='a') { estado.currentZ-=1; renderInterface(); }
     
-    // ATAJO PARA EDITAR ALTURA
-    if(e.key.toLowerCase() === 'z') {
-        e.preventDefault();
-        focusZInput();
-        return;
-    }
+    if(e.key.toLowerCase() === 'z') { e.preventDefault(); focusZInput(); return; }
 
     if(e.key==='Escape') { 
         estado.drawing=false; 
@@ -1081,6 +1133,7 @@ window.addEventListener('keydown', e=>{
     if(e.key==='Delete') borrarSeleccion(); 
     renderInterface();
 });
+
 // --- GUIZMO & INTERFAZ ---
 function renderGizmo() {
     const c = document.getElementById('gizmo-axes'); c.innerHTML = '';
@@ -1099,7 +1152,7 @@ function renderGizmo() {
     });
 }
 
-// --- FUNCIÓN renderInterface CORREGIDA (Z-TRACKER AL LADO + 2 DECIMALES) ---
+// --- FUNCIÓN renderInterface CORREGIDA (Z-TRACKER FIJO AL PUNTERO) ---
 function renderInterface(pSVG) {
     const g = document.getElementById('capa-interfaz'); 
     g.innerHTML='';
@@ -1149,26 +1202,23 @@ function renderInterface(pSVG) {
         g.appendChild(pathFloor);
     }
 
-    // --- POSICIONAR Z-TRACKER HTML (SIN ELEVACIÓN) ---
-    // Calculamos la posición en pantalla aplicando el Zoom y Pan actuales
+    // --- POSICIONAR Z-TRACKER (SOLUCIÓN DRIFT) ---
+    // Usamos worldPoint transformado para obtener la posición exacta del píxel donde está la cruz
     const screenX = estado.view.x + (worldPoint.x * estado.view.scale);
     const screenY = estado.view.y + (worldPoint.y * estado.view.scale);
 
     zTracker.style.display = 'flex';
-    // Offset: +15px a la derecha, +10px hacia abajo (para que no tape la cruz)
-    zTracker.style.left = (screenX + 15) + 'px';
-    zTracker.style.top = (screenY + 10) + 'px';
+    zTracker.style.left = screenX + 'px';
+    zTracker.style.top = screenY + 'px';
 
     if(!isEditingZ) {
         zUnit.innerText = UNITS[CONFIG.unit].label;
-        
-        // --- CAMBIO: FORZAR 2 DECIMALES SIEMPRE ---
         const u = UNITS[CONFIG.unit];
         const val = tz * u.factor;
-        zInput.value = val.toFixed(2); // Esto asegura "2.50" en lugar de "2.5"
+        zInput.value = val.toFixed(2);
         
         if(estado.snapped) {
-            zTracker.classList.add('snapped'); // Activa borde verde
+            zTracker.classList.add('snapped'); 
         } else {
             zTracker.classList.remove('snapped');
         }
@@ -1181,7 +1231,8 @@ function renderInterface(pSVG) {
         r.setAttribute("class","snap-marker"); g.appendChild(r);
     } else {
         const path = document.createElementNS("http://www.w3.org/2000/svg","path");
-        path.setAttribute("d", `M${worldPoint.x-8},${worldPoint.y} L${worldPoint.x+8},${worldPoint.y} M${worldPoint.x},${worldPoint.y-8} L${worldPoint.x},${worldPoint.y+8}`);
+        // Hacemos la cruz un poco más grande y clara para ayudar a la visualización
+        path.setAttribute("d", `M${worldPoint.x-10},${worldPoint.y} L${worldPoint.x+10},${worldPoint.y} M${worldPoint.x},${worldPoint.y-10} L${worldPoint.x},${worldPoint.y+10}`);
         path.setAttribute("class","cursor-crosshair"); 
         if(isEditingZ) path.setAttribute("stroke", "#f0f");
         g.appendChild(path);
@@ -1310,7 +1361,6 @@ function initLibrary() {
     renderLayersUI();
 }
 function setTool(t) { 
-    // --- ACTUALIZADO: Acepta 'insert' ---
     estado.tool = (t==='cota'||t==='texto'||t==='select'||t==='insert') ? t : 'draw'; 
     estado.drawing=false; estado.selID=null; renderEffects(); 
     
@@ -1330,9 +1380,14 @@ function addEl(data) {
     if(!data.props.diametroNominal && estado.activeItem?.props?.diametroNominal) { data.props.diametroNominal = estado.activeItem.props.diametroNominal; }
     // Asignar visibilidad por defecto y escala
     elementos.push({id:Date.now(), layerId:activeLayerId, visible:true, ...data}); 
+    saveState(); // Guardar historial
     renderScene(); 
 }
-function borrarSeleccion() { elementos=elementos.filter(x=>x.id!==estado.selID); estado.selID=null; updatePropsPanel(); renderScene(); document.getElementById('right-panel').classList.add('closed'); }
+function borrarSeleccion() { 
+    elementos=elementos.filter(x=>x.id!==estado.selID); estado.selID=null; 
+    saveState(); // Guardar historial
+    updatePropsPanel(); renderScene(); document.getElementById('right-panel').classList.add('closed'); 
+}
 
 // --- GESTIÓN DE CAPAS ---
 function toggleLayerMenu() { document.getElementById('layer-menu-content').classList.toggle('show'); }
@@ -1373,9 +1428,8 @@ window.updatePropsPanel = function() {
     
     f.style.display='block'; v.style.display='none';
     
-    // --- NUEVO: CARGAR VALOR VISIBILIDAD ---
     const chkVis = document.getElementById('p-visible');
-    chkVis.checked = (el.visible !== false); // Default true
+    chkVis.checked = (el.visible !== false); 
 
     document.getElementById('p-color').value = ensureHex(el.props.customColor || el.props.color || '#cccccc');
     document.getElementById('p-tag').value = el.props.tag || '';
@@ -1393,18 +1447,16 @@ window.updatePropsPanel = function() {
     const lblFinal = document.getElementById('lbl-unit-z-final');
     if (lblFinal) lblFinal.innerText = u.label;
 
-    // --- LÓGICA DE CONTROLES ESPECÍFICOS ---
     const divAdjControls = document.getElementById('obj-adjust-controls');
     
     if (el.tipo === 'tuberia' || el.tipo === 'cota') {
         const finalZ = el.z + el.dz;
         document.getElementById('p-altura-final').value = (finalZ * u.factor).toFixed(u.precision);
         rowFinal.style.display = 'flex';
-        divAdjControls.style.display = 'none'; // Ocultar slider para tuberias
+        divAdjControls.style.display = 'none'; 
     } else {
         rowFinal.style.display = 'none';
         
-        // Es un objeto (valvula, equipo, etc) -> MOSTRAR AJUSTES
         if(el.tipo !== 'texto') {
              divAdjControls.style.display = 'block';
              const scaleVal = el.props.scaleFactor || 1.0;
@@ -1468,6 +1520,7 @@ window.updateAlturaFinal = function(valUser) {
     const u = UNITS[CONFIG.unit];
     const newFinalZ = num / u.factor; 
     el.dz = newFinalZ - el.z;
+    saveState();
     renderScene();
     renderEffects();
     updatePropsPanel(); 
@@ -1482,31 +1535,30 @@ window.changeMaterial = function(newMat) {
         el.props.customColor = null; 
         el.props.color = catItem.color;
         el.props.diametroNominal = catItem.props.diametroNominal; 
+        saveState();
         updatePropsPanel(); renderScene();
     }
 }
-window.updateDiametro = function(val) { const el = elementos.find(x=>x.id===estado.selID); if(el){ el.props.diametroNominal = val; renderScene(); } }
+window.updateDiametro = function(val) { const el = elementos.find(x=>x.id===estado.selID); if(el){ el.props.diametroNominal = val; saveState(); renderScene(); } }
 window.updateStyleProp = function(k,v) { 
     const el=elementos.find(x=>x.id===estado.selID); 
     if(el){ 
         if(k==='color') el.props.customColor = v; 
         else el.props[k]=v; 
         
-        // Actualizar UI instantaneamente para slider
         if(k === 'scaleFactor') document.getElementById('p-scale-val').textContent = v;
-        
+        saveState();
         renderScene(); 
-        if(k==='anchor' || k==='scaleFactor') renderEffects(); // Actualizar halo de selección si cambia tamaño
+        if(k==='anchor' || k==='scaleFactor') renderEffects(); 
     } 
 }
 window.updateBooleanProp = function(k, val) {
     const el = elementos.find(x=>x.id===estado.selID);
-    if(el){ el.props[k] = val; renderScene(); }
+    if(el){ el.props[k] = val; saveState(); renderScene(); }
 }
-// --- NUEVO: ACTUALIZAR PROPIEDAD ROOT (NO PROPS) ---
 window.updateRootProp = function(k, val) {
     const el = elementos.find(x=>x.id===estado.selID);
-    if(el){ el[k] = val; renderScene(); renderEffects(); }
+    if(el){ el[k] = val; saveState(); renderScene(); renderEffects(); }
 }
 
 window.updateLongitud = function(valUser) {
@@ -1518,6 +1570,7 @@ window.updateLongitud = function(valUser) {
     if(isNaN(newValMeters) || newValMeters <= 0) return;
     const ratio = newValMeters / currentLen;
     el.dx *= ratio; el.dy *= ratio; el.dz *= ratio;
+    saveState();
     renderScene();
 }
 
@@ -1528,12 +1581,83 @@ window.updateAltura = function(valUser) {
     if(isNaN(num)) return;
     const u = UNITS[CONFIG.unit];
     el.z = num / u.factor;
+    saveState();
     renderScene();
     renderEffects(); 
     updatePropsPanel();
 }
 
 function ensureHex(c){ if(c.startsWith('#') && c.length===7) return c; return '#cccccc'; }
+
+// --- EXPORTAR CSV ---
+function exportarCSV() {
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Tipo,Descripcion,Detalle,Cantidad/Longitud,Unidad\r\n";
+    
+    let counts = {};
+    
+    // Contar elementos regulares
+    elementos.forEach(el => {
+        if(el.visible === false) return;
+        let type = el.tipo;
+        let desc = el.name || el.tipo;
+        let detail = "";
+        let val = 1;
+        let unit = "und";
+        
+        if(el.tipo === 'tuberia') {
+            type = "Tuberia";
+            desc = el.props.material ? el.props.material.toUpperCase() : "Generica";
+            detail = el.props.diametroNominal || "";
+            val = Math.sqrt(el.dx**2 + el.dy**2 + el.dz**2);
+            unit = "m";
+        } else if (el.tipo === 'texto' || el.tipo === 'cota') {
+            return; // No exportar cotas ni textos
+        } else {
+            // Equipos, valvulas
+            detail = el.props.modelo || el.props.tipo || "";
+        }
+        
+        let key = `${type}|${desc}|${detail}|${unit}`;
+        if(!counts[key]) counts[key] = 0;
+        counts[key] += val;
+    });
+
+    // Contar fittings automáticos
+    const autoFittings = analizarRed();
+    autoFittings.forEach(fit => {
+        let type = "Accesorio";
+        let desc = "";
+        if (fit.tipo === 'codo_auto') desc = "Codo 90°";
+        else if (fit.tipo === 'tee_auto') desc = "Tee";
+        else if (fit.tipo === 'cruz_auto') desc = "Cruz";
+        else if (fit.tipo === 'reductor_auto') desc = "Reductor";
+        
+        if(desc) {
+            let key = `${type}|${desc}|Auto|und`;
+            if(!counts[key]) counts[key] = 0;
+            counts[key] += 1;
+        }
+    });
+
+    // Generar filas
+    for (let key in counts) {
+        let parts = key.split('|');
+        let valStr = counts[key];
+        if(parts[3] === 'm') valStr = formatLength(counts[key]).replace(' m',''); // Solo numero
+        
+        csvContent += `${parts[0]},${parts[1]},${parts[2]},${valStr},${parts[3]}\r\n`;
+    }
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "reporte_materiales_gas.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
 // --- GUARDADO/CARGA ---
 function guardarProyecto() { document.getElementById('modal-guardar').style.display = 'flex'; document.getElementById('input-filename').focus(); }
 function confirmarDescarga() {
@@ -1546,9 +1670,9 @@ function confirmarDescarga() {
 function guardarEnNavegador() {
     try { const datos = JSON.stringify({ layers, elementos }); localStorage.setItem('backup_cad_gas', datos); const msg = document.getElementById('msg-guardado'); msg.style.display = 'block'; setTimeout(() => { msg.style.display = 'none'; document.getElementById('modal-guardar').style.display = 'none'; }, 1500); } catch (e) { alert("Error: Almacenamiento lleno."); }
 }
-function comprobarAutoguardado() { const backup = localStorage.getItem('backup_cad_gas'); if (backup) { if(confirm("Existe un proyecto guardado en memoria. ¿Deseas recuperarlo?")) { try { const d = JSON.parse(backup); layers = d.layers; elementos = d.elementos; renderScene(); renderLayersUI(); } catch(e) { console.error(e); } } } }
-function cargarProyecto(i){ const r=new FileReader(); r.onload=e=>{const d=JSON.parse(e.target.result); layers=d.layers; elementos=d.elementos; renderScene(); renderLayersUI();}; r.readAsText(i.files[0]); }
-function limpiarTodo(){ if(confirm("Borrar?")){elementos=[]; renderScene();} }
+function comprobarAutoguardado() { const backup = localStorage.getItem('backup_cad_gas'); if (backup) { if(confirm("Existe un proyecto guardado en memoria. ¿Deseas recuperarlo?")) { try { const d = JSON.parse(backup); layers = d.layers; elementos = d.elementos; saveState(); renderScene(); renderLayersUI(); } catch(e) { console.error(e); } } } }
+function cargarProyecto(i){ const r=new FileReader(); r.onload=e=>{const d=JSON.parse(e.target.result); layers=d.layers; elementos=d.elementos; saveState(); renderScene(); renderLayersUI();}; r.readAsText(i.files[0]); }
+function limpiarTodo(){ if(confirm("Borrar?")){elementos=[]; saveState(); renderScene();} }
 function mostrarReporte(){
     let html=""; let counts={};
     elementos.forEach(el=>{
@@ -1561,7 +1685,11 @@ function mostrarReporte(){
     });
     const autoFittings = analizarRed();
     autoFittings.forEach(fit => {
-        let key = ""; if (fit.tipo === 'codo_auto') key = "Codo 90° (Auto)"; else if (fit.tipo === 'tee_auto') key = "Tee (Auto)"; else if (fit.tipo === 'cruz_auto') key = "Cruz (Auto)";
+        let key = ""; 
+        if (fit.tipo === 'codo_auto') key = "Codo 90° (Auto)"; 
+        else if (fit.tipo === 'tee_auto') key = "Tee (Auto)"; 
+        else if (fit.tipo === 'cruz_auto') key = "Cruz (Auto)";
+        else if (fit.tipo === 'reductor_auto') key = "Reductor (Auto)";
         if(key) counts[key] = (counts[key]||0) + 1;
     });
     for(let k in counts) { let valStr = ""; if(k.includes("Ø") || k.includes("Tuberia")) { valStr = formatLength(counts[k]); } else { valStr = counts[k] + " und"; } html+=`<tr><td>${k}</td><td align='right'>${valStr}</td></tr>`; }
@@ -1637,6 +1765,7 @@ function ejecutarInsercion() {
 }
 
 // --- INICIALIZACIÓN ---
+saveState(); // Guardar estado inicial vacio
 renderGrid(); renderGizmo(); initLibrary();
 const rectInit = svg.getBoundingClientRect(); estado.view.x=rectInit.width/2; estado.view.y=rectInit.height/2; 
 updateTransform(); setTimeout(comprobarAutoguardado, 500);
