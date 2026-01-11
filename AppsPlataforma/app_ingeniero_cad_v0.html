@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>CAD Gas v10.9 - Z-Tracker Fixed</title>
+<title>CAD Gas v10.10 - Etiqueta Ajustada</title>
 <style>
     /* --- ESTILOS CORE --- */
     :root { --bg: #1e1e1e; --panel: #252526; --border: #333; --accent: #0078d7; --text: #ccc; --snap: #00ff00; }
@@ -146,25 +146,24 @@
     #ins-select optgroup { background: #333; color: var(--accent); font-style: normal; font-weight: bold; }
     #ins-select option { background: var(--panel); color: #eee; padding: 5px; }
 
-    /* --- Z-TRACKER (Etiqueta Flotante Corregida) --- */
+    /* --- Z-TRACKER (Etiqueta Ajustada) --- */
     #z-tracker {
         position: absolute;
-        /* Quitamos transforms complicados, usaremos top/left directos */
         display: none; 
         flex-direction: row;
         align-items: center;
         background: rgba(20, 20, 20, 0.9);
-        border: 1px solid #444; /* Borde sutil por defecto */
+        border: 1px solid #444; 
         border-radius: 4px;
         padding: 1px 5px;
-        z-index: 1500; /* Encima de todo */
+        z-index: 1500; 
         pointer-events: auto;
         box-shadow: 2px 2px 8px rgba(0,0,0,0.6);
         backdrop-filter: blur(2px);
         transition: border-color 0.1s;
     }
     #z-tracker.snapped {
-        border-color: #00ff00; /* Verde brillante al hacer Snap */
+        border-color: #00ff00; /* Borde verde al tocar objeto */
         background: rgba(0, 30, 0, 0.9);
     }
     .z-label-title {
@@ -186,7 +185,7 @@
         border-bottom: 1px solid transparent;
         text-align: right;
     }
-    #z-tracker.snapped #z-input-val { color: #00ff00; } /* Texto verde al snap */
+    #z-tracker.snapped #z-input-val { color: #00ff00; } 
     
     #z-input-val:focus {
         border-bottom: 1px solid var(--accent);
@@ -200,7 +199,7 @@
 <body>
 
 <header>
-    <div class="brand"><span>CAD</span> GAS v10.9</div>
+    <div class="brand"><span>CAD</span> GAS v10.10</div>
     <button class="btn" onclick="guardarProyecto()">💾 Guardar</button>
     <button class="btn" onclick="document.getElementById('file-input').click()">📂 Abrir</button>
     <button class="btn danger" onclick="limpiarTodo()">🗑️ Nuevo</button>
@@ -1031,7 +1030,7 @@ function renderGizmo() {
     });
 }
 
-// --- FUNCIÓN renderInterface CORREGIDA (FIX COORDENADAS) ---
+// --- FUNCIÓN renderInterface CORREGIDA (Z-TRACKER AL LADO) ---
 function renderInterface(pSVG) {
     const g = document.getElementById('capa-interfaz'); 
     g.innerHTML='';
@@ -1081,15 +1080,15 @@ function renderInterface(pSVG) {
         g.appendChild(pathFloor);
     }
 
-    // --- POSICIONAR Z-TRACKER HTML (CORREGIDO) ---
+    // --- POSICIONAR Z-TRACKER HTML (SIN ELEVACIÓN) ---
     // Calculamos la posición en pantalla aplicando el Zoom y Pan actuales
     const screenX = estado.view.x + (worldPoint.x * estado.view.scale);
     const screenY = estado.view.y + (worldPoint.y * estado.view.scale);
 
     zTracker.style.display = 'flex';
-    // Offset para que no tape el cursor (20px a la derecha, 20px arriba)
-    zTracker.style.left = (screenX + 20) + 'px';
-    zTracker.style.top = (screenY - 25) + 'px';
+    // Offset: +15px a la derecha, +10px hacia abajo (para que no tape la cruz)
+    zTracker.style.left = (screenX + 15) + 'px';
+    zTracker.style.top = (screenY + 10) + 'px';
 
     if(!isEditingZ) {
         zUnit.innerText = UNITS[CONFIG.unit].label;
