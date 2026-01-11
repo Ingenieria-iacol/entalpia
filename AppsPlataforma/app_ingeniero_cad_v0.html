@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>CAD Gas v12.0 - Verticalidad Definitiva</title>
+<title>CAD Gas v12.1 - Smart Hover & Vertical Fix</title>
 <style>
     /* --- ESTILOS CORE --- */
     :root { --bg: #1e1e1e; --panel: #252526; --border: #333; --accent: #0078d7; --text: #ccc; --snap: #00ff00; }
@@ -138,19 +138,28 @@
     
     /* ESTILO ESPECIFICO PARA EL INPUT VERTICAL */
     #vertical-input-container {
-        border-color: #0f0; /* Verde para diferenciar verticalidad */
+        border-color: #0f0;
         flex-direction: column;
         align-items: flex-start;
         padding: 10px;
         min-width: 150px;
     }
     #v-title { color: #0f0; font-weight: bold; font-size: 0.8rem; margin-bottom: 5px; display:flex; gap:5px; align-items:center;}
+
+    /* NUEVO: TOOLTIP FLOTANTE DE ALTURA */
+    #hover-tooltip {
+        position: absolute; display: none; pointer-events: none; z-index: 2000;
+        background: rgba(0, 0, 0, 0.85); border: 1px solid #777; padding: 3px 8px;
+        border-radius: 4px; font-size: 0.75rem; color: #fff; font-family: monospace;
+        box-shadow: 2px 2px 5px rgba(0,0,0,0.5); white-space: nowrap;
+        backdrop-filter: blur(2px);
+    }
 </style>
 </head>
 <body>
 
 <header>
-    <div class="brand"><span>CAD</span> GAS v12.0</div>
+    <div class="brand"><span>CAD</span> GAS v12.1</div>
     
     <div class="toolbar-sep"></div>
     <button class="btn" id="btn-undo" onclick="undo()" title="Deshacer (Ctrl+Z)">↩</button>
@@ -290,6 +299,8 @@
             </div>
             <div style="font-size:0.7rem; color:#777; margin-top:5px;">[Enter] confirmar, [Esc] cancelar</div>
         </div>
+        
+        <div id="hover-tooltip">Z: 0.00m</div>
 
     </div>
     
@@ -998,6 +1009,28 @@ svg.addEventListener('mousemove', e => {
         });
         if(h !== estado.hoverID) { estado.hoverID = h; renderEffects(); }
     }
+    
+    // --- NUEVO: ACTUALIZAR TOOLTIP AL HOVER ---
+    const tooltip = document.getElementById('hover-tooltip');
+    if (estado.hoverID) {
+        const el = elementos.find(x => x.id === estado.hoverID);
+        if(el) {
+            const u = UNITS[CONFIG.unit];
+            let txt = `Z: ${formatLength(el.z)}`;
+            // Si es tuberia con pendiente, mostrar rango
+            if (el.tipo === 'tuberia' && Math.abs(el.dz) > 0.01) {
+                txt = `Z: ${formatLength(el.z)} ⮕ ${formatLength(el.z + el.dz)}`;
+            }
+            tooltip.innerText = txt;
+            tooltip.style.display = 'block';
+            tooltip.style.left = (e.clientX + 15) + 'px';
+            tooltip.style.top = (e.clientY + 15) + 'px';
+        }
+    } else {
+        tooltip.style.display = 'none';
+    }
+    // ------------------------------------------
+
     renderInterface(p);
 });
 
@@ -1059,12 +1092,6 @@ function handleCanvasClick(e) {
                 // Al seleccionar, establecemos la altura de trabajo a la altura del objeto
                 estado.currentZ = el.z;
                 syncZInput(); // Actualizar HUD
-                
-                // --- PREPARAMOS PARA CONTINUAR DIBUJANDO ---
-                // Si seleccionamos una tubería, asumimos que queremos continuar desde ahí
-                if (el.tipo === 'tuberia') {
-                     // El sistema ya sabe la Z, pero opcionalmente podríamos definir el 'inicio' de dibujo aquí si quisiéramos
-                }
             }
         }
         updatePropsPanel(); 
