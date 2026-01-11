@@ -680,7 +680,7 @@ function analizarRed() {
     return accesorios;
 }
 
-// --- RENDERIZADO ---
+// --- RENDERIZADO (CORREGIDO: Etiquetas separadas) ---
 function renderGrid() {
     const pMaj = document.getElementById('grid-path'); const pMin = document.getElementById('grid-minor'); const a = document.getElementById('grid-axis');
     if(!CONFIG.showGrid) { pMaj.setAttribute('d', ''); pMin.setAttribute('d', ''); a.setAttribute('d', ''); return; }
@@ -729,33 +729,48 @@ function renderScene() {
             const midX = (s.x + e.x)/2; const midY = (s.y + e.y)/2;
             let angDeg = Math.atan2(e.y - s.y, e.x - s.x) * (180 / Math.PI);
             if (angDeg > 90 || angDeg < -90) { angDeg += 180; }
-            let hasTechLabel = false;
+            
             const lenRaw = Math.sqrt(el.dx**2 + el.dy**2 + el.dz**2);
             
+            // --- NUEVA LÓGICA DE ETIQUETAS ---
             if(showLabel && (el.props.diametroNominal || el.props.material)) {
-                hasTechLabel = true;
+                
                 const matRaw = el.props.material || '';
                 const matDisplay = matRaw.charAt(0).toUpperCase() + matRaw.slice(1);
                 const diamDisplay = el.props.diametroNominal ? `Ø${el.props.diametroNominal}` : '';
-                const lenDisplay = `L=${formatLength(lenRaw)}`;
                 
-                let hDisplay = `H=${formatLength(el.z)}`;
-                if (Math.abs(el.dz) > 0.05) {
-                    hDisplay = `H=${formatLength(el.z)}⮕${formatLength(el.z + el.dz)}`;
-                }
+                // 1. Texto Superior: Material y Diámetro (ARRIBA)
+                const txtTop = `${matDisplay} ${diamDisplay}`.trim();
+                const tTop = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                tTop.setAttribute("x", midX); tTop.setAttribute("y", midY - 8); 
+                tTop.setAttribute("class", "label-tech");
+                tTop.setAttribute("transform", `rotate(${angDeg}, ${midX}, ${midY})`);
+                tTop.textContent = txtTop;
+                g.appendChild(tTop);
 
-                const labelText = `${matDisplay} ${diamDisplay} ${lenDisplay} ${hDisplay}`.trim();
+                // 2. Texto Inferior: Longitud y Altura (ABAJO)
+                const lenDisplay = `L=${formatLength(lenRaw)}`;
+                let hDisplay = `Z=${formatLength(el.z)}`;
+                if (Math.abs(el.dz) > 0.05) {
+                    hDisplay = `Z=${formatLength(el.z)}⮕${formatLength(el.z + el.dz)}`;
+                }
+                const txtBottom = `${lenDisplay}  |  ${hDisplay}`;
                 
-                const tTech = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                tTech.setAttribute("x", midX); tTech.setAttribute("y", midY - 6); 
-                tTech.setAttribute("class", "label-tech");
-                tTech.setAttribute("transform", `rotate(${angDeg}, ${midX}, ${midY})`);
-                tTech.textContent = labelText;
-                g.appendChild(tTech);
+                const tBot = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                tBot.setAttribute("x", midX); tBot.setAttribute("y", midY + 12); 
+                tBot.setAttribute("class", "label-tech");
+                tBot.setAttribute("fill", "#999"); // Color gris suave
+                tBot.setAttribute("transform", `rotate(${angDeg}, ${midX}, ${midY})`);
+                tBot.textContent = txtBottom;
+                g.appendChild(tBot);
             }
+
+            // 3. Etiqueta Personalizada (TAG)
             if(showLabel && el.props.tag) {
                 const tt = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                const offset = hasTechLabel ? 14 : -5;
+                // Si hay datos técnicos, bajamos el TAG más para no superponer
+                const offset = (el.props.diametroNominal || el.props.material) ? 24 : -5;
+                
                 tt.setAttribute("x", midX); tt.setAttribute("y", midY + offset); 
                 tt.setAttribute("font-size", "10px"); tt.setAttribute("fill", "#fff"); 
                 tt.setAttribute("text-anchor", "middle");
@@ -763,6 +778,8 @@ function renderScene() {
                 tt.textContent = el.props.tag;
                 g.appendChild(tt);
             }
+            // ---------------------------------
+
         } else if(el.tipo === 'cota') {
             const e = isoToScreen(el.x+el.dx, el.y+el.dy, el.z+el.dz);
             const l = document.createElementNS("http://www.w3.org/2000/svg", "line");
@@ -1070,9 +1087,8 @@ function confirmarInput() {
 }
 document.getElementById('dynamic-len').addEventListener('keydown', (e) => { if (e.key === 'Enter') confirmarInput(); if (e.key === 'Escape') { document.getElementById('dynamic-input-container').style.display = 'none'; estado.tempVector = null; } e.stopPropagation(); });
 
-// --- LOGICA CLICK ---
+// --- LOGICA CLICK (CORREGIDA: Alineación exacta con guía roja) ---
 function handleCanvasClick(e) {
-    // Si hay un input abierto, no hacer nada en el canvas
     if(document.getElementById('dynamic-input-container').style.display === 'flex' ||
        document.getElementById('vertical-input-container').style.display === 'flex') return;
 
@@ -1101,11 +1117,32 @@ function handleCanvasClick(e) {
         return; 
     }
     
-    // Al hacer click, redondeamos para alinear a grid
-    const tx = estado.snapped ? estado.snapped.x : Math.round(estado.mouseIso.x*10)/10;
-    const ty = estado.snapped ? estado.snapped.y : Math.round(estado.mouseIso.y*10)/10;
-    const tz = estado.snapped ? estado.snapped.z : estado.currentZ;
+    // --- CAMBIO IMPORTANTE AQUÍ ---
+    // Usamos 'let' en lugar de 'const' para poder modificar las coordenadas si se alinean
+    let tx = estado.snapped ? estado.snapped.x : Math.round(estado.mouseIso.x*10)/10;
+    let ty = estado.snapped ? estado.snapped.y : Math.round(estado.mouseIso.y*10)/10;
+    let tz = estado.snapped ? estado.snapped.z : estado.currentZ;
     
+    // CORRECCIÓN: Si estamos dibujando y NO hay snap a objeto, aplicamos "Imán Ortogonal"
+    if (estado.drawing && estado.inicio && !estado.snapped) {
+        const diffX = tx - estado.inicio.x;
+        const diffY = ty - estado.inicio.y;
+        const diffZ = tz - estado.inicio.z;
+        const th = 0.5; // Umbral de sensibilidad (debe ser igual al visual)
+
+        // Detectar si estamos alineados y forzar la coordenada
+        if (Math.abs(diffY) < th && Math.abs(diffZ) < th) { 
+            ty = estado.inicio.y; tz = estado.inicio.z; // Bloqueo en Eje X
+        } 
+        else if (Math.abs(diffX) < th && Math.abs(diffZ) < th) { 
+            tx = estado.inicio.x; tz = estado.inicio.z; // Bloqueo en Eje Y
+        } 
+        else if (Math.abs(diffX) < th && Math.abs(diffY) < th) { 
+            tx = estado.inicio.x; ty = estado.inicio.y; // Bloqueo en Eje Z (Vertical)
+        }
+    }
+    // -----------------------------
+
     if(estado.tool === 'texto') { 
         const txt = prompt("Texto:", "Etiqueta"); 
         if(txt) {
@@ -1124,6 +1161,7 @@ function handleCanvasClick(e) {
         } 
         else {
             // SEGUNDO CLICK (CONFIRMAR TRAMO)
+            // Calculamos con las coordenadas YA CORREGIDAS (tx, ty, tz)
             let dx=tx-estado.inicio.x, dy=ty-estado.inicio.y, dz=tz-estado.inicio.z;
             const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
             if(dist > 0.01) { mostrarInputDinámico(e.clientX, e.clientY, dist, {dx, dy, dz}); } else { estado.drawing = false; }
@@ -1135,6 +1173,7 @@ function handleCanvasClick(e) {
     }
     renderInterface();
 }
+
 svg.addEventListener('wheel', e => { 
     e.preventDefault(); 
     let newScale = estado.view.scale * (e.deltaY > 0 ? 0.9 : 1.1); 
