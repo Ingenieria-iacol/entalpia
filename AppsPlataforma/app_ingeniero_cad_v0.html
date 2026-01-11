@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>CAD Gas v10.7 - Control de Alturas</title>
+<title>CAD Gas v10.8 - Inserción por Panel</title>
 <style>
     /* --- ESTILOS CORE --- */
     :root { --bg: #1e1e1e; --panel: #252526; --border: #333; --accent: #0078d7; --text: #ccc; --snap: #00ff00; }
@@ -141,12 +141,16 @@
     #dynamic-input-container { position: absolute; background: rgba(37, 37, 38, 0.95); border: 1px solid var(--accent); padding: 5px 8px; border-radius: 4px; display: none; align-items: center; gap: 5px; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
     #dynamic-len { width: 70px; background: #111; border: 1px solid #444; color: #fff; padding: 2px 5px; border-radius: 2px; outline: none; font-family: monospace; }
     #dynamic-len:focus { border-color: var(--accent); }
+
+    /* ESTILOS PARA SELECT DE INSERCIÓN */
+    #ins-select optgroup { background: #333; color: var(--accent); font-style: normal; font-weight: bold; }
+    #ins-select option { background: var(--panel); color: #eee; padding: 5px; }
 </style>
 </head>
 <body>
 
 <header>
-    <div class="brand"><span>CAD</span> GAS v10.7</div>
+    <div class="brand"><span>CAD</span> GAS v10.8</div>
     <button class="btn" onclick="guardarProyecto()">💾 Guardar</button>
     <button class="btn" onclick="document.getElementById('file-input').click()">📂 Abrir</button>
     <button class="btn danger" onclick="limpiarTodo()">🗑️ Nuevo</button>
@@ -156,6 +160,8 @@
     <button id="btn-select" class="btn active" onclick="setTool('select')">👆 Seleccionar</button>
     <button id="btn-cota" class="btn" onclick="setTool('cota')">📏 Cota</button>
     <button id="btn-texto" class="btn" onclick="setTool('texto')">T Texto</button>
+    
+    <button id="btn-insert" class="btn" onclick="setTool('insert')">📍 Insertar</button>
     <div class="toolbar-sep"></div>
     
     <div class="layer-dropdown">
@@ -364,6 +370,35 @@
     </div>
 </div>
 
+<div id="modal-insertar" class="modal">
+    <div class="modal-box">
+        <h3>Insertar Elemento en Punto</h3>
+        <div class="prop-row">
+            <label>Elemento a integrar:</label>
+            <select id="ins-select" class="btn" style="width:100%" onchange="checkInsertType()">
+                </select>
+        </div>
+        
+        <div class="prop-row row-h" style="margin-top:10px;">
+            <label>Altura Inicial (Z1):</label>
+            <input type="text" id="ins-z1" class="btn-input" style="width:100px" placeholder="0.00">
+        </div>
+
+        <div class="prop-row row-h" id="row-ins-z2" style="margin-top:10px;">
+            <label>Altura Final (Z2) (Op):</label>
+            <input type="text" id="ins-z2" class="btn-input" style="width:100px" placeholder="0.00">
+        </div>
+        <small style="color:#777; font-size:0.75rem; display:block; margin-top:5px;">
+            * Si Z1 es distinto a Z2, se creará una tubería vertical.
+        </small>
+
+        <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px;">
+            <button class="btn primary" onclick="ejecutarInsercion()">Integrar Objeto</button>
+            <button class="btn" onclick="cerrarModalInsertar()">Cancelar</button>
+        </div>
+    </div>
+</div>
+
 <script>
 // --- HELPER PARA INPUTS CON COMA ---
 function parseInputFloat(val) {
@@ -546,7 +581,6 @@ function renderScene() {
         else width = el.props.grosor || 2; 
         
         // --- LOGICA VISIBILIDAD ETIQUETAS ---
-        // Se muestra si Global está activo O si la propiedad "Mostrar Siempre" del elemento es true
         const showLabel = CONFIG.showTags || (el.props.mostrarEtiqueta === true);
 
         if(el.tipo === 'tuberia') {
@@ -822,9 +856,21 @@ function confirmarInput() {
     box.style.display = 'none'; estado.tempVector = null; renderScene(); 
 }
 document.getElementById('dynamic-len').addEventListener('keydown', (e) => { if (e.key === 'Enter') confirmarInput(); if (e.key === 'Escape') { document.getElementById('dynamic-input-container').style.display = 'none'; estado.tempVector = null; } e.stopPropagation(); });
-// --- LOGICA CLICK ---
+
+// --- LOGICA CLICK (ACTUALIZADA) ---
 function handleCanvasClick(e) {
     if(document.getElementById('dynamic-input-container').style.display === 'flex') return;
+
+    // --- NUEVO: HERRAMIENTA INSERTAR ---
+    if(estado.tool === 'insert') {
+        const tx = estado.snapped ? estado.snapped.x : estado.mouseIso.x;
+        const ty = estado.snapped ? estado.snapped.y : estado.mouseIso.y;
+        const tz = estado.snapped ? estado.snapped.z : estado.currentZ;
+        abrirModalInsertar(tx, ty, tz);
+        return; 
+    }
+    // -----------------------------------
+
     if(estado.tool === 'select') { 
         estado.selID = estado.hoverID; 
         updatePropsPanel(); 
@@ -1046,14 +1092,20 @@ function initLibrary() {
     renderLayersUI();
 }
 function setTool(t) { 
-    estado.tool = (t==='cota'||t==='texto'||t==='select') ? t : 'draw'; 
+    // --- ACTUALIZADO: Acepta 'insert' ---
+    estado.tool = (t==='cota'||t==='texto'||t==='select'||t==='insert') ? t : 'draw'; 
     estado.drawing=false; estado.selID=null; renderEffects(); 
-    if(t==='select' || t==='cota' || t==='texto') {
-          document.querySelectorAll('.tool-item').forEach(x=>x.classList.remove('active'));
-          ['btn-select','btn-cota','btn-texto'].forEach(id => document.getElementById(id).classList.remove('active'));
-          document.getElementById('btn-'+t).classList.add('active');
-    } else {
-          ['btn-select','btn-cota','btn-texto'].forEach(id => document.getElementById(id).classList.remove('active'));
+    
+    // Reset buttons
+    document.querySelectorAll('.tool-item').forEach(x=>x.classList.remove('active'));
+    ['btn-select','btn-cota','btn-texto', 'btn-insert'].forEach(id => {
+         const btn = document.getElementById(id);
+         if(btn) btn.classList.remove('active');
+    });
+
+    // Activar botón específico si existe
+    if(document.getElementById('btn-'+t)) {
+        document.getElementById('btn-'+t).classList.add('active');
     }
 }
 function addEl(data) { 
@@ -1093,7 +1145,7 @@ function renderLayersUI() {
 window.togLay = (id) => { const l=layers.find(x=>x.id===id); l.visible=!l.visible; renderLayersUI(); renderScene(); }
 window.addLayer = () => { layers.push({id:'l'+Date.now(), name:'Nueva', color:'#fff', visible:true}); renderLayersUI(); }
 
-// --- PROPIEDADES ACTUALIZADAS ---
+// --- PROPIEDADES ---
 window.updatePropsPanel = function() {
     const el = elementos.find(x=>x.id===estado.selID);
     const f = document.getElementById('prop-form'); const v = document.getElementById('prop-vacio');
@@ -1106,16 +1158,13 @@ window.updatePropsPanel = function() {
     document.getElementById('p-linestyle').value = el.props.tipoLinea || 'solid';
     document.getElementById('p-capa').value = el.layerId;
     
-    // Checkbox Etiqueta
     const cbLabel = document.getElementById('p-show-label');
     cbLabel.checked = el.props.mostrarEtiqueta === true;
 
-    // --- UNIDADES Y ALTURA INICIAL ---
     const u = UNITS[CONFIG.unit];
     document.getElementById('lbl-unit-z').innerText = u.label;
     document.getElementById('p-altura').value = (el.z * u.factor).toFixed(u.precision);
     
-    // --- NUEVO: LÓGICA ALTURA FINAL ---
     const rowFinal = document.getElementById('row-altura-final');
     const lblFinal = document.getElementById('lbl-unit-z-final');
     if (lblFinal) lblFinal.innerText = u.label;
@@ -1172,7 +1221,6 @@ window.updatePropsPanel = function() {
     }
 }
 
-// --- NUEVA FUNCION ALTURA FINAL ---
 window.updateAlturaFinal = function(valUser) {
     const el = elementos.find(x => x.id === estado.selID);
     if (!el || (el.tipo !== 'tuberia' && el.tipo !== 'cota')) return;
@@ -1180,7 +1228,6 @@ window.updateAlturaFinal = function(valUser) {
     if (isNaN(num)) return;
     const u = UNITS[CONFIG.unit];
     const newFinalZ = num / u.factor; 
-    // Ajusta el vector DZ
     el.dz = newFinalZ - el.z;
     renderScene();
     renderEffects();
@@ -1233,7 +1280,7 @@ window.updateAltura = function(valUser) {
     el.z = num / u.factor;
     renderScene();
     renderEffects(); 
-    updatePropsPanel(); // Actualizar para recalcular la altura final mostrada
+    updatePropsPanel();
 }
 
 function ensureHex(c){ if(c.startsWith('#') && c.length===7) return c; return '#cccccc'; }
@@ -1268,6 +1315,76 @@ function mostrarReporte(){
     });
     for(let k in counts) { let valStr = ""; if(k.includes("Ø") || k.includes("Tuberia")) { valStr = formatLength(counts[k]); } else { valStr = counts[k] + " und"; } html+=`<tr><td>${k}</td><td align='right'>${valStr}</td></tr>`; }
     document.getElementById('tabla-res').innerHTML=html+`<tr><td colspan='2' style='border-top:1px solid #555; font-size:0.8rem; color:#666'>Item<span style='float:right'>Cant/Long</span></td></tr>`; document.getElementById('modal-reporte').style.display='flex';    }
+
+// --- FUNCIONES DE INSERCIÓN (NUEVAS) ---
+let insertCoords = { x:0, y:0 };
+
+function abrirModalInsertar(x, y, zDefault) {
+    insertCoords = { x, y };
+    const sel = document.getElementById('ins-select');
+    sel.innerHTML = '';
+    const groupNames = { mat: 'Materiales (Tuberías)', eq: 'Equipos', inst: 'Instrumentos', perif: 'Periféricos / Válvulas' };
+    Object.keys(CATALOGO).forEach(key => {
+        const group = document.createElement('optgroup');
+        group.label = groupNames[key] || key.toUpperCase();
+        CATALOGO[key].forEach(item => {
+            const opt = document.createElement('option');
+            opt.value = key + '|' + item.id; 
+            opt.innerText = item.name;
+            opt.setAttribute('data-type', item.type); 
+            group.appendChild(opt);
+        });
+        sel.appendChild(group);
+    });
+    const u = UNITS[CONFIG.unit];
+    document.getElementById('ins-z1').value = (zDefault * u.factor).toFixed(u.precision);
+    document.getElementById('ins-z2').value = (zDefault * u.factor).toFixed(u.precision);
+    checkInsertType(); 
+    document.getElementById('modal-insertar').style.display = 'flex';
+}
+function cerrarModalInsertar() {
+    document.getElementById('modal-insertar').style.display = 'none';
+    setTool('select'); 
+}
+function checkInsertType() {
+    const sel = document.getElementById('ins-select');
+    if(!sel.options.length) return;
+    const opt = sel.options[sel.selectedIndex];
+    const type = opt.getAttribute('data-type');
+    const rowZ2 = document.getElementById('row-ins-z2');
+    if(type === 'tuberia') rowZ2.style.display = 'flex'; else rowZ2.style.display = 'none';
+}
+function ejecutarInsercion() {
+    const sel = document.getElementById('ins-select');
+    const valParts = sel.value.split('|');
+    const groupKey = valParts[0]; const itemId = valParts[1];
+    const itemDef = CATALOGO[groupKey].find(x => x.id === itemId);
+    if(!itemDef) return;
+
+    const rawZ1 = parseInputFloat(document.getElementById('ins-z1').value);
+    const rawZ2 = parseInputFloat(document.getElementById('ins-z2').value);
+    const u = UNITS[CONFIG.unit];
+    const z1Meters = rawZ1 / u.factor; const z2Meters = rawZ2 / u.factor;
+    const props = JSON.parse(JSON.stringify(itemDef.props));
+    
+    if (itemDef.type === 'tuberia' && Math.abs(z1Meters - z2Meters) > 0.001) {
+        addEl({
+            tipo: 'tuberia', x: insertCoords.x, y: insertCoords.y, z: z1Meters,
+            dx: 0, dy: 0, dz: z2Meters - z1Meters,
+            props: props, layerId: activeLayerId, customColor: itemDef.color
+        });
+    } else {
+        addEl({
+            tipo: itemDef.type, x: insertCoords.x, y: insertCoords.y, z: z1Meters,
+            dx: 0, dy: 0, dz: 0, 
+            props: props, icon: itemDef.icon, layerId: activeLayerId, color: itemDef.color
+        });
+    }
+    document.getElementById('modal-insertar').style.display = 'none';
+    setTool('select');
+    renderScene();
+}
+
 // --- INICIALIZACIÓN ---
 renderGrid(); renderGizmo(); initLibrary();
 const rectInit = svg.getBoundingClientRect(); estado.view.x=rectInit.width/2; estado.view.y=rectInit.height/2; 
