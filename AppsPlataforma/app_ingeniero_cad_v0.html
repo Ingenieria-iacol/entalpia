@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>CAD Gas v12.2 - Tuberías y Componentes</title>
+<title>CAD Gas v12.3 - Fixed Props & Accordion</title>
 <style>
     /* --- ESTILOS CORE --- */
     :root { --bg: #1e1e1e; --panel: #252526; --border: #333; --accent: #0078d7; --text: #ccc; --snap: #00ff00; }
@@ -104,10 +104,23 @@
     .hover-halo { stroke: #fff; stroke-width: 6; opacity: 0.3; fill: none; pointer-events: none; stroke-linecap: round; }
     .sel-halo { stroke: var(--accent); stroke-width: 4; opacity: 0.8; fill: none; pointer-events: none; stroke-linecap: round; }
     
-    /* PROPIEDADES */
+    /* PROPIEDADES & ACORDEON */
     .sub-panel { display: flex; flex-direction: column; height: 100%;}
-    .sp-top { flex: 1; overflow-y:auto; } 
-    .prop-section-title { font-size: 0.7rem; font-weight: bold; color: var(--accent); margin: 15px 15px 5px 15px; text-transform: uppercase; border-bottom: 1px solid #444; padding-bottom: 2px;}
+    .sp-top { flex: 1; overflow-y:auto; padding-bottom: 20px;} 
+    
+    /* Estilos Acordeón */
+    .acc-group { border-bottom: 1px solid #333; }
+    .acc-header { 
+        padding: 10px 15px; background: #2a2a2a; color: #ddd; font-weight: 600; font-size: 0.8rem; 
+        cursor: pointer; display: flex; justify-content: space-between; align-items: center; 
+        transition: background 0.2s; text-transform: uppercase;
+    }
+    .acc-header:hover { background: #333; color: #fff; }
+    .acc-header::after { content: '▼'; font-size: 0.7rem; transition: transform 0.2s; }
+    .acc-group.collapsed .acc-header::after { transform: rotate(-90deg); }
+    .acc-content { display: block; padding: 10px 0; background: #252526; }
+    .acc-group.collapsed .acc-content { display: none; }
+
     .prop-row { margin: 8px 15px; display: flex; flex-direction: column; gap: 4px; }
     .prop-row.row-h { flex-direction: row; align-items: center; justify-content: space-between; gap: 10px; }
     .prop-row label { color: #aaa; font-size: 0.75rem; }
@@ -159,7 +172,7 @@
 <body>
 
 <header>
-    <div class="brand"><span>CAD</span> GAS v12.2</div>
+    <div class="brand"><span>CAD</span> GAS v12.3</div>
     
     <div class="toolbar-sep"></div>
     <button class="btn" id="btn-undo" onclick="undo()" title="Deshacer (Ctrl+Z)">↩</button>
@@ -322,86 +335,95 @@
             
             <div id="prop-form" class="sp-top" style="display:none;">
                 
-                <div class="prop-section-title">Información</div>
-                
-                <div class="prop-row row-h" style="border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:10px;">
-                    <label style="color:#fff; font-weight:bold;">Visibilidad Objeto</label>
-                    <input type="checkbox" id="p-visible" onchange="updateRootProp('visible', this.checked)" style="width:auto; cursor:pointer;">
-                </div>
-
-                <div class="prop-row row-h">
-                    <label style="color:#fff;">Mostrar Etiqueta Siempre</label>
-                    <input type="checkbox" id="p-show-label" onchange="updateBooleanProp('mostrarEtiqueta', this.checked)" style="width:auto; cursor:pointer;">
-                </div>
-
-                <div class="prop-row">
-                    <label>Tag (Etiqueta)</label>
-                    <input type="text" id="p-tag" onchange="updateStyleProp('tag', this.value)">
-                </div>
-                <div class="prop-row">
-                    <label>Capa Actual</label>
-                    <select id="p-capa" class="btn" onchange="updateStyleProp('layerId', this.value)"></select>
-                </div>
-                
-                <div class="prop-row">
-                    <label>Elevación Inicial (Z) (<span id="lbl-unit-z">m</span>)</label>
-                    <input type="text" id="p-altura" inputmode="decimal" onchange="updateAltura(this.value)" placeholder="0.00">
-                </div>
-                
-                <div class="prop-row" id="row-altura-final" style="display:none;">
-                    <label>Elevación Final (Z) (<span id="lbl-unit-z-final">m</span>)</label>
-                    <input type="text" id="p-altura-final" inputmode="decimal" onchange="updateAlturaFinal(this.value)" placeholder="0.00">
-                </div>
-                <div class="prop-row" id="row-longitud">
-                      <label>Longitud (<span id="lbl-unit">m</span>)</label>
-                      <input type="text" inputmode="decimal" id="p-longitud" onchange="updateLongitud(this.value)">
-                </div>
-                
-                <div id="prop-datos-tecnicos"></div>
-                
-                <div class="prop-section-title">Apariencia y Ajuste</div>
-                
-                <div id="obj-adjust-controls" style="display:none;">
-                    <div class="prop-row">
-                        <label>Tamaño Visual (Escala)</label>
-                        <div style="display:flex; align-items:center; gap:5px;">
-                            <input type="range" id="p-scale" min="0.5" max="3" step="0.1" oninput="updateStyleProp('scaleFactor', this.value)" style="flex-grow:1;">
-                            <span id="p-scale-val" style="font-size:0.7rem; color:#888; width:25px;">1.0</span>
+                <div class="acc-group" id="grp-general">
+                    <div class="acc-header" onclick="toggleAccordion('grp-general')">Información</div>
+                    <div class="acc-content">
+                        <div class="prop-row row-h">
+                            <label style="color:#fff; font-weight:bold;">Visibilidad</label>
+                            <input type="checkbox" id="p-visible" onchange="updateRootProp('visible', this.checked)" style="width:auto; cursor:pointer;">
+                        </div>
+                        <div class="prop-row row-h">
+                            <label style="color:#fff;">Mostrar Etiqueta</label>
+                            <input type="checkbox" id="p-show-label" onchange="updateBooleanProp('mostrarEtiqueta', this.checked)" style="width:auto; cursor:pointer;">
+                        </div>
+                        <div class="prop-row">
+                            <label>Tag (Etiqueta)</label>
+                            <input type="text" id="p-tag" onchange="updateStyleProp('tag', this.value)">
+                        </div>
+                        <div class="prop-row">
+                            <label>Capa Actual</label>
+                            <select id="p-capa" class="btn" onchange="updateStyleProp('layerId', this.value)"></select>
                         </div>
                     </div>
-                    <div class="prop-row">
-                        <label>Punto de Acople</label>
-                        <select id="p-anchor" class="btn" onchange="updateStyleProp('anchor', this.value)">
-                            <option value="start">Extremo Inicio (Izq)</option>
-                            <option value="center">Extremo Centro</option>
-                            <option value="end">Extremo Fin (Der)</option>
-                        </select>
+                </div>
+
+                <div class="acc-group" id="grp-geo">
+                    <div class="acc-header" onclick="toggleAccordion('grp-geo')">Geometría</div>
+                    <div class="acc-content">
+                        <div class="prop-row">
+                            <label>Elevación Z1 (<span id="lbl-unit-z">m</span>)</label>
+                            <input type="text" id="p-altura" inputmode="decimal" onchange="updateAltura(this.value)" placeholder="0.00">
+                        </div>
+                        <div class="prop-row" id="row-altura-final" style="display:none;">
+                            <label>Elevación Z2 (<span id="lbl-unit-z-final">m</span>)</label>
+                            <input type="text" id="p-altura-final" inputmode="decimal" onchange="updateAlturaFinal(this.value)" placeholder="0.00">
+                        </div>
+                        <div class="prop-row" id="row-longitud">
+                            <label>Longitud (<span id="lbl-unit">m</span>)</label>
+                            <input type="text" inputmode="decimal" id="p-longitud" onchange="updateLongitud(this.value)">
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="prop-datos-tecnicos-container"></div>
+                
+                <div class="acc-group" id="grp-app">
+                    <div class="acc-header" onclick="toggleAccordion('grp-app')">Apariencia</div>
+                    <div class="acc-content">
+                        <div id="obj-adjust-controls" style="display:none;">
+                            <div class="prop-row">
+                                <label>Tamaño Visual</label>
+                                <div style="display:flex; align-items:center; gap:5px;">
+                                    <input type="range" id="p-scale" min="0.5" max="3" step="0.1" oninput="updateStyleProp('scaleFactor', this.value)" style="flex-grow:1;">
+                                    <span id="p-scale-val" style="font-size:0.7rem; color:#888; width:25px;">1.0</span>
+                                </div>
+                            </div>
+                            <div class="prop-row">
+                                <label>Punto de Acople</label>
+                                <select id="p-anchor" class="btn" onchange="updateStyleProp('anchor', this.value)">
+                                    <option value="start">Inicio</option>
+                                    <option value="center">Centro</option>
+                                    <option value="end">Fin</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="prop-row">
+                            <label>Color</label>
+                            <input type="color" id="p-color" onchange="updateStyleProp('color', this.value)">
+                        </div>
+                        
+                        <div class="prop-row" id="row-tipo-linea">
+                            <label>Tipo de Línea</label>
+                            <select id="p-linestyle" class="btn" onchange="updateStyleProp('tipoLinea', this.value)">
+                                <option value="solid">Sólida (⎯⎯⎯)</option>
+                                <option value="dashed">Guiones (- - -)</option>
+                                <option value="dotted">Punteada (· · ·)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="prop-row" id="row-grosor">
+                            <label>Grosor Visual</label>
+                            <input type="number" id="p-grosor" value="2" onchange="updateStyleProp('grosor', this.value)">
+                        </div>
+                        
+                        <div class="prop-row">
+                            <label>Rotación (°)</label>
+                            <input type="number" id="p-rot" onchange="updateStyleProp('rotacion', this.value)">
+                        </div>
                     </div>
                 </div>
 
-                <div class="prop-row">
-                    <label>Color</label>
-                    <input type="color" id="p-color" onchange="updateStyleProp('color', this.value)">
-                </div>
-                
-                <div class="prop-row" id="row-tipo-linea">
-                    <label>Tipo de Línea</label>
-                    <select id="p-linestyle" class="btn" onchange="updateStyleProp('tipoLinea', this.value)">
-                        <option value="solid">Sólida (⎯⎯⎯)</option>
-                        <option value="dashed">Guiones (- - -)</option>
-                        <option value="dotted">Punteada (· · ·)</option>
-                    </select>
-                </div>
-                
-                <div class="prop-row" id="row-grosor">
-                    <label>Grosor Visual</label>
-                    <input type="number" id="p-grosor" value="2" onchange="updateStyleProp('grosor', this.value)">
-                </div>
-                
-                <div class="prop-row">
-                      <label>Rotación Objeto (°)</label>
-                      <input type="number" id="p-rot" onchange="updateStyleProp('rotacion', this.value)">
-                </div>
                 <div class="prop-row" style="margin-top:15px;">
                     <button class="btn danger" onclick="borrarSeleccion()" style="justify-content:center;">Eliminar Objeto</button>
                 </div>
@@ -1598,6 +1620,12 @@ function toggleGroup(id) {
     document.getElementById(id).classList.toggle('open'); 
 }
 
+// --- FUNCION ACORDEON ---
+function toggleAccordion(id) {
+    const el = document.getElementById(id);
+    if(el) el.classList.toggle('collapsed');
+}
+
 // --- INICIALIZACIÓN BIBLIOTECA ---
 function initLibrary() {
     const fillGroup = (id, items) => {
@@ -1686,7 +1714,15 @@ window.updatePropsPanel = function() {
     const el = elementos.find(x=>x.id===estado.selID);
     const f = document.getElementById('prop-form'); 
     const v = document.getElementById('prop-vacio');
-    const divAdjust = document.getElementById('obj-adjust-controls'); // Contenedor de escala/acople
+    
+    // Contenedores Acordeon
+    const grpGeo = document.getElementById('grp-geo');
+    const grpApp = document.getElementById('grp-app');
+    const divAdjust = document.getElementById('obj-adjust-controls');
+    
+    // Contenedor dinámico de datos técnicos
+    const contDatos = document.getElementById('prop-datos-tecnicos-container'); 
+    contDatos.innerHTML = ''; 
 
     if(!el) { f.style.display='none'; v.style.display='block'; return; }
     
@@ -1711,19 +1747,26 @@ window.updatePropsPanel = function() {
     const lblFinal = document.getElementById('lbl-unit-z-final');
     if (lblFinal) lblFinal.innerText = u.label;
 
+    // Configurar Inputs según Tipo
     if (el.tipo === 'tuberia' || el.tipo === 'cota') {
         const finalZ = el.z + el.dz;
         document.getElementById('p-altura-final').value = (finalZ * u.factor).toFixed(u.precision);
         rowFinal.style.display = 'flex';
         // Ocultar ajuste visual para tuberías
         divAdjust.style.display = 'none';
+        
+        // Mostrar longitud
+        document.getElementById('row-longitud').style.display = 'flex';
+        const rawLen = Math.sqrt(el.dx**2 + el.dy**2 + el.dz**2);
+        document.getElementById('lbl-unit').innerText = u.label;
+        document.getElementById('p-longitud').value = (rawLen * u.factor).toFixed(u.precision);
+
     } else {
         rowFinal.style.display = 'none';
+        document.getElementById('row-longitud').style.display = 'none';
         
-        // --- RECUPERADO: Si no es texto, mostrar controles de ajuste ---
         if(el.tipo !== 'texto') {
              divAdjust.style.display = 'block'; 
-             
              const scaleVal = el.props.scaleFactor || 1.0;
              document.getElementById('p-scale').value = scaleVal;
              document.getElementById('p-scale-val').textContent = scaleVal;
@@ -1733,24 +1776,27 @@ window.updatePropsPanel = function() {
         }
     }
 
+    // Grosor
     const divGrosor = document.getElementById('row-grosor');
     if(el.tipo === 'tuberia' && el.props.material) { divGrosor.style.display = 'none'; } 
     else { divGrosor.style.display = 'flex'; document.getElementById('p-grosor').value = el.props.grosor || 2; }
     
-    const divLen = document.getElementById('row-longitud');
-    if(el.tipo === 'tuberia') {
-        divLen.style.display = 'flex';
-        const rawLen = Math.sqrt(el.dx**2 + el.dy**2 + el.dz**2);
-        document.getElementById('lbl-unit').innerText = u.label;
-        document.getElementById('p-longitud').value = (rawLen * u.factor).toFixed(u.precision);
-    } else {
-        divLen.style.display = 'none';
-    }
     if(el.props.rotacion !== undefined) document.getElementById('p-rot').value = el.props.rotacion;
     
-    const contDatos = document.getElementById('prop-datos-tecnicos'); contDatos.innerHTML = ''; 
+    // --- GENERAR DATOS TÉCNICOS EN ESTRUCTURA ACORDEÓN ---
     if (el.tipo === 'tuberia' && el.props.material) {
-        const title = document.createElement('div'); title.className = 'prop-section-title'; title.innerText = 'Datos Técnicos'; contDatos.appendChild(title);
+        
+        // Crear estructura acordeón
+        const accGroup = document.createElement('div'); accGroup.className = 'acc-group';
+        accGroup.id = 'grp-tech';
+        
+        const accHead = document.createElement('div'); accHead.className = 'acc-header';
+        accHead.innerText = 'Datos Técnicos';
+        accHead.onclick = function() { toggleAccordion('grp-tech'); };
+        
+        const accContent = document.createElement('div'); accContent.className = 'acc-content';
+        
+        // Row Material
         const rowMat = document.createElement('div'); rowMat.className = 'prop-row';
         const lblMat = document.createElement('label'); lblMat.innerText = "Material Tubería";
         const selMat = document.createElement('select'); selMat.className = 'btn';
@@ -1760,20 +1806,32 @@ window.updatePropsPanel = function() {
             selMat.appendChild(opt);
         });
         selMat.onchange = (e) => changeMaterial(e.target.value);
-        rowMat.appendChild(lblMat); rowMat.appendChild(selMat); contDatos.appendChild(rowMat);
+        rowMat.appendChild(lblMat); rowMat.appendChild(selMat);
+        accContent.appendChild(rowMat);
+
+        // Row Diametro
         if (DIAMETROS_DISPONIBLES[el.props.material]) {
             const list = DIAMETROS_DISPONIBLES[el.props.material];
-            const row = document.createElement('div'); row.className = 'prop-row';
-            const label = document.createElement('label'); label.innerText = "Diámetro Nominal";
-            const select = document.createElement('select'); select.className = 'btn'; select.style.width = '100%';
-            select.onchange = (e) => updateDiametro(e.target.value);
+            const rowDia = document.createElement('div'); rowDia.className = 'prop-row';
+            const labelDia = document.createElement('label'); labelDia.innerText = "Diámetro Nominal";
+            const selectDia = document.createElement('select'); selectDia.className = 'btn'; selectDia.style.width = '100%';
+            
+            // Asignar función global updateDiametro
+            selectDia.onchange = function(e) { window.updateDiametro(e.target.value); };
+            
             list.forEach(nominal => {
                 const opt = document.createElement('option'); opt.value = nominal; opt.innerText = nominal; 
+                // Asegurar coincidencia exacta para seleccionar
                 if(el.props.diametroNominal === nominal) opt.selected = true;
-                select.appendChild(opt);
+                selectDia.appendChild(opt);
             });
-            row.appendChild(label); row.appendChild(select); contDatos.appendChild(row);
+            rowDia.appendChild(labelDia); rowDia.appendChild(selectDia);
+            accContent.appendChild(rowDia);
         }
+        
+        accGroup.appendChild(accHead);
+        accGroup.appendChild(accContent);
+        contDatos.appendChild(accGroup);
     }
 }
 
@@ -1804,7 +1862,16 @@ window.changeMaterial = function(newMat) {
         updatePropsPanel(); renderScene();
     }
 }
-window.updateDiametro = function(val) { const el = elementos.find(x=>x.id===estado.selID); if(el){ el.props.diametroNominal = val; saveState(); renderScene(); } }
+window.updateDiametro = function(val) { 
+    const el = elementos.find(x=>x.id===estado.selID); 
+    if(el){ 
+        el.props.diametroNominal = val; 
+        saveState(); 
+        renderScene(); 
+        // Forzar renderizado de efectos para actualizar visualmente la selección si cambia grosor
+        renderEffects(); 
+    } 
+}
 
 window.updateStyleProp = function(k,v) { 
     const el=elementos.find(x=>x.id===estado.selID); 
