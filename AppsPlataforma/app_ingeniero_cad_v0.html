@@ -513,19 +513,18 @@ function parseInputFloat(val) {
 }
 
 // --- LISTAS DE DIAMETROS DISPONIBLES ---
-// Aquí definimos qué medidas aparecen en el menú de propiedades para cada tipo
 const DIAMETROS_DISPONIBLES = {
     // Acero al Carbón
-    'acero_sch40': ['1/4"', '1/2"', '3/4"', '1"', '1-1/4"', '1-1/2"', '2"', '2-1/2"', '3"', '4"'],
+    'acero_sch40': ['1/4"', '1/2"', '3/4"', '1"', '1-1/4"', '1-1/2"', '2"', '2-1/2"', '3"', '4"', '6"'],
     'acero_sch80': ['1/2"', '3/4"', '1"', '1-1/4"', '1-1/2"', '2"', '3"', '4"'],
     'acero_sch160': ['1/2"', '3/4"', '1"', '2"'],
     
-    // Acero Galvanizado (Suelen compartir diámetros con el carbón, pero los separamos por si acaso)
+    // Acero Galvanizado
     'galv_sch40': ['1/2"', '3/4"', '1"', '1-1/4"', '1-1/2"', '2"', '3"', '4"'],
     'galv_sch80': ['1/2"', '3/4"', '1"', '1-1/4"', '1-1/2"', '2"'],
     'galv_sch160': ['1/2"', '3/4"', '1"'],
 
-    // Multicapa (PE-AL-PE) - Usamos notación común milimétrica
+    // Multicapa (PE-AL-PE) - Formato Tuberia (mm)
     'multicapa': ['1216 (16mm)', '1620 (20mm)', '2025 (25mm)', '2632 (32mm)', '4050 (50mm)'],
 
     // Cobre Rígido
@@ -557,10 +556,18 @@ function parseDiameterToScale(valStr) {
     if(!valStr) return 2; 
 
     let meters = 0;
+    // Lógica mejorada para detectar mm, IPS, CTS y fracciones
     if(valStr.toLowerCase().includes('mm')) {
-        meters = parseFloat(valStr) / 1000;
+        // Extraer número de strings como "1216 (16mm)"
+        const match = valStr.match(/(\d+)mm/);
+        if (match) {
+            meters = parseFloat(match[1]) / 1000;
+        } else {
+            meters = parseFloat(valStr) / 1000;
+        }
     } else {
-        let clean = valStr.replace(/"/g, '').trim();
+        // Limpiar sufijos como IPS, CTS o comillas
+        let clean = valStr.replace(/"/g, '').replace('IPS','').replace('CTS','').trim();
         let parts = clean.split(/[- ]/);
         let inches = 0;
         parts.forEach(p => {
@@ -568,7 +575,8 @@ function parseDiameterToScale(valStr) {
                 const frac = p.split('/');
                 if(frac.length === 2) inches += parseFloat(frac[0]) / parseFloat(frac[1]);
             } else {
-                inches += parseFloat(p);
+                const f = parseFloat(p);
+                if(!isNaN(f)) inches += f;
             }
         });
         meters = inches * 0.0254;
@@ -576,22 +584,45 @@ function parseDiameterToScale(valStr) {
 
     if(isNaN(meters) || meters === 0) return 2;
     let pixelWidth = meters * CONFIG.tileW;
+    // Grosor mínimo visual de 1.5px para que no desaparezca
     return Math.max(1.5, pixelWidth);
 }
 
 // --- CATALOGO ---
 const CATALOGO = {
     mat: [
-        { id: 't_acero', name: 'Acero Sch40', color: '#FFD700', type: 'tuberia', props: { material: 'acero', diametroNominal: '1"' } },
-        { id: 't_pe', name: 'Polietileno (PE)', color: '#E6E600', type: 'tuberia', props: { material: 'pe', diametroNominal: '32mm' } },
-        { id: 't_cobre', name: 'Cobre Tipo L', color: '#ff8c00', type: 'tuberia', props: { material: 'cobre', diametroNominal: '1/2"' } }
+        // --- ACERO AL CARBÓN (Negros/Grises) ---
+        { id: 't_ac_40', name: 'A. Carbón Sch40', color: '#444444', type: 'tuberia', props: { material: 'acero_sch40', diametroNominal: '1"' } },
+        { id: 't_ac_80', name: 'A. Carbón Sch80', color: '#222222', type: 'tuberia', props: { material: 'acero_sch80', diametroNominal: '1"' } },
+        { id: 't_ac_160', name: 'A. Carbón Sch160', color: '#000000', type: 'tuberia', props: { material: 'acero_sch160', diametroNominal: '1"' } },
+        
+        // --- ACERO GALVANIZADO (Plateados) ---
+        { id: 't_gl_40', name: 'Galvanizado Sch40', color: '#C0C0C0', type: 'tuberia', props: { material: 'galv_sch40', diametroNominal: '1"' } },
+        { id: 't_gl_80', name: 'Galvanizado Sch80', color: '#A9A9A9', type: 'tuberia', props: { material: 'galv_sch80', diametroNominal: '1"' } },
+        { id: 't_gl_160', name: 'Galvanizado Sch160', color: '#808080', type: 'tuberia', props: { material: 'galv_sch160', diametroNominal: '1"' } },
+
+        // --- MULTICAPA (Crema/Blanco) ---
+        { id: 't_multi', name: 'Multicapa PE-AL', color: '#FFFFE0', type: 'tuberia', props: { material: 'multicapa', diametroNominal: '1620 (20mm)' } },
+
+        // --- COBRE RÍGIDO (Colores estándar: K=Verde, L=Azul, M=Rojo) ---
+        { id: 't_cu_k', name: 'Cobre Tipo K', color: '#006400', type: 'tuberia', props: { material: 'cobre_k', diametroNominal: '1/2"' } },
+        { id: 't_cu_l', name: 'Cobre Tipo L', color: '#1E90FF', type: 'tuberia', props: { material: 'cobre_l', diametroNominal: '1/2"' } },
+        { id: 't_cu_m', name: 'Cobre Tipo M', color: '#DC143C', type: 'tuberia', props: { material: 'cobre_m', diametroNominal: '1/2"' } },
+        
+        // --- COBRE FLEXIBLE (Color Cobre) ---
+        { id: 't_cu_flex', name: 'Cobre Flexible', color: '#B87333', type: 'tuberia', props: { material: 'cobre_flex', diametroNominal: '3/8"' } },
+
+        // --- POLIETILENO (Amarillos) ---
+        { id: 't_pe_met', name: 'PE Métrico', color: '#FFD700', type: 'tuberia', props: { material: 'pe_metric', diametroNominal: '32mm' } },
+        { id: 't_pe_ips', name: 'PE IPS', color: '#E6E600', type: 'tuberia', props: { material: 'pe_ips', diametroNominal: '1" IPS' } },
+        { id: 't_pe_cts', name: 'PE CTS', color: '#F0E68C', type: 'tuberia', props: { material: 'pe_cts', diametroNominal: '1/2" CTS' } }
     ],
     eq: [
         { id: 'eq_medidor', name: 'Medidor G4', icon: '⏱️', type: 'equipo', props: { modelo: 'G4' } },
         { id: 'eq_reg', name: 'Regulador', icon: '⚙️', type: 'equipo', props: { cap: '5 m3/h' } }
     ],
     inst: [
-         { id: 'i_mano', name: 'Manómetro', icon: '⌚', type: 'equipo', props: { rango: '0-60 psi' } }
+          { id: 'i_mano', name: 'Manómetro', icon: '⌚', type: 'equipo', props: { rango: '0-60 psi' } }
     ],
     perif: [
         { id: 'v_bola', name: 'Válvula Bola', icon: '⧓', type: 'valvula', props: { tipo: 'bola', rotacion: 0 } },
